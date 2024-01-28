@@ -1,7 +1,7 @@
 CC	= gcc -g3
 CFLAGS  = -g3
 TARGET1 = kid
-TARGET2 = adult 
+TARGET2 = user 
 
 OBJS1	= child.o
 OBJS2	= parent.o
