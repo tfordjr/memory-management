@@ -8,9 +8,6 @@
 
 
 void help();
-void sigCatch(int);
-void timeout(int);
-void logfile();
 int forkandwait(int);
 
 int main(int argc, char** argv){
