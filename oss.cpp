@@ -74,8 +74,8 @@ int forkandwait(int numChildren, int iterations) {
         //     sleep(1); // wait(0);  
         // }
 
-        if (childPid == 0 ) {                 // Each child uses exec to run ./slave	
-		 	if(execl("./user","user", (char *)NULL) == -1) {   
+        if (childPid == 0 ) {             // Each child uses exec to run ./user	
+		 	if(execl("./user", (char *)iterations, (char *)NULL) == -1) {   
 				perror("Exec failed.\n");				
 			}	
 			exit(0);
