@@ -5,6 +5,7 @@
 #include <iostream>
 #include <string>
 #include <cstring>
+using namespace std;
 
 
 void help();
@@ -16,7 +17,7 @@ int main(int argc, char** argv){
     int simultaneous;
     int iterations;
 
-    while ( (option = getopt(argc, argv, "hn:s:t:")) != -1) {  // getopt h no args, i.o req args
+    while ( (option = getopt(argc, argv, "hn:s:t:")) != -1) {  
         switch(option) {
             case 'h':
                 help();
@@ -24,7 +25,7 @@ int main(int argc, char** argv){
             case 'n':                    
                 for (int i = 1; i < argc; i++) {    // cycles through args 
                     if (strcmp(argv[i], "-n") == 0 && i + 1 < argc) {
-                        numChildren = atoi(argv[i + 1]);  // assigns arg follwing -i to string variable infile
+                        numChildren = atoi(argv[i + 1]);  
                             break;
                         }
                 }	
