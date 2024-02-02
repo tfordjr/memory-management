@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <iostream>
 #include <string>
+#include <cstring>
+
 
 void help();
 void sigCatch(int);
@@ -71,7 +73,7 @@ int forkandwait(int numChildren) {
     } else {
         printf("I'm a parent! My pid is %d, and my child's pid is %d \n",
         getpid(), childPid);    
-        wait(0);  //sleep(1);
+        sleep(1); // wait(0);  
     }
 
     printf("Parent is now ending.\n");
