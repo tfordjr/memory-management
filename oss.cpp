@@ -1,5 +1,6 @@
 #include <unistd.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
@@ -80,9 +81,9 @@ int forkandwait(int numChildren, int iterations) {
 			exit(0);
 				
 		} else 	if (childPid == -1) {  // Error message for failed fork (child has PID -1)
-            		perror("master: Error: Fork has failed!");
-            		exit(0);
-        	}       
+            perror("master: Error: Fork has failed!");
+            exit(0);
+        }       
 		wait(NULL);  // Parent waits to assure children perform in order
     }
 

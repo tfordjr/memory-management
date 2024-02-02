@@ -1,7 +1,11 @@
-#include<unistd.h>
-#include<sys/types.h>
-#include<stdio.h>
-#include<stdlib.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <iostream>
+#include <string>
+#include <cstring>
 using namespace std;
 
 int main(int argc, char** argv) {
