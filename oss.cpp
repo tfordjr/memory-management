@@ -47,19 +47,17 @@ int main(int argc, char** argv){
                     } 
                 }
         }
-	}
-
-    std::cout << "Number of Children: " + numChildren << std::endl;
-    std::cout << "Number of Simultaneous: " + simultaneous << std::endl;
-    std::cout << "Number of Iterations: " + iterations << std::endl;
-
-    forkandwait(numChildren);
+	}   
 
     printf("Number of Children: %d\n", numChildren);
     printf("Number of Simultaneous: %d\n", simultaneous);
     printf("Number of Iterations: %d\n", iterations);
 
-    
+    forkandwait(numChildren);  
+
+    // std::cout << "Number of Children: " + numChildren << std::endl;
+    // std::cout << "Number of Simultaneous: " + simultaneous << std::endl;
+    // std::cout << "Number of Iterations: " + iterations << std::endl;
 }
 
 int forkandwait(int numChildren) {    
