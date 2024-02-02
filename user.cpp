@@ -5,7 +5,7 @@
 
 int main(int argc, char** argv) {
 
-    printf("%d\n", argv[0]);
+    printf("%d\n", atoi(argv[0]));
 
     printf("Hello from Child.c, a new executable!\n");
     printf("My process id is: %d\n",getpid());
