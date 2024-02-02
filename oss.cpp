@@ -26,8 +26,8 @@ int main(int argc, char** argv){
                 for (int i = 1; i < argc; i++) {    // cycles through args 
                     if (strcmp(argv[i], "-n") == 0 && i + 1 < argc) {
                         numChildren = atoi(argv[i + 1]);  
-                            break;
-                        }
+                        break;
+                    }
                 }	
                 break;
             case 's':
@@ -59,19 +59,38 @@ int main(int argc, char** argv){
 }
 
 int forkandwait(int numChildren, int iterations) {    
-    pid_t childPid = fork(); // This is where the child process splits from the parent
+    for (int i = 0; i < numChildren; i++) {
+        pid_t childPid = fork(); // This is where the child process splits from the parent
 
-    if (childPid == 0) {        
-        static char *args[] = { "./user", (char *)iterations, NULL };
-        execv(args[0], args);
-        fprintf(stderr, "Failed to execute %s\n", args[0]);
-        exit(EXIT_FAILURE);
-    } else {
-        printf("I'm a parent! My pid is %d, and my child's pid is %d \n",
-        getpid(), childPid);    
-        sleep(1); // wait(0);  
+        // if (childPid == 0) {        
+        //     static char *args[] = { "./user", (char *)iterations, NULL };
+        //     execv(args[0], args);
+        //     fprintf(stderr, "Failed to execute %s\n", args[0]);
+        //     exit(EXIT_FAILURE);
+        // } else {
+        //     printf("I'm a parent! My pid is %d, and my child's pid is %d \n",
+        //     getpid(), childPid);    
+        //     sleep(1); // wait(0);  
+        // }
+
+        if (childPid == 0 ) {                 // Each child uses exec to run ./slave	
+		 	if(execl("./user","user", (char *)NULL) == -1) {   
+				perror("Exec failed.\n");				
+			}	
+			exit(0);
+				
+		} else 	if (childPid == -1) {  // Error message for failed fork (child has PID -1)
+            		perror("master: Error: Fork has failed!");
+            		exit(0);
+        	}       
+		wait(NULL);  // Parent waits to assure children perform in order
     }
 
+    for (int i = 0; i < numChildren; i++) { 
+        wait(NULL);	// Parent Waiting for children
+    }
+
+	printf("Child processes have completed.\n");
     printf("Parent is now ending.\n");
     return EXIT_SUCCESS;
 }
