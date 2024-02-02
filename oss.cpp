@@ -75,7 +75,7 @@ int forkandwait(int numChildren, int iterations) {
         // }
 
         if (childPid == 0 ) {             // Each child uses exec to run ./user	
-		 	if(execl("./user", (char *)iterations, (char *)NULL) == -1) {   
+		 	if(execl("./user", "user", (char *)iterations, (char *)NULL) == -1) {   
 				perror("Exec failed.\n");				
 			}	
 			exit(0);
