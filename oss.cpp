@@ -9,7 +9,7 @@ using namespace std;
 
 
 void help();
-int forkandwait(int);
+int forkandwait(int, int);
 
 int main(int argc, char** argv){
     int option;
@@ -51,24 +51,21 @@ int main(int argc, char** argv){
     printf("Number of Simultaneous: %d\n", simultaneous);
     printf("Number of Iterations: %d\n", iterations);
 
-    forkandwait(numChildren);  
+    forkandwait(numChildren, iterations);  
 
     // std::cout << "Number of Children: " + numChildren << std::endl;
     // std::cout << "Number of Simultaneous: " + simultaneous << std::endl;
     // std::cout << "Number of Iterations: " + iterations << std::endl;
 }
 
-int forkandwait(int numChildren) {    
+int forkandwait(int numChildren, int iterations) {    
     pid_t childPid = fork(); // This is where the child process splits from the parent
 
-    if (childPid == 0) {
-        printf("I am a child but a copy of parent! My parent's PID is %d, and my PID is %d\n",
-            getppid(), getpid());
-        char* args[] = {"./child", "Hello", "there", "exec", "is", "neat", 0};
-            //execvp(args[0], args);
-        execlp(args[0],args[0],args[1],args[2],args[3],args[4],args[5],args[6], NULL);
-        fprintf(stderr,"Exec failed, terminating\n");
-        exit(1);
+    if (childPid == 0) {        
+        static char *args[] = { "./user", (char *)iterations, NULL };
+        execv(args[0], args);
+        fprintf(stderr, "Failed to execute %s\n", args[0]);
+        exit(EXIT_FAILURE);
     } else {
         printf("I'm a parent! My pid is %d, and my child's pid is %d \n",
         getpid(), childPid);    
