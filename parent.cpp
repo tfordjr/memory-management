@@ -27,7 +27,7 @@ int main(int argc, char** argv){
             case 'n':                    
                 for (int i = 1; i < argc; i++) {    // cycles through args 
                     if (strcmp(argv[i], "-n") == 0 && i + 1 < argc) {
-                        numChildren = argv[i + 1];  // assigns arg follwing -i to string variable infile
+                        numChildren = atoi(argv[i + 1]);  // assigns arg follwing -i to string variable infile
                             break;
                         }
                 }	
@@ -35,14 +35,14 @@ int main(int argc, char** argv){
             case 's':
                 for (int i = 1; i < argc; i++) {  // cycles through args 
                     if (strcmp(argv[i], "-s") == 0 && i + 1 < argc) {
-                        simultaneous = argv[i + 1];
+                        simultaneous = atoi(argv[i + 1]);
                         break;
                     } 
                 }
             case 't':
                 for (int i = 1; i < argc; i++) {  // cycles through args 
                     if (strcmp(argv[i], "-t") == 0 && i + 1 < argc) {
-                        iterations = argv[i + 1];
+                        iterations = atoi(argv[i + 1]);
                         break;
                     } 
                 }
