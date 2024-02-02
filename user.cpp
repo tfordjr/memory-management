@@ -7,7 +7,7 @@ using namespace std;
 int main(int argc, char** argv) {
 
     int iterations = atoi(argv[1]);
-    for(int i = 1; i < iterations; i++){
+    for(int i = 1; i < iterations + 1; i++){
         printf("USER PID: %d ", getpid());
         printf("PPID: %d ", getppid());
         printf("Iteration: %d\n", i);
@@ -20,7 +20,7 @@ int main(int argc, char** argv) {
     // for (i = 0; i < argc; i++)
     //     printf("|%s| ", argv[i]);
     // printf("\nChild is now ending.\n");
-    
+
     sleep(3);
     return EXIT_SUCCESS; 
 }
