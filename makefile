@@ -1,4 +1,4 @@
-CC	= gcc -g3
+CC	= g++ -g3
 CFLAGS  = -g3
 TARGET1 = kid
 TARGET2 = user 
@@ -14,11 +14,11 @@ $(TARGET1):	$(OBJS1)
 $(TARGET2):	$(OBJS2)
 	$(CC) -o $(TARGET2) $(OBJS2)
 
-child.o:	child.c
-	$(CC) $(CFLAGS) -c child.c 
+child.o:	child.cpp
+	$(CC) $(CFLAGS) -c child.cpp 
 
-parent.o:	parent.c
-	$(CC) $(CFLAGS) -c parent.c
+parent.o:	parent.cpp
+	$(CC) $(CFLAGS) -c parent.cpp
 
 clean:
 	/bin/rm -f *.o $(TARGET1) $(TARGET2)
