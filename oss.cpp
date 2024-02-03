@@ -23,19 +23,13 @@ int main(int argc, char** argv){
                 help();
                 return 0;     // terminates if -h is present
             case 'n':                                
-                numChildren = (optarg == NULL || atoi(optarg) > 20) ? 1 : atoi(optarg);
-                if (numChildren > 20 || numChildren < 0 || !numChildren)
-                    numChildren = 1;
+                numChildren = atoi(optarg);
                 break;
             case 's':          
-                simultaneous = (optarg == NULL || atoi(optarg) > 20) ? 1 : atoi(optarg);
-                if (simultaneous > 20 || simultaneous < 0 || !simultaneous)
-                    simultaneous = 1;
+                simultaneous = atoi(optarg);
                 break;
             case 't':
-                iterations = (optarg == NULL || atoi(optarg) > 20) ? 1 : atoi(optarg);
-                if (iterations > 20 || iterations < 0 || !iterations)
-                    iterations = 1;
+                iterations = atoi(optarg);
                 break;            
         }
 	}   // getopt loop completed here
