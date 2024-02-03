@@ -25,15 +25,15 @@ int main(int argc, char** argv){
                 return 0;     // terminates if -h is present
             case 'n':                    
                 // numChildren = return_arg("-n", argc, argv);                
-                numChildren = (optarg == NULL || optarg > 20) ? 1 : atoi(optarg);
+                numChildren = (optarg == NULL || atoi(optarg) > 20) ? 1 : atoi(optarg);
                 break;
             case 's':
                 // simultaneous = return_arg("-s", argc, argv);                
-                simultaneous = (optarg == NULL || optarg > 20) ? 1 : atoi(optarg);
+                simultaneous = (optarg == NULL || atoi(optarg) > 20) ? 1 : atoi(optarg);
                 break;
             case 't':
                 // iterations = return_arg("-t", argc, argv);
-                iterations = (optarg == NULL || optarg > 20) ? 1 : atoi(optarg);
+                iterations = (optarg == NULL || atoi(optarg) > 20) ? 1 : atoi(optarg);
                 break;
         }
 	}   // getopt loop completed here
