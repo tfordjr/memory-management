@@ -34,6 +34,9 @@ int main(int argc, char** argv){
                 iterations = (optarg == NULL || atoi(optarg) > 20) ? 1 : atoi(optarg);
                 std::cout << optarg;
                 break;
+            case ':':
+                std::cout << "Missing arg for " << optopt << endl;
+                break;
         }
 	}   // getopt loop completed here
 
