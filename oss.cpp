@@ -60,7 +60,7 @@ int forkandwait(int numChildren, int iterations) {
 		 	// static char *args[] = { "./user", (char *)iterations, NULL };
             // execv(args[0], args);
             execl("./user", "user", (std::to_string(iterations)).c_str(), NULL);            
-            fprintf(stderr, "Failed to execute %s\n", args[0]);  // IF child makes it 
+            fprintf(stderr, "Failed to execute \n");      // IF child makes it 
             exit(EXIT_FAILURE);                          // this far exec did not work				
 		} else 	if (childPid == -1) {  // Error message for failed fork (child has PID -1)
             perror("master: Error: Fork has failed!");
