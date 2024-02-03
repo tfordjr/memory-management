@@ -12,9 +12,9 @@
 #include <cstdlib>
 using namespace std;
 
+void help();
 int fork_and_wait(int, int, int);
 int return_arg(string, int)
-void help();
 
 int main(int argc, char** argv){
     int option, numChildren, simultaneous, iterations;    
