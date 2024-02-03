@@ -16,7 +16,7 @@ void help();
 int fork_and_wait(int, int, int);
 
 int main(int argc, char** argv){
-    int option, numChildren, simultaneous, iterations;    
+    int option, numChildren = 1, simultaneous = 1, iterations = 1;  
     while ( (option = getopt(argc, argv, "hn:s:t:")) != -1) {   // getopt implementation
         switch(option) {
             case 'h':
