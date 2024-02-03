@@ -10,7 +10,7 @@
 using namespace std;
 
 void help();
-int forkandwait(int, int);
+int forkandwait(int, int, int);
 
 int main(int argc, char** argv){
     int option, numChildren, simultaneous, iterations;    
@@ -45,14 +45,16 @@ int main(int argc, char** argv){
 	}   // getopt loop completed here
 
     printf("Number of Children: %d\n", numChildren);
-    printf("Number of Simultaneous: %d\n", simultaneous);
     printf("Number of Iterations: %d\n", iterations);
+    printf("Number of Simultaneous: %d\n", simultaneous);
+    
 
-    forkandwait(numChildren, iterations);  
+    forkandwait(numChildren, iterations, simultaneous);  
     return 0;
 }
 
-int forkandwait(int numChildren, int iterations) {    
+int forkandwait(int numChildren, int iterations, int simultaneous) {    
+    int running = 0;
     for (int i = 0; i < numChildren; i++) {
         pid_t childPid = fork(); // This is where the child process splits from the parent
         
@@ -66,7 +68,12 @@ int forkandwait(int numChildren, int iterations) {
             perror("master: Error: Fork has failed!");
             exit(0);
         }       
-		wait(NULL);  // Parent waits to assure children perform in order
+        running++;
+
+        if(running >= simultaneous){
+            wait(NULL);  // Parent waits to assure children perform in order
+            running--;
+        } 
     }
 
     for (int i = 0; i < numChildren; i++) 
