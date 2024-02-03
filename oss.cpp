@@ -61,6 +61,10 @@ int main(int argc, char** argv){
 
 int forkandwait(int numChildren, int iterations) {    
     for (int i = 0; i < numChildren; i++) {
+
+        char iterations_as_string[20];
+        sprintf(iterations_as_string, "%d", iterations);
+
         pid_t childPid = fork(); // This is where the child process splits from the parent
 
         // if (childPid == 0) {        
@@ -75,10 +79,11 @@ int forkandwait(int numChildren, int iterations) {
         // }
 
         if (childPid == 0 ) {             // Each child uses exec to run ./user	
-		 	if(execl("./user", "user", (char *)iterations, (char *)NULL) == -1) {   
-				perror("Exec failed.\n");				
-			}	
-			exit(0);
+		 	// if(execl("./user", "user", (char *)iterations, (char *)NULL) == -1) {   
+			// 	perror("Exec failed.\n");				
+			// }	
+			// exit(0);
+            execl("./user", "user", iterations_as_string, NULL);
 				
 		} else 	if (childPid == -1) {  // Error message for failed fork (child has PID -1)
             perror("master: Error: Fork has failed!");
