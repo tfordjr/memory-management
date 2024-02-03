@@ -14,7 +14,7 @@ using namespace std;
 
 void help();
 int fork_and_wait(int, int, int);
-int return_arg(string, int);
+int return_arg(string, int, char**);
 
 int main(int argc, char** argv){
     int option, numChildren, simultaneous, iterations;    
@@ -24,13 +24,13 @@ int main(int argc, char** argv){
                 help();
                 return 0;     // terminates if -h is present
             case 'n':                    
-                numChildren = return_arg("-n", argc);
+                numChildren = return_arg("-n", argc, argv);
                 break;
             case 's':
-                simultaneous = return_arg("-s", argc);
+                simultaneous = return_arg("-s", argc, argv);
                 break;
             case 't':
-                iterations = return_arg("-t", argc);
+                iterations = return_arg("-t", argc, argv);
         }
 	}   // getopt loop completed here
 
@@ -79,7 +79,7 @@ void help(){   // Help message here
     printf("\t-t The argument following -t will be number of iterations each process will perform.\n");
 }
 
-int return_arg(string s, int argc){
+int return_arg(string s, int argc, char** argv){
     for (int i = 1; i < argc; i++) {    // cycles through args 
         if (strcmp(argv[i], s) == 0 && i + 1 < argc) {
             return atoi(argv[i + 1]);   // assigns arg to numChildren            
