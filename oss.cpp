@@ -14,7 +14,6 @@ using namespace std;
 
 void help();
 int fork_and_wait(int, int, int);
-int return_arg(string, int, char**);
 
 int main(int argc, char** argv){
     int option, numChildren, simultaneous, iterations;    
@@ -23,17 +22,17 @@ int main(int argc, char** argv){
             case 'h':
                 help();
                 return 0;     // terminates if -h is present
-            case 'n':                    
-                // numChildren = return_arg("-n", argc, argv);                
+            case 'n':                                
                 numChildren = (optarg == NULL || atoi(optarg) > 20) ? 1 : atoi(optarg);
+                std::cout << optarg;
                 break;
-            case 's':
-                // simultaneous = return_arg("-s", argc, argv);                
+            case 's':          
                 simultaneous = (optarg == NULL || atoi(optarg) > 20) ? 1 : atoi(optarg);
+                std::cout << optarg;
                 break;
             case 't':
-                // iterations = return_arg("-t", argc, argv);
                 iterations = (optarg == NULL || atoi(optarg) > 20) ? 1 : atoi(optarg);
+                std::cout << optarg;
                 break;
         }
 	}   // getopt loop completed here
@@ -81,13 +80,4 @@ void help(){   // Help message here
     printf("\t-n The argument following -n will be number of total processes to be run.\n");
     printf("\t-s The argument following -s will be max number of processes to be run simultaneously\n");
     printf("\t-t The argument following -t will be number of iterations each process will perform.\n");
-}
-
-int return_arg(string s, int argc, char** argv){
-    for (int i = 1; i < argc; i++) {    // cycles through args 
-        if (strcmp(argv[i], s.c_str()) == 0 && i + 1 < argc) {
-            return atoi(argv[i + 1]);   // assigns arg to numChildren            
-        } 
-    }
-    return 1;
 }
