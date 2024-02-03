@@ -24,19 +24,19 @@ int main(int argc, char** argv){
                 return 0;     // terminates if -h is present
             case 'n':                                
                 numChildren = (optarg == NULL || atoi(optarg) > 20) ? 1 : atoi(optarg);
-                std::cout << optarg;
+                if (numChildren > 20 || numChildren < 0)
+                    numChildren = 1;
                 break;
             case 's':          
                 simultaneous = (optarg == NULL || atoi(optarg) > 20) ? 1 : atoi(optarg);
-                std::cout << optarg;
+                if (simultaneous > 20 || simultaneous < 0)
+                    simultaneous = 1;
                 break;
             case 't':
                 iterations = (optarg == NULL || atoi(optarg) > 20) ? 1 : atoi(optarg);
-                std::cout << optarg;
-                break;
-            case ':':
-                std::cout << "Missing arg for " << optopt << endl;
-                break;
+                if (iterations > 20 || iterations < 0)
+                    iterations = 1;
+                break;            
         }
 	}   // getopt loop completed here
 
