@@ -6,6 +6,7 @@ simply run make command and oss command in the following format:
 oss -n 4 -s 2 -t 3
 where -n is total processes, -s simultaneous processes, and -t iterations done
 use the -h arg to learn more about how to use these commands.
+Args default to 1 if not provided.
 
 Features: 
 oss.cpp: processes args and handles child forking with fork_and_wait funciton.
@@ -14,5 +15,4 @@ user.cpp: user executable takes one arg for number of iterations. prints and sle
 makefile: creates oss and user executables, oss executes user executable to perform work.
 
 Problem areas: 
-Defaults assigned as 1 if none are found. Unsure what the expectation is. 
-Made to assign all defaults at 1 but if ./oss done with no args creates runaway program
+None that I know of for this assignment. 
