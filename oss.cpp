@@ -31,6 +31,7 @@ int main(int argc, char** argv){
                 break;
             case 't':
                 iterations = return_arg("-t", argc, argv);
+                break;
         }
 	}   // getopt loop completed here
 
@@ -83,7 +84,7 @@ int return_arg(string s, int argc, char** argv){
     for (int i = 1; i < argc; i++) {    // cycles through args 
         if (strcmp(argv[i], s.c_str()) == 0 && i + 1 < argc) {
             return atoi(argv[i + 1]);   // assigns arg to numChildren            
-        }
+        } 
     }
     return 1;
 }
