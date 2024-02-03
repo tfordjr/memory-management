@@ -24,19 +24,19 @@ int main(int argc, char** argv){
                 help();
                 return 0;     // terminates if -h is present
             case 'n':                    
-                // numChildren = return_arg("-n", argc, argv);
-                if (optarg)
-                    numChildren = atoi(optarg);
+                numChildren = return_arg("-n", argc, argv);
+                // if (optarg)
+                //     numChildren = atoi(optarg);
                 break;
             case 's':
-                // simultaneous = return_arg("-s", argc, argv);
-                if (optarg)
-                    simultaneous = atoi(optarg);
+                simultaneous = return_arg("-s", argc, argv);
+                // if (optarg)
+                //     simultaneous = atoi(optarg);
                 break;
             case 't':
-                // iterations = return_arg("-t", argc, argv);
-                if (optarg)
-                    iterations = atoi(optarg);
+                iterations = return_arg("-t", argc, argv);
+                // if (optarg)
+                //     iterations = atoi(optarg);
                 break;
         }
 	}   // getopt loop completed here
