@@ -24,17 +24,17 @@ int main(int argc, char** argv){
                 return 0;     // terminates if -h is present
             case 'n':                                
                 numChildren = (optarg == NULL || atoi(optarg) > 20) ? 1 : atoi(optarg);
-                if (numChildren > 20 || numChildren < 0)
+                if (numChildren > 20 || numChildren < 0 || !numChildren)
                     numChildren = 1;
                 break;
             case 's':          
                 simultaneous = (optarg == NULL || atoi(optarg) > 20) ? 1 : atoi(optarg);
-                if (simultaneous > 20 || simultaneous < 0)
+                if (simultaneous > 20 || simultaneous < 0 || !simultaneous)
                     simultaneous = 1;
                 break;
             case 't':
                 iterations = (optarg == NULL || atoi(optarg) > 20) ? 1 : atoi(optarg);
-                if (iterations > 20 || iterations < 0)
+                if (iterations > 20 || iterations < 0 || !iterations)
                     iterations = 1;
                 break;            
         }
