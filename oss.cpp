@@ -9,16 +9,11 @@
 #include <cstdlib>
 using namespace std;
 
-
 void help();
 int forkandwait(int, int);
 
 int main(int argc, char** argv){
-    int option;
-    int numChildren;
-    int simultaneous;
-    int iterations;
-
+    int option, numChildren, simultaneous, iterations;    
     while ( (option = getopt(argc, argv, "hn:s:t:")) != -1) {  
         switch(option) {
             case 'h':
@@ -47,45 +42,26 @@ int main(int argc, char** argv){
                     } 
                 }
         }
-	}   
+	}   // getopt loop completed here
 
     printf("Number of Children: %d\n", numChildren);
     printf("Number of Simultaneous: %d\n", simultaneous);
     printf("Number of Iterations: %d\n", iterations);
 
     forkandwait(numChildren, iterations);  
-
-    // std::cout << "Number of Children: " + numChildren << std::endl;
-    // std::cout << "Number of Simultaneous: " + simultaneous << std::endl;
-    // std::cout << "Number of Iterations: " + iterations << std::endl;
+    return 0;
 }
 
 int forkandwait(int numChildren, int iterations) {    
     for (int i = 0; i < numChildren; i++) {
-
-        char iterations_as_string[20];
-        sprintf(iterations_as_string, "%d", iterations);
-
         pid_t childPid = fork(); // This is where the child process splits from the parent
-
-        // if (childPid == 0) {        
-        //     static char *args[] = { "./user", (char *)iterations, NULL };
-        //     execv(args[0], args);
-        //     fprintf(stderr, "Failed to execute %s\n", args[0]);
-        //     exit(EXIT_FAILURE);
-        // } else {
-        //     printf("I'm a parent! My pid is %d, and my child's pid is %d \n",
-        //     getpid(), childPid);    
-        //     sleep(1); // wait(0);  
-        // }
-
+        
         if (childPid == 0 ) {             // Each child uses exec to run ./user	
-		 	// if(execl("./user", "user", (char *)iterations, (char *)NULL) == -1) {   
-			// 	perror("Exec failed.\n");				
-			// }	
-			// exit(0);
-            execl("./user", "user", (std::to_string(iterations)).c_str(), NULL);
-				
+		 	// static char *args[] = { "./user", (char *)iterations, NULL };
+            // execv(args[0], args);
+            execl("./user", "user", (std::to_string(iterations)).c_str(), NULL);            
+            fprintf(stderr, "Failed to execute %s\n", args[0]);  // IF child makes it 
+            exit(EXIT_FAILURE);                          // this far exec did not work				
 		} else 	if (childPid == -1) {  // Error message for failed fork (child has PID -1)
             perror("master: Error: Fork has failed!");
             exit(0);
@@ -93,9 +69,8 @@ int forkandwait(int numChildren, int iterations) {
 		wait(NULL);  // Parent waits to assure children perform in order
     }
 
-    for (int i = 0; i < numChildren; i++) { 
-        wait(NULL);	// Parent Waiting for children
-    }
+    for (int i = 0; i < numChildren; i++) 
+        wait(NULL);	// Parent Waiting for children    
 
 	printf("Child processes have completed.\n");
     printf("Parent is now ending.\n");
