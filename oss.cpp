@@ -1,3 +1,6 @@
+// CS4760-001SS - Terry Ford Jr. - Project 1 Processes - 01/28/2024
+// https://github.com/tfordjr/multiple-processes
+
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -9,52 +12,35 @@
 #include <cstdlib>
 using namespace std;
 
+int fork_and_wait(int, int, int);
+int return_arg(string)
 void help();
-int forkandwait(int, int, int);
 
 int main(int argc, char** argv){
     int option, numChildren, simultaneous, iterations;    
-    while ( (option = getopt(argc, argv, "hn:s:t:")) != -1) {  
+    while ( (option = getopt(argc, argv, "hn:s:t:")) != -1) {   // getopt implementation
         switch(option) {
             case 'h':
                 help();
                 return 0;     // terminates if -h is present
             case 'n':                    
-                for (int i = 1; i < argc; i++) {    // cycles through args 
-                    if (strcmp(argv[i], "-n") == 0 && i + 1 < argc) {
-                        numChildren = atoi(argv[i + 1]);  
-                        break;
-                    }
-                }	
+                numChildren = return_arg("-n");
                 break;
             case 's':
-                for (int i = 1; i < argc; i++) {  // cycles through args 
-                    if (strcmp(argv[i], "-s") == 0 && i + 1 < argc) {
-                        simultaneous = atoi(argv[i + 1]);
-                        break;
-                    } 
-                }
+                simultaneous = return_arg("-s");
+                break;
             case 't':
-                for (int i = 1; i < argc; i++) {  // cycles through args 
-                    if (strcmp(argv[i], "-t") == 0 && i + 1 < argc) {
-                        iterations = atoi(argv[i + 1]);
-                        break;
-                    } 
-                }
+                iterations = return_arg("-t");
         }
 	}   // getopt loop completed here
 
-    printf("Number of Children: %d\n", numChildren);
-    printf("Number of Iterations: %d\n", iterations);
-    printf("Number of Simultaneous: %d\n", simultaneous);
-    
-
-    forkandwait(numChildren, iterations, simultaneous);  
+    printf("Number of Children: %d\nNumber of Simultaneous: %d\nNumber of Iterations: %d\n", numChildren, simultaneous, iterations);
+    fork_and_wait(numChildren, simultaneous, iterations);  
     return 0;
 }
 
-int forkandwait(int numChildren, int iterations, int simultaneous) {    
-    int running = 0;
+int fork_and_wait(int numChildren, int simultaneous, int iterations) {    
+    int running = 0;  // count of current number of running processes
     for (int i = 0; i < numChildren; i++) {
         pid_t childPid = fork(); // This is where the child process splits from the parent
         
@@ -68,9 +54,9 @@ int forkandwait(int numChildren, int iterations, int simultaneous) {
             perror("master: Error: Fork has failed!");
             exit(0);
         }       
-        running++;
+        running++;  
 
-        if(running >= simultaneous){
+        if(running >= simultaneous){ //If number of currently running processes at max number
             wait(NULL);  // Parent waits to assure children perform in order
             running--;
         } 
@@ -85,9 +71,19 @@ int forkandwait(int numChildren, int iterations, int simultaneous) {
 }
 
 void help(){   // Help message here
-    printf("-h detecteed. Printing Help Message...\n");
+    printf("-h detected. Printing Help Message...\n");
     printf("The options for this program are: \n");
-    printf("\t-h Help feature. This takes no arguments.\n");
-    printf("\t-i The argument following -i will be the input file. Optional - defaults to input.dat.\n");
-    printf("\t-o The argument following -o will be the output file. Optional - defaults to output.dat.\n");
+    printf("\t-h Help will halt execution, print help message, and take no arguments.\n");
+    printf("\t-n The argument following -n will be number of total processes to be run.\n");
+    printf("\t-s The argument following -s will be max number of processes to be run simultaneously\n");
+    printf("\t-t The argument following -t will be number of iterations each process will perform.\n");
+}
+
+int return_arg(string s){
+    for (int i = 1; i < argc; i++) {    // cycles through args 
+        if (strcmp(argv[i], s) == 0 && i + 1 < argc) {
+            return atoi(argv[i + 1]);   // assigns arg to numChildren            
+        }
+    }
+    return -1;
 }
