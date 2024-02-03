@@ -81,7 +81,7 @@ void help(){   // Help message here
 
 int return_arg(string s, int argc, char** argv){
     for (int i = 1; i < argc; i++) {    // cycles through args 
-        if (strcmp(argv[i], s) == 0 && i + 1 < argc) {
+        if (strcmp(argv[i], s.c_str()) == 0 && i + 1 < argc) {
             return atoi(argv[i + 1]);   // assigns arg to numChildren            
         }
     }
