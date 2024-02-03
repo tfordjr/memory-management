@@ -18,19 +18,25 @@ int return_arg(string, int, char**);
 
 int main(int argc, char** argv){
     int option, numChildren, simultaneous, iterations;    
-    while ( (option = getopt(argc, argv, "hn:s:t:")) != -1) {   // getopt implementation
+    while ( (option = getopt(argc, argv, "hn::s::t::")) != -1) {   // getopt implementation
         switch(option) {
             case 'h':
                 help();
                 return 0;     // terminates if -h is present
             case 'n':                    
-                numChildren = return_arg("-n", argc, argv);
+                // numChildren = return_arg("-n", argc, argv);
+                if (optarg)
+                    numChildren = atoi(optarg);
                 break;
             case 's':
-                simultaneous = return_arg("-s", argc, argv);
+                // simultaneous = return_arg("-s", argc, argv);
+                if (optarg)
+                    simultaneous = atoi(optarg);
                 break;
             case 't':
-                iterations = return_arg("-t", argc, argv);
+                // iterations = return_arg("-t", argc, argv);
+                if (optarg)
+                    iterations = atoi(optarg);
                 break;
         }
 	}   // getopt loop completed here
