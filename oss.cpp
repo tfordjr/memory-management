@@ -85,5 +85,5 @@ int return_arg(string s, int argc, char** argv){
             return atoi(argv[i + 1]);   // assigns arg to numChildren            
         }
     }
-    return -1;
+    return 1;
 }
