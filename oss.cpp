@@ -84,7 +84,7 @@ int forkandwait(int numChildren, int iterations) {
 			// 	perror("Exec failed.\n");				
 			// }	
 			// exit(0);
-            execl("./user", "user", iterations.cstr(), NULL);
+            execl("./user", "user", (std::to_string(iterations)).cstr(), NULL);
 				
 		} else 	if (childPid == -1) {  // Error message for failed fork (child has PID -1)
             perror("master: Error: Fork has failed!");
