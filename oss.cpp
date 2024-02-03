@@ -18,7 +18,7 @@ int return_arg(string, int, char**);
 
 int main(int argc, char** argv){
     int option, numChildren, simultaneous, iterations;    
-    while ( (option = getopt(argc, argv, "hn::s::t::")) != -1) {   // getopt implementation
+    while ( (option = getopt(argc, argv, "hn:s:t:")) != -1) {   // getopt implementation
         switch(option) {
             case 'h':
                 help();
