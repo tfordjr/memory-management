@@ -77,4 +77,5 @@ void help(){   // Help message here
     printf("\t-n The argument following -n will be number of total processes to be run.\n");
     printf("\t-s The argument following -s will be max number of processes to be run simultaneously\n");
     printf("\t-t The argument following -t will be number of iterations each process will perform.\n");
+    printf("\t args will default to 1 if not provided.\n")
 }
