@@ -15,7 +15,6 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <sys/msg.h>
-#include "pcb.h"
 #include "clock.h"
 using namespace std;
 
