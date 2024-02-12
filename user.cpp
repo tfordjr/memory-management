@@ -2,13 +2,18 @@
 // https://github.com/tfordjr/process-tables
 
 #include <unistd.h>
-#include <sys/types.h>
-#include <sys/wait.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
 #include <string>
 #include <cstring>
+#include <sys/mman.h>
+#include <fcntl.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <sys/msg.h>
 #include "pcb.h"
 #include "shm.h"
 using namespace std;
