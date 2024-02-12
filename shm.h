@@ -4,15 +4,9 @@
 #ifndef SHM_H
 #define SHM_H
 
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <iostream>
-#include <string>
-#include <cstring>
-#include <cstdlib>
-using namespace std;
+typedef struct Clock {
+        int secs;
+        int nanos;
+} Clock;
 
 #endif

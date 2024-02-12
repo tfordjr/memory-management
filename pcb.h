@@ -4,17 +4,6 @@
 #ifndef PCB_H
 #define PCB_H
 
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <iostream>
-#include <string>
-#include <cstring>
-#include <cstdlib>
-using namespace std;
-
 struct PCB {
     int occupied; // either true or false
     pid_t pid; // process id of this child
