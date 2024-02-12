@@ -7,6 +7,7 @@
 #include <iostream>
 #include <string>
 #include <cstring>
+#include <stdbool.h>
 #include <sys/mman.h>
 #include <fcntl.h>
 #include <sys/ipc.h>
@@ -24,14 +25,37 @@ int main(int argc, char** argv) {
 	key_t key = ftok("/tmp", 35);
 	int shmtid = shmget(key, sizeof(Clock), 0666);
 	clock = (Clock*)shmat(shmtid, NULL, 0);
+  
+    int secs = atoi(argv[1]);     // Arg 1 will be seconds
+    int nanos = atoi(argv[2]);   // Arg 2 will be nanoseconds
 
+    int start_secs = clock->secs;
+    int start_nanos = clock->nanos;
 
+    int recent_secs = clock->secs;
+    int recent_nanos = clock->nanos;
 
-    int iterations = atoi(argv[1]);   // only arg provided will be number of iterations
-    for(int i = 1; i < iterations + 1; i++){
-        printf("USER PID: %d  PPID: %d  Iteration: %d before sleeping\n", getpid(), getppid(), i);  
-        sleep(1);
-        printf("USER PID: %d  PPID: %d  Iteration: %d after sleeping\n" , getpid(), getppid(), i);  
-    }        
-    return EXIT_SUCCESS; 
+    int end_secs = clock->secs + secs;   
+    int end_nanos = clock->nanos + nanos;  
+    if (end_nanos > 1000000000){   // if over 1 billion nanos, add 1 second, sub 1 bil nanos
+        end_nanos = end_nanos - 1000000000;
+        end_secs++;
+    }          
+
+    printf("USER PID: %d  PPID: %d  SysClockS: %d  SysClockNano: %d  TermTimeS: %d  TermTimeNano: %d\n--Just Starting\n", getpid(), getppid(), clock->secs, clock->nanos, end_secs, end_nanos); 
+
+    bool done = false;
+    while(!done){
+        if (recent_secs != clock->secs || recent_nanos != clock->nanos){
+            if(clock->secs > end_secs || clock->secs == end_secs && clock->nanos > end_nanos){
+                printf("USER PID: %d  PPID: %d  SysClockS: %d  SysClockNano: %d  TermTimeS: %d  TermTimeNano: %d\n--Terminating\n", getpid(), getppid(), clock->secs, clock->nanos, end_secs, end_nanos);
+                done = true;
+            } else {
+                printf("USER PID: %d  PPID: %d  SysClockS: %d  SysClockNano: %d  TermTimeS: %d  TermTimeNano: %d\n--%d seconds have passed since starting\n", getpid(), getppid(), clock->secs, clock->nanos, end_secs, end_nanos, (clock->secs - start_secs));
+                int recent_secs = clock->secs;
+                int recent_nanos = clock->nanos;
+            }            
+        }
+    }
+    return EXIT_SUCCESS;     
 }
