@@ -7,13 +7,7 @@
 #include <iostream>
 #include <string>
 #include <cstring>
-#include <sys/mman.h>
-#include <fcntl.h>
-#include <sys/ipc.h>
-#include <sys/shm.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <sys/msg.h>
+
 #include "pcb.h"
 #include "shm.h"
 using namespace std;
@@ -23,7 +17,7 @@ int main(int argc, char** argv) {
     Clock* clock;           // init shm clock
 	key_t key = ftok("/tmp", 35);
 	int shmtid = shmget(key, sizeof(Clock), 0666);
-	clock = shmat(shmtid, NULL, 0);
+	clock = (Clock*)shmat(shmtid, NULL, 0);
 
 
 
