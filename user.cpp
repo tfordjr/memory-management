@@ -36,7 +36,7 @@ int main(int argc, char** argv) {
 
     int end_secs = start_secs + secs;   // end time is starting time plus time told to wait
     int end_nanos = start_nanos + nanos;  
-    if (end_nanos > 1000000000){   // if over 1 billion nanos, add 1 second, sub 1 bil nanos
+    if (end_nanos >= 1000000000){   // if over 1 billion nanos, add 1 second, sub 1 bil nanos
         end_nanos = end_nanos - 1000000000;
         end_secs++;
     }          

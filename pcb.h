@@ -7,8 +7,8 @@
 struct PCB {
     int occupied;     // either true or false
     pid_t pid;        // process id of this child
-    int startSeconds; // time when it was forked
-    int startNano;    // time when it was forked
+    int startSecs; // time when it was forked
+    int startNanos;    // time when it was forked
 };
 
 # endif
