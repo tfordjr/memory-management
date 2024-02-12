@@ -45,7 +45,7 @@ int main(int argc, char** argv){
     Clock* clock;       // init shm clock
     key_t key = ftok("/tmp", 35);
     int shmtid = shmget(key, sizeof(Clock), IPC_CREAT | 0666);
-    clock = shmat(shmtid, NULL, 0);
+    clock = (Clock*)shmat(shmtid, NULL, 0);
     clock->secs = 0;
     clock->nanos = 0; 
 
