@@ -11,6 +11,4 @@ struct PCB {
     int startNano; // time when it was forked
 };
 
-struct PCB processTable[20];
-
 # endif

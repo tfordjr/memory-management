@@ -49,7 +49,7 @@ int main(int argc, char** argv){
     clock->secs = 0;
     clock->nanos = 0; 
 
-
+    struct PCB processTable[20]; // Init Process Table Array of PCB structs
 
     printf("Number of Children: %d\nNumber of Simultaneous: %d\nNumber of Iterations: %d\n", numChildren, simultaneous, iterations);
     fork_and_wait(numChildren, simultaneous, iterations);  
