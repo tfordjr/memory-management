@@ -9,6 +9,8 @@
 #include <iostream>
 #include <string>
 #include <cstring>
+#include "pcb.h"
+#include "shm.h"
 using namespace std;
 
 int main(int argc, char** argv) {

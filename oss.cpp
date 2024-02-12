@@ -10,6 +10,8 @@
 #include <string>
 #include <cstring>
 #include <cstdlib>
+#include "pcb.h"
+#include "shm.h"
 using namespace std;
 
 void help();
