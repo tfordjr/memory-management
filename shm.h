@@ -5,8 +5,14 @@
 #define SHM_H
 
 typedef struct Clock {
-        int secs;
-        int nanos;
+    int secs;
+    int nanos;
 } Clock;
+
+Clock wind(Clock c){
+    c.secs = 0;
+    c.nanos = 0;
+    return c;
+}
 
 #endif
