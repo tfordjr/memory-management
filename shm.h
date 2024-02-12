@@ -9,10 +9,4 @@ typedef struct Clock {
     int nanos;
 } Clock;
 
-Clock wind(Clock c){
-    c.secs = 0;
-    c.nanos = 0;
-    return c;
-}
-
 #endif

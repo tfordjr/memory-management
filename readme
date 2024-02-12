@@ -15,4 +15,5 @@ user.cpp: user executable takes one arg for number of iterations. prints and sle
 makefile: creates oss and user executables, oss executes user executable to perform work.
 
 Problem areas: 
-None that I know of for this assignment. 
+
+Best way to setup clock? How to change time and how to view it in user.cpp??

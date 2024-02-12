@@ -36,6 +36,16 @@ int main(int argc, char** argv){
         }
 	}   // getopt loop completed here
 
+
+    Clock* clock;       // init shm clock
+    key_t key = ftok("/tmp", 35);
+    int shmtid = shmget(key, sizeof(Clock), IPC_CREAT | 0666);
+    clock = shmat(shmtid, NULL, 0);
+    clock->secs = 0;
+    clock->nanos = 0; 
+
+
+
     printf("Number of Children: %d\nNumber of Simultaneous: %d\nNumber of Iterations: %d\n", numChildren, simultaneous, iterations);
     fork_and_wait(numChildren, simultaneous, iterations);  
     return 0;

@@ -14,6 +14,14 @@
 using namespace std;
 
 int main(int argc, char** argv) {
+
+    Clock* clock;           // init shm clock
+	key_t key = ftok("/tmp", 35);
+	int shmtid = shmget(key, sizeof(Clock), 0666);
+	clock = shmat(shmtid, NULL, 0);
+
+
+
     int iterations = atoi(argv[1]);   // only arg provided will be number of iterations
     for(int i = 1; i < iterations + 1; i++){
         printf("USER PID: %d  PPID: %d  Iteration: %d before sleeping\n", getpid(), getppid(), i);  
