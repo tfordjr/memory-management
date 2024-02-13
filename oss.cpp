@@ -86,7 +86,19 @@ int main(int argc, char** argv){
         if(launch_interval_satisfied(launch_interval, clock->secs, clock->nanos) 
         && process_table_vacancy(processTable, simultaneous)){
             cout << "Launching Child Process..." << endl;
-            launch_child(time_limit);
+            int rand_secs = generate_random_number(1, (time_limit - 1));
+            int rand_nanos = generate_random_number(0, 999999999);
+            string user_parameters = std::to_string(rand_secs) + " " + std::to_string(rand_nanos); 
+
+            pid_t childPid = fork(); // This is where the child process splits from the parent        
+            if (childPid == 0 ) {            // Each child uses exec to run ./user	
+                execl("./user", "user", user_parameters.c_str(), NULL);            
+                fprintf(stderr, "Failed to execute \n");      // IF child makes it 
+                exit(EXIT_FAILURE);                          // this far exec did not work				
+            } else 	if (childPid == -1) {  // Error message for failed fork (child has PID -1)
+                perror("master: Error: Fork has failed!");
+                exit(0);
+            }          
         }               
     }       
 
