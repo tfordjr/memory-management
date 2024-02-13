@@ -19,7 +19,6 @@
 using namespace std;
 
 int main(int argc, char** argv) {
-
     Clock* clock;           // init shm clock
 	key_t key = ftok("/tmp", 35);
 	int shmtid = shmget(key, sizeof(Clock), 0666);
@@ -50,7 +49,7 @@ int main(int argc, char** argv) {
                 printf("USER PID: %d  PPID: %d  SysClockS: %d  SysClockNano: %d  TermTimeS: %d  TermTimeNano: %d\n--Terminating\n", getpid(), getppid(), clock->secs, clock->nanos, end_secs, end_nanos);
                 done = true;
             } else {  // if time changed and end time hasn't elapsed, print update msg
-                printf("USER PID: %d  PPID: %d  SysClockS: %d  SysClockNano: %d  TermTimeS: %d  TermTimeNano: %d\n--%d seconds have passed since starting\n", getpid(), getppid(), clock->secs, clock->nanos, end_secs, end_nanos, (clock->secs - start_secs));
+                // printf("USER PID: %d  PPID: %d  SysClockS: %d  SysClockNano: %d  TermTimeS: %d  TermTimeNano: %d\n--%d seconds have passed since starting\n", getpid(), getppid(), clock->secs, clock->nanos, end_secs, end_nanos, (clock->secs - start_secs));
                 int recent_secs = clock->secs;
                 int recent_nanos = clock->nanos;
             }            

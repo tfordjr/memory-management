@@ -11,4 +11,51 @@ struct PCB {
     int startNanos;    // time when it was forked
 };
 
+void init_process_table(PCB processTable[]){
+    for(int i = 0; i < 20; i++){
+        processTable[i].occupied = 0;
+        processTable[i].pid = 0;
+        processTable[i].startSecs = 0;
+        processTable[i].startNanos = 0;
+    }
+}
+
+bool process_table_vacancy(PCB processTable[], int simultaneous){
+    for(int i = 0; i < simultaneous; i++){
+        if (processTable[i].occupied == 0){
+            return true;
+        }
+    }
+    return false;
+}
+
+void print_process_table(PCB processTable[], int simultaneous, int secs, int nanos){
+    static int next_print_secs = 0;  // static ints used to keep track of each 
+    static int next_print_nanos = 0;   // process table print to be done
+
+    if(secs > next_print_secs || secs == next_print_secs && nanos > next_print_nanos){
+        printf("OSS PID: %d  SysClockS: %d  SysClockNano: %d  \nProcess Table:\nEntry\tOccupied  PID\tStartS\tStartN\n", getpid(), secs, nanos);
+        for(int i = 0; i < simultaneous; i++){
+            printf("%d\t%d\t%d\t%d\t%d\n", i, processTable[i].occupied, processTable[i].pid, processTable[i].startSecs, processTable[i].startNanos);
+        }
+        next_print_nanos = next_print_nanos + 500000000;
+        if (next_print_nanos >= 1000000000){   // if over 1 billion nanos, add 1 second, sub 1 bil nanos
+            next_print_nanos = next_print_nanos - 1000000000;
+            next_print_secs++;
+        }    
+    }
+}
+
+void update_process_table_of_terminated_child(PCB processTable[], pid_t pid){
+    for(int i = 0; i < 20; i++){
+        if(processTable[i].pid == pid){  // if PCB pid equal to killed pid
+            processTable[i].occupied = 0;
+            processTable[i].pid = 0;
+            processTable[i].startSecs = 0;
+            processTable[i].startNanos = 0;
+            return;
+        } 
+    }
+}
+
 # endif
