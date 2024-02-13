@@ -191,6 +191,6 @@ void help(){   // Help message here
     printf("\t-n The argument following -n will be number of total processes to be run.\n");
     printf("\t-s The argument following -s will be max number of processes to be run simultaneously\n");
     printf("\t-t The argument following -t will be the max time limit for each user process created.\n");
-    printf("\t-t The argument following -i will be lauch interval between process launch in milliseconds.\n");
+    printf("\t-i The argument following -i will be lauch interval between process launch in milliseconds.\n");
     printf("\t args will default to appropriate values if not provided.\n");
 }
