@@ -102,7 +102,7 @@ void increment(Clock* c){
 
 bool process_table_vacancy(PCB processTable[], int simultaneous){
     for(int i = 0; i < simultaneous; i++){
-        if ((processTable + (i * sizeof(PCB)))->occupied == 0){
+        if (processTable[i].occupied == 0){
             return true;
         }
     }
@@ -110,7 +110,7 @@ bool process_table_vacancy(PCB processTable[], int simultaneous){
 }
 
 void init_process_table(PCB processTable[]){
-    for(int i; i < 20; i++){
+    for(int i = 0; i < 20; i++){
         (processTable + (i * sizeof(PCB)))->occupied = 0;
         (processTable + (i * sizeof(PCB)))->pid = 0;
         (processTable + (i * sizeof(PCB)))->startSecs = 0;
