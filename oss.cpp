@@ -120,7 +120,6 @@ void init_process_table(PCB processTable[]){
 }
 
 void print_process_table(PCB processTable[], int simultaneous, int secs, int nanos){
-
     static int next_print_secs = 0;  // static ints used to keep track of each 
     static int next_print_nanos = 0;   // process table print to be done
 
@@ -168,11 +167,11 @@ void launch_child(int time_limit){
     pid_t childPid = fork(); // This is where the child process splits from the parent        
     if (childPid == 0 ) {            // Each child uses exec to run ./user	
         execl("./user", "user", user_parameters.c_str(), NULL);            
-        fprintf(stderr, "Failed to execute \n");      // IF child makes it 
-        exit(EXIT_FAILURE);                          // this far exec did not work				
-    } else 	if (childPid == -1) {  // Error message for failed fork (child has PID -1)
-        perror("master: Error: Fork has failed!");
-        exit(0);
+        perror("Error: Failed to execute user program");
+        exit(EXIT_FAILURE);
+    } else if (childPid == -1) {  // Fork failed
+        perror("Error: Fork has failed");
+        exit(EXIT_FAILURE);
     }          
 }
 
