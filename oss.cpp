@@ -42,7 +42,7 @@ int main(int argc, char** argv){
                 time_limit = atoi(optarg);
                 break; 
             case 'i':
-                launch_interval = atoi(optarg);
+                launch_interval = (1000000 * atoi(optarg));  // converting ms to nanos
                 break;            
         }
 	}   // getopt loop completed here
@@ -119,6 +119,9 @@ void increment(Clock* c){
     }    
 }
 
+void launch_child(){
+    return;
+}
 
 void print_process_table(PCB processTable[], int simultaneous, int secs, int nanos){
 
@@ -135,6 +138,28 @@ void print_process_table(PCB processTable[], int simultaneous, int secs, int nan
             next_print_nanos = next_print_nanos - 1000000000;
             next_print_secs++;
         }    
+    }
+}
+
+
+bool launch_interval_satisfied(int launch_interval, int secs, int nanos){
+    static int last_launch_secs = 0;  // static ints used to keep track of 
+    static int last_launch_nanos = 0;   // most recent process launch
+
+    int elapsed_secs = secs - last_launch_secs; 
+    int elapsed_nanos = nanos - last_launch_nanos;
+
+    while (elapsed_nanos < 0) {   // fix if subtracted time is too low
+        elapsed_secs--;
+        elapsed_nanos += 1000000000;
+    }
+
+    if (elapsed_secs > 0 || (elapsed_secs == 0 && elapsed_nanos >= launch_interval)) {        
+        last_launch_secs = secs;  // Update the last launch time
+        last_launch_nanos = nanos;        
+        return true;
+    } else {
+        return false;
     }
 }
 
