@@ -15,6 +15,8 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <sys/msg.h>
+#include <random>
+#include <chrono>
 #include "pcb.h"
 #include "clock.h"
 using namespace std;
@@ -24,6 +26,9 @@ void increment(Clock*);
 void print_process_table(PCB[], int, int, int);
 void update_process_table_of_terminated_child(PCB[], pid_t);
 bool launch_interval_satisfied(int, int, int);
+bool process_table_vacancy(PCB[], int);
+void launch_child(int);
+int generate_random_number(int, int);
 
 int main(int argc, char** argv){
     int option, numChildren = 1, simultaneous = 1, time_limit = 2, launch_interval = 100;  
@@ -56,11 +61,10 @@ int main(int argc, char** argv){
     clock->secs = 0;   // init clock to 00:00
     clock->nanos = 0; 
 
-    struct PCB processTable[20]; // Init Process Table Array of PCB structs    
-    
+    struct PCB processTable[20]; // Init Process Table Array of PCB structs (not shm)    
 
 
-    while(numChildren > 0){
+    while(numChildren > 0){ // Main loop moves clock, checks for dead processes and launches new ones
         increment(clock);
         print_process_table(processTable, simultaneous, clock->secs, clock->nanos);        
 
@@ -71,45 +75,20 @@ int main(int argc, char** argv){
         }
 
         if(launch_interval_satisfied(launch_interval, clock->secs, clock->nanos) 
-            && process_table_vacancy()){
-                launch_child();
-        }        
-    }
+        && process_table_vacancy(processTable, simultaneous)){
+            launch_child(time_limit);
+        }               
+    }       
 
+    printf("\n\nLEFT MAIN LOOP\n\n");
 
-
-
-
-    
-    // for (int i = 0; i < numChildren; i++) {  //  OLD CODE FROM P1
-    //     pid_t childPid = fork(); // This is where the child process splits from the parent
-        
-    //     if (childPid == 0 ) {             // Each child uses exec to run ./user	
-	// 	 	// static char *args[] = { "./user", (char *)iterations, NULL };
-    //         // execv(args[0], args);
-    //         execl("./user", "user", (std::to_string(iterations)).c_str(), NULL);            
-    //         fprintf(stderr, "Failed to execute \n");      // IF child makes it 
-    //         exit(EXIT_FAILURE);                          // this far exec did not work				
-	// 	} else 	if (childPid == -1) {  // Error message for failed fork (child has PID -1)
-    //         perror("master: Error: Fork has failed!");
-    //         exit(0);
-    //     }       
-    //     running++;  
-
-    //     if(running >= simultaneous){ //If number of currently running processes at max number
-    //         wait(NULL);  // Parent waits to assure children perform in order
-    //         running--;
-    //     } 
-    // }
-
-    // for (int i = 0; i < numChildren; i++) 
-    //     wait(NULL);	// Parent Waiting for children    
+    for (int i = 0; i < simultaneous; i++) 
+        wait(NULL);	// Parent Waiting for children 
 
 	printf("Child processes have completed.\n");
     printf("Parent is now ending.\n");
     return 0;
 }
-
 
 void increment(Clock* c){
     c->nanos = c->nanos + 100;
@@ -119,8 +98,13 @@ void increment(Clock* c){
     }    
 }
 
-void launch_child(){
-    return;
+bool process_table_vacancy(PCB processTable[], int simultaneous){
+    for(int i = 0; i < simultaneous; i++){
+        if (processTable[i]->occupied == 0){
+            return true;
+        }
+    }
+    return false;
 }
 
 void print_process_table(PCB processTable[], int simultaneous, int secs, int nanos){
@@ -161,6 +145,31 @@ bool launch_interval_satisfied(int launch_interval, int secs, int nanos){
     } else {
         return false;
     }
+}
+
+
+void launch_child(int time_limit){
+    int rand_secs = generate_random_number(1, (time_limit - 1));
+    int rand_nanos = generate_random_number(0, 999999999);
+    string user_parameters = std::to_string(rand_secs) + " " + std::to_string(rand_nanos); 
+
+    pid_t childPid = fork(); // This is where the child process splits from the parent        
+    if (childPid == 0 ) {            // Each child uses exec to run ./user	
+        execl("./user", "user", user_parameters.c_str(), NULL);            
+        fprintf(stderr, "Failed to execute \n");      // IF child makes it 
+        exit(EXIT_FAILURE);                          // this far exec did not work				
+    } else 	if (childPid == -1) {  // Error message for failed fork (child has PID -1)
+        perror("master: Error: Fork has failed!");
+        exit(0);
+    }          
+}
+
+int generate_random_number(int min, int max) {
+    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+    std::default_random_engine generator(seed);
+    std::uniform_int_distribution<int> distribution(min, max);
+    int random_number = distribution(generator);
+    return random_number;
 }
 
 void update_process_table_of_terminated_child(PCB processTable[], pid_t pid){
