@@ -66,7 +66,7 @@ int main(int argc, char** argv){
     clock->secs = 0;   // init clock to 00:00
     clock->nanos = 0;         
                         //  ---------  MAIN LOOP  ---------   
-    while(numChildren > 0){ // incrs clock, checks for dead processes and launches new ones
+    while(numChildren > 0 || !process_table_empty(processTable, simultaneous)){ 
         increment(clock);
         print_process_table(processTable, simultaneous, clock->secs, clock->nanos);        
 
@@ -76,18 +76,22 @@ int main(int argc, char** argv){
             pid = 0;
         }
 
-        if(launch_interval_satisfied(launch_interval, clock)   // child process launch check
-        && process_table_vacancy(processTable, simultaneous)){
+        if(numChildren > 0 && launch_interval_satisfied(launch_interval, clock)  
+        && process_table_vacancy(processTable, simultaneous)){ // child process launch check
             cout << "Launching Child Process..." << endl;
             numChildren--;
             launch_child(processTable, time_limit, simultaneous, clock);
         }               
     }                   // --------- END OF MAIN LOOP --------- 
 
-    while(!process_table_empty(processTable, simultaneous)){  
-        sleep(1);    // Parent waits until process table is empty after sends all childs
-    }
-    
+    //         // BOTH BAD WAIT LOOPS, DON'T ALLOW CHILDREN TO FINSIH!
+    // while(!process_table_empty(processTable, simultaneous)){  
+    //     increment(clock);  // Parent waits until process table is empty after sends all children
+    //     print_process_table(processTable, simultaneous, clock->secs, clock->nanos);
+    // }
+    // // for (int i = 0; i < simultaneous; i++) 
+    // //     wait(NULL);	// Parent Waiting for children 
+
 	printf("Child processes have completed.\n");
     printf("Parent is now ending.\n");
     shmdt(clock);
