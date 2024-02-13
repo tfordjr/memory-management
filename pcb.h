@@ -20,13 +20,13 @@ void init_process_table(PCB processTable[]){
     }
 }
 
-bool process_table_vacancy(PCB processTable[], int simultaneous){
+int process_table_vacancy(PCB processTable[], int simultaneous){
     for(int i = 0; i < simultaneous; i++){
         if (processTable[i].occupied == 0){
-            return true;
+            return (i + 1);
         }
     }
-    return false;
+    return 0;
 }
 
 void print_process_table(PCB processTable[], int simultaneous, int secs, int nanos){

@@ -22,10 +22,10 @@
 #include "clock.h"
 using namespace std;
 
-void help();
-bool launch_interval_satisfied(int, int, int);
-void launch_child(int);
+void launch_child(PCB[], int, int, Clock*);
 int generate_random_number(int, int);
+bool launch_interval_satisfied(int, int, int);
+void help();
 
 void timeout_handler(int);
 void ctrl_c_handler(int);
@@ -68,7 +68,7 @@ int main(int argc, char** argv){
     init_process_table(processTable);
 
 
-                //  ---------  MAIN LOOP  ---------   
+                        //  ---------  MAIN LOOP  ---------   
     while(numChildren > 0){ // incrs clock, checks for dead processes and launches new ones
         increment(clock);
         print_process_table(processTable, simultaneous, clock->secs, clock->nanos);        
@@ -82,9 +82,9 @@ int main(int argc, char** argv){
         if(launch_interval_satisfied(launch_interval, clock->secs, clock->nanos) 
         && process_table_vacancy(processTable, simultaneous)){
             cout << "Launching Child Process..." << endl;
-            launch_child(time_limit);
+            launch_child(processTable, time_limit, simultaneous, clock);
         }               
-    }           // --------- END OF MAIN LOOP --------- 
+    }                   // --------- END OF MAIN LOOP --------- 
 
 
     for (int i = 0; i < simultaneous; i++) 
@@ -96,13 +96,13 @@ int main(int argc, char** argv){
     return 0;
 }
 
-void launch_child(int time_limit){
+void launch_child(PCB processTable[], int time_limit, int simultaneous, Clock* clock){
     string rand_secs = std::to_string(generate_random_number(1, (time_limit - 1)));
     string rand_nanos = std::to_string(generate_random_number(0, 999999999));
     // string user_parameters = std::to_string(rand_secs) + " " + std::to_string(rand_nanos); 
 
     pid_t childPid = fork(); // This is where the child process splits from the parent        
-    if (childPid == 0 ) {            // Each child uses exec to run ./user	
+    if (childPid == 0) {            // Each child uses exec to run ./user	
         // execl("./user", "user", user_parameters.c_str(), NULL);    
         char* args[] = {const_cast<char*>("./user"), const_cast<char*>(rand_secs.c_str()), const_cast<char*>(rand_nanos.c_str()), nullptr};
         execvp(args[0], args);
@@ -111,7 +111,13 @@ void launch_child(int time_limit){
     } else if (childPid == -1) {  // Fork failed
         perror("Error: Fork has failed");
         exit(EXIT_FAILURE);
-    }          
+    } else {            // Parent updates Process Table with child info after fork()
+        int i = (process_table_vacancy(processTable, simultaneous) - 1);
+        processTable[i].occupied = 1;
+        processTable[i].pid = childPid;
+        processTable[i].startSecs = clock->secs;
+        processTable[i].startNanos = clock->nanos;
+    }
 }
 
 int generate_random_number(int min, int max) {
@@ -122,12 +128,12 @@ int generate_random_number(int min, int max) {
     return random_number;
 }
 
-bool launch_interval_satisfied(int launch_interval, int secs, int nanos){
+bool launch_interval_satisfied(int launch_interval, Clock* clock){
     static int last_launch_secs = 0;  // static ints used to keep track of 
     static int last_launch_nanos = 0;   // most recent process launch
 
-    int elapsed_secs = secs - last_launch_secs; 
-    int elapsed_nanos = nanos - last_launch_nanos;
+    int elapsed_secs = clock->secs - last_launch_secs; 
+    int elapsed_nanos = clock->nanos - last_launch_nanos;
 
     while (elapsed_nanos < 0) {   // fix if subtracted time is too low
         elapsed_secs--;
@@ -135,8 +141,8 @@ bool launch_interval_satisfied(int launch_interval, int secs, int nanos){
     }
 
     if (elapsed_secs > 0 || (elapsed_secs == 0 && elapsed_nanos >= launch_interval)) {        
-        last_launch_secs = secs;  // Update the last launch time
-        last_launch_nanos = nanos;        
+        last_launch_secs = clock->secs;  // Update the last launch time
+        last_launch_nanos = clock->nanos;        
         return true;
     } else {
         return false;
