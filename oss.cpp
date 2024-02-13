@@ -24,7 +24,7 @@ using namespace std;
 
 void launch_child(PCB[], int, int, Clock*);
 int generate_random_number(int, int);
-bool launch_interval_satisfied(int, int, int);
+bool launch_interval_satisfied(int, Clock*);
 void help();
 
 void timeout_handler(int);
@@ -79,7 +79,7 @@ int main(int argc, char** argv){
             pid = 0;
         }
 
-        if(launch_interval_satisfied(launch_interval, clock->secs, clock->nanos) 
+        if(launch_interval_satisfied(launch_interval, clock) 
         && process_table_vacancy(processTable, simultaneous)){
             cout << "Launching Child Process..." << endl;
             launch_child(processTable, time_limit, simultaneous, clock);
