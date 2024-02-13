@@ -30,6 +30,7 @@ void timeout_handler(int);
 void ctrl_c_handler(int);
 
 volatile sig_atomic_t term = 0;  // signal handling global
+struct PCB processTable[20]; // Init Process Table Array of PCB structs (not shm)
 
 int main(int argc, char** argv){
     int option, numChildren = 1, simultaneous = 1, time_limit = 2, launch_interval = 100;  
@@ -63,10 +64,8 @@ int main(int argc, char** argv){
     clock = (Clock*)shmat(shmtid, NULL, 0);
     clock->secs = 0;   // init clock to 00:00
     clock->nanos = 0; 
-
-    struct PCB processTable[20]; // Init Process Table Array of PCB structs (not shm)
-    init_process_table(processTable);
-
+    
+    init_process_table(processTable); // init process table
 
                         //  ---------  MAIN LOOP  ---------   
     while(numChildren > 0){ // incrs clock, checks for dead processes and launches new ones
@@ -93,6 +92,7 @@ int main(int argc, char** argv){
 	printf("Child processes have completed.\n");
     printf("Parent is now ending.\n");
     shmdt(clock);
+    kill_all_processes(processTable);
     return 0;
 }
 
@@ -163,6 +163,7 @@ void help(){   // Help message here
 void timeout_handler(int signum) {
     std::cout << "Timeout occurred. Cleaning up before exiting..." << std::endl;
     term = 1;
+    kill_all_processes(processTable);
     // shmdt(clock);  // detatch from shared memory
     std::exit(EXIT_SUCCESS);
 }
@@ -170,6 +171,7 @@ void timeout_handler(int signum) {
 // Signal handler for Ctrl+C (SIGINT)
 void ctrl_c_handler(int signum) {
     std::cout << "Ctrl+C detected. Cleaning up before exiting..." << std::endl;
+    kill_all_processes(processTable);
     // shmdt(clock);
     std::exit(EXIT_SUCCESS);
 }

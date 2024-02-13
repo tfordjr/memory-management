@@ -4,6 +4,10 @@
 #ifndef PCB_H
 #define PCB_H
 
+#include <iostream>
+#include <unistd.h>
+#include <signal.h>
+
 struct PCB {
     int occupied;     // either true or false
     pid_t pid;        // process id of this child
@@ -54,6 +58,14 @@ void update_process_table_of_terminated_child(PCB processTable[], pid_t pid){
             processTable[i].startSecs = 0;
             processTable[i].startNanos = 0;
             return;
+        } 
+    }
+}
+
+void kill_all_processes(PCB processTable[]){
+    for(int i = 0; i < 20; i++){
+        if(processTable[i].occupied){  // if PCB pid equal to killed pid
+            kill(processTable[i].pid, SIGKILL);
         } 
     }
 }
