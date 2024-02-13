@@ -84,10 +84,10 @@ int main(int argc, char** argv){
         }               
     }                   // --------- END OF MAIN LOOP --------- 
 
-
-    for (int i = 0; i < simultaneous; i++) 
-        wait(NULL);	// Parent Waiting for children 
-
+    while(!process_table_empty(processTable, simultaneous)){  
+        sleep(1);    // Parent waits until process table is empty after sends all childs
+    }
+    
 	printf("Child processes have completed.\n");
     printf("Parent is now ending.\n");
     shmdt(clock);
