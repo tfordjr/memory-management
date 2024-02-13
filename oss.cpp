@@ -162,7 +162,7 @@ void timeout_handler(int signum) {
     std::cout << "Timeout occurred. Cleaning up before exiting..." << std::endl;
     term = 1;
     kill_all_processes(processTable);
-    shmdt(clock);  // detatch from shared memory
+    // shmdt(clock);  // detatch from shared memory
     std::exit(EXIT_SUCCESS);
 }
 
@@ -170,6 +170,6 @@ void timeout_handler(int signum) {
 void ctrl_c_handler(int signum) {
     std::cout << "Ctrl+C detected. Cleaning up before exiting..." << std::endl;
     kill_all_processes(processTable);
-    shmdt(clock);
+    // shmdt(clock);
     std::exit(EXIT_SUCCESS);
 }
