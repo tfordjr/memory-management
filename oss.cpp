@@ -79,8 +79,8 @@ int main(int argc, char** argv){
         if(launch_interval_satisfied(launch_interval, clock)   // child process launch check
         && process_table_vacancy(processTable, simultaneous)){
             cout << "Launching Child Process..." << endl;
-            launch_child(processTable, time_limit, simultaneous, clock);
             numChildren--;
+            launch_child(processTable, time_limit, simultaneous, clock);
         }               
     }                   // --------- END OF MAIN LOOP --------- 
 
