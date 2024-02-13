@@ -15,7 +15,7 @@ user.cpp: user executable takes one arg for number of iterations. prints and sle
 makefile: creates oss and user executables, oss executes user executable to perform work.
 
 Problem areas: 
+not detatching and deleting shared memory on signal catching
+    should I also setup signal catching in user.cpp and dt from shm there too?
 
-Best way to setup clock? How to change time and how to view it in user.cpp??
-
-Note that your process table is limited in size and so should reuse old entries. That is, if the process occupying entry 0 finishes, then the next time you go to launch a process, it should go in that spot. When oss detects that a process has terminated, it can clear out that entry and set its occupied to 0, indicating that it is now a free slot.
+segfaults a lot

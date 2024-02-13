@@ -209,13 +209,13 @@ void help(){   // Help message here
 void timeout_handler(int signum) {
     std::cout << "Timeout occurred. Cleaning up before exiting..." << std::endl;
     term = 1;
-    shmdt(clock);  // detatch from shared memory
+    // shmdt(clock);  // detatch from shared memory
     std::exit(EXIT_SUCCESS);
 }
 
 // Signal handler for Ctrl+C (SIGINT)
 void ctrl_c_handler(int signum) {
     std::cout << "Ctrl+C detected. Cleaning up before exiting..." << std::endl;
-    shmdt(clock);
+    // shmdt(clock);
     std::exit(EXIT_SUCCESS);
 }
