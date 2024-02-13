@@ -8,6 +8,7 @@
 #include <string>
 #include <cstring>
 #include <cstdlib>
+#include <csignal>
 #include <sys/mman.h>
 #include <fcntl.h>
 #include <sys/ipc.h>
@@ -31,6 +32,8 @@ void launch_child(int);
 int generate_random_number(int, int);
 void init_process_table(PCB[]);
 
+volatile sig_atomic_t term = 0;  // signal handling global
+
 int main(int argc, char** argv){
     int option, numChildren = 1, simultaneous = 1, time_limit = 2, launch_interval = 100;  
     while ( (option = getopt(argc, argv, "hn:s:t:i:")) != -1) {   // getopt implementation
@@ -53,7 +56,9 @@ int main(int argc, char** argv){
         }
 	}   // getopt loop completed here
 
-
+    std::signal(SIGALRM, timeout_handler);  // signal handlers setup
+    std::signal(SIGINT, ctrl_c_handler);
+    alarm(6);
 
     Clock* clock;       // init shm clock
     key_t key = ftok("/tmp", 35);
@@ -204,4 +209,16 @@ void help(){   // Help message here
     printf("\t-t The argument following -t will be the max time limit for each user process created.\n");
     printf("\t-i The argument following -i will be lauch interval between process launch in milliseconds.\n");
     printf("\t args will default to appropriate values if not provided.\n");
+}
+
+void timeout_handler(int signum) {
+    std::cout << "Timeout occurred." << std::endl;
+    term = 1;
+    std::exit(EXIT_SUCCESS);
+}
+
+// Signal handler for Ctrl+C (SIGINT)
+void ctrl_c_handler(int signum) {
+    std::cout << "Ctrl+C detected. Cleaning up before exiting..." << std::endl;
+    std::exit(EXIT_SUCCESS);
 }
