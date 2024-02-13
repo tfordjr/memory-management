@@ -158,15 +158,16 @@ bool launch_interval_satisfied(int launch_interval, int secs, int nanos){
     }
 }
 
-
 void launch_child(int time_limit){
-    int rand_secs = generate_random_number(1, (time_limit - 1));
-    int rand_nanos = generate_random_number(0, 999999999);
-    string user_parameters = std::to_string(rand_secs) + " " + std::to_string(rand_nanos); 
+    string rand_secs = std::to_string(generate_random_number(1, (time_limit - 1)));
+    string rand_nanos = std::to_string(generate_random_number(0, 999999999));
+    // string user_parameters = std::to_string(rand_secs) + " " + std::to_string(rand_nanos); 
 
     pid_t childPid = fork(); // This is where the child process splits from the parent        
     if (childPid == 0 ) {            // Each child uses exec to run ./user	
-        execl("./user", "user", user_parameters.c_str(), NULL);            
+        // execl("./user", "user", user_parameters.c_str(), NULL);    
+        char* args[] = {"./user", const_cast<char*>(rand_secs.c_str()), const_cast<char*>(rand_nanos.c_str()), nullptr};
+        execvp(args[0], args);
         perror("Error: Failed to execute user program");
         exit(EXIT_FAILURE);
     } else if (childPid == -1) {  // Fork failed
