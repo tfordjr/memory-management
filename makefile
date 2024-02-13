@@ -2,7 +2,7 @@
 # https://github.com/tfordjr/process-tables
 
 CC	= g++ -g3
-CFLAGS  = -g3
+CFLAGS  = -g3 -g
 TARGET1 = user
 TARGET2 = oss 
 
