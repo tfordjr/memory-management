@@ -29,6 +29,7 @@ bool launch_interval_satisfied(int, int, int);
 bool process_table_vacancy(PCB[], int);
 void launch_child(int);
 int generate_random_number(int, int);
+void init_process_table(PCB[]);
 
 int main(int argc, char** argv){
     int option, numChildren = 1, simultaneous = 1, time_limit = 2, launch_interval = 100;  
@@ -61,7 +62,8 @@ int main(int argc, char** argv){
     clock->secs = 0;   // init clock to 00:00
     clock->nanos = 0; 
 
-    struct PCB processTable[20]; // Init Process Table Array of PCB structs (not shm)    
+    struct PCB processTable[20]; // Init Process Table Array of PCB structs (not shm)
+    init_process_table(processTable);
 
 
     while(numChildren > 0){ // Main loop moves clock, checks for dead processes and launches new ones
@@ -105,6 +107,15 @@ bool process_table_vacancy(PCB processTable[], int simultaneous){
         }
     }
     return false;
+}
+
+void init_process_table(PCB processTable[]){
+    for(int i; i < 20; i++){
+        (processTable + (i * sizeof(PCB)))->occupied = 0;
+        (processTable + (i * sizeof(PCB)))->pid = 0;
+        (processTable + (i * sizeof(PCB)))->startSecs = 0;
+        (processTable + (i * sizeof(PCB)))->startNanos = 0;
+    }
 }
 
 void print_process_table(PCB processTable[], int simultaneous, int secs, int nanos){
