@@ -25,8 +25,6 @@ Are there cleanup actions I'm missing, or I could improve on my implementation?
 Is my nonblocking wait call working correctly? I took out &status and replaced it with
 nullptr because it wasn't recognized and I didn't want a junk value there.
 
-If we don't timeout, does program end correctly?
-
 Known Problems or Bugs: 
     NOT ABLE TO DETATCH CLOCK! Can't pass to signal functions, and
         I get TONS of bugs when attempting to make logical clock global
