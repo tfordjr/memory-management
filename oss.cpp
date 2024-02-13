@@ -68,7 +68,7 @@ int main(int argc, char** argv){
         increment(clock);
         print_process_table(processTable, simultaneous, clock->secs, clock->nanos);        
 
-        pid_t pid = waitpid(-1, &status, WNOHANG);  // non-blocking wait call for terminated child process
+        pid_t pid = waitpid(-1, &stat, WNOHANG);  // non-blocking wait call for terminated child process
         if(pid != 0){     // if child has been terminated
             update_process_table_of_terminated_child(processTable, pid);
             pid = 0;
