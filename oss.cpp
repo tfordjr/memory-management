@@ -32,6 +32,8 @@ void launch_child(int);
 int generate_random_number(int, int);
 void init_process_table(PCB[]);
 
+void timeout_handler(int);
+void ctrl_c_handler(int);
 volatile sig_atomic_t term = 0;  // signal handling global
 
 int main(int argc, char** argv){
