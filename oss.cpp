@@ -57,16 +57,14 @@ int main(int argc, char** argv){
 
     std::signal(SIGALRM, timeout_handler);  // signal handlers setup
     std::signal(SIGINT, ctrl_c_handler);
-    alarm(60);
+    alarm(60);   // timeout timer
           
+    init_process_table(processTable); // init local process table
     key_t key = ftok("/tmp", 35);             // init shm clock
     int shmtid = shmget(key, sizeof(Clock), IPC_CREAT | 0666);
     clock = (Clock*)shmat(shmtid, NULL, 0);
     clock->secs = 0;   // init clock to 00:00
-    clock->nanos = 0; 
-    
-    init_process_table(processTable); // init process table
-
+    clock->nanos = 0;         
                         //  ---------  MAIN LOOP  ---------   
     while(numChildren > 0){ // incrs clock, checks for dead processes and launches new ones
         increment(clock);
@@ -74,11 +72,11 @@ int main(int argc, char** argv){
 
         pid_t pid = waitpid(-1, nullptr, WNOHANG);  // non-blocking wait call for terminated child process
         if(pid != 0){     // if child has been terminated
-            update_process_table_of_terminated_child(processTable, pid);
+            update_process_table_of_terminated_child(processTable, pid);  // clear spot in pcb
             pid = 0;
         }
 
-        if(launch_interval_satisfied(launch_interval, clock) 
+        if(launch_interval_satisfied(launch_interval, clock)   // child process launch check
         && process_table_vacancy(processTable, simultaneous)){
             cout << "Launching Child Process..." << endl;
             launch_child(processTable, time_limit, simultaneous, clock);
@@ -120,7 +118,7 @@ void launch_child(PCB processTable[], int time_limit, int simultaneous, Clock* c
     }
 }
 
-int generate_random_number(int min, int max) {
+int generate_random_number(int min, int max) {  // pseudo rng for random child workload
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::default_random_engine generator(seed);
     std::uniform_int_distribution<int> distribution(min, max);

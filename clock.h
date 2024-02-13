@@ -10,7 +10,7 @@ typedef struct Clock {
 } Clock;
 
 void increment(Clock* c){
-    c->nanos = c->nanos + 200;
+    c->nanos = c->nanos + 100;
     if (c->nanos >= 1000000000){   // if over 1 billion nanos, add 1 second, sub 1 bil nanos
         c->nanos = c->nanos - 1000000000;
         c->secs++;
