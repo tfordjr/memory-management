@@ -166,7 +166,7 @@ void launch_child(int time_limit){
     pid_t childPid = fork(); // This is where the child process splits from the parent        
     if (childPid == 0 ) {            // Each child uses exec to run ./user	
         // execl("./user", "user", user_parameters.c_str(), NULL);    
-        char* args[] = {"./user", const_cast<char*>(rand_secs.c_str()), const_cast<char*>(rand_nanos.c_str()), nullptr};
+        char* args[] = {const_cast<char*>("./user"), const_cast<char*>(rand_secs.c_str()), const_cast<char*>(rand_nanos.c_str()), nullptr};
         execvp(args[0], args);
         perror("Error: Failed to execute user program");
         exit(EXIT_FAILURE);
