@@ -80,6 +80,7 @@ int main(int argc, char** argv){
         && process_table_vacancy(processTable, simultaneous)){
             cout << "Launching Child Process..." << endl;
             launch_child(processTable, time_limit, simultaneous, clock);
+            numChildren--;
         }               
     }                   // --------- END OF MAIN LOOP --------- 
 
