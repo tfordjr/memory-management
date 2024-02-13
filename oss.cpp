@@ -31,7 +31,6 @@ void ctrl_c_handler(int);
 
 volatile sig_atomic_t term = 0;  // signal handling global
 struct PCB processTable[20]; // Init Process Table Array of PCB structs (not shm)
-Clock* clock;   // Declare global Clock* clock
 
 int main(int argc, char** argv){
     int option, numChildren = 1, simultaneous = 1, time_limit = 2, launch_interval = 100;  
@@ -60,6 +59,7 @@ int main(int argc, char** argv){
     alarm(60);   // timeout timer
           
     init_process_table(processTable); // init local process table
+    Clock* clock;                             // declare clock locally
     key_t key = ftok("/tmp", 35);             // init shm clock
     int shmtid = shmget(key, sizeof(Clock), IPC_CREAT | 0666);
     clock = (Clock*)shmat(shmtid, NULL, 0);
