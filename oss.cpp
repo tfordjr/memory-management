@@ -31,6 +31,7 @@ void ctrl_c_handler(int);
 
 volatile sig_atomic_t term = 0;  // signal handling global
 struct PCB processTable[20]; // Init Process Table Array of PCB structs (not shm)
+Clock* clock;   // Declare global Clock* clock
 
 int main(int argc, char** argv){
     int option, numChildren = 1, simultaneous = 1, time_limit = 2, launch_interval = 100;  
@@ -57,9 +58,8 @@ int main(int argc, char** argv){
     std::signal(SIGALRM, timeout_handler);  // signal handlers setup
     std::signal(SIGINT, ctrl_c_handler);
     alarm(60);
-
-    Clock* clock;       // init shm clock
-    key_t key = ftok("/tmp", 35);
+          
+    key_t key = ftok("/tmp", 35);             // init shm clock
     int shmtid = shmget(key, sizeof(Clock), IPC_CREAT | 0666);
     clock = (Clock*)shmat(shmtid, NULL, 0);
     clock->secs = 0;   // init clock to 00:00
@@ -164,7 +164,7 @@ void timeout_handler(int signum) {
     std::cout << "Timeout occurred. Cleaning up before exiting..." << std::endl;
     term = 1;
     kill_all_processes(processTable);
-    // shmdt(clock);  // detatch from shared memory
+    shmdt(clock);  // detatch from shared memory
     std::exit(EXIT_SUCCESS);
 }
 
@@ -172,6 +172,6 @@ void timeout_handler(int signum) {
 void ctrl_c_handler(int signum) {
     std::cout << "Ctrl+C detected. Cleaning up before exiting..." << std::endl;
     kill_all_processes(processTable);
-    // shmdt(clock);
+    shmdt(clock);
     std::exit(EXIT_SUCCESS);
 }
