@@ -17,7 +17,10 @@ makefile: creates oss and user executables, oss executes user executable to perf
 Problem areas: 
 not detatching and deleting shared memory on signal catching
     should I also setup signal catching in user.cpp and dt from shm there too?
+Just not cleaning up after myself, too many child processes active at a time,
+    fork utility unavailable bc I'm using so many children, etc
 
+Concerns: 
 I followed the guidance to have the user (child) processes print a message everytime they
 notice a change on the clock, but for my program, the clock increments every 200 ns, so
 I've commented that line(line 52 user.cpp) out as it spams stdout. I did include that req.

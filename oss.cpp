@@ -26,9 +26,9 @@ void launch_child(PCB[], int, int, Clock*);
 int generate_random_number(int, int);
 bool launch_interval_satisfied(int, Clock*);
 void help();
-
 void timeout_handler(int);
 void ctrl_c_handler(int);
+
 volatile sig_atomic_t term = 0;  // signal handling global
 
 int main(int argc, char** argv){
