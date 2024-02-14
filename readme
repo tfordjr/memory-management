@@ -3,7 +3,7 @@ https://github.com/tfordjr/process-tables
 
 Compile and run instructions:
 simply run make command and oss command in the following format:
-oss -n 4 -s 2 -t 3 -i 100
+./oss -n 7 -s 8 -t 2 -i 100
 where -n is processes, -s simultaneous processes, -t max runtime, -i launch interval(ms)
 use the -h arg to learn more about how to use these commands.
 Args default to appropriate figures if not provided, can be in any order.
