@@ -163,9 +163,9 @@ void timeout_handler(int signum) {
     std::cout << "Timeout occurred. Cleaning up before exiting..." << std::endl;
     term = 1;
     kill_all_processes(processTable);
-    shmdt(shm_clock);  // detatch from shared memory
-    if (shmctl(shmtid, IPC_RMID, NULL) == -1) // delete shm
-        perror("Error: shmctl failed!!");   
+    // shmdt(shm_clock);  // detatch from shared memory
+    // if (shmctl(shmtid, IPC_RMID, NULL) == -1) // delete shm
+    //     perror("Error: shmctl failed!!");   
     std::exit(EXIT_SUCCESS);
 }
 
@@ -173,8 +173,8 @@ void timeout_handler(int signum) {
 void ctrl_c_handler(int signum) {
     std::cout << "Ctrl+C detected. Cleaning up before exiting..." << std::endl;
     kill_all_processes(processTable);
-    shmdt(shm_clock);
-    if (shmctl(shmtid, IPC_RMID, NULL) == -1) // delete shm
-        perror("Error: shmctl failed!!");    
+    // shmdt(shm_clock);
+    // if (shmctl(shmtid, IPC_RMID, NULL) == -1) // delete shm
+    //     perror("Error: shmctl failed!!");    
     std::exit(EXIT_SUCCESS);
 }
