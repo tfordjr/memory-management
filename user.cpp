@@ -19,19 +19,19 @@
 using namespace std;
 
 int main(int argc, char** argv) {
-    Clock* clock;           // init shm clock
+    Clock* shm_clock;           // init shm clock
 	key_t key = ftok("/tmp", 35);
 	int shmtid = shmget(key, sizeof(Clock), 0666);
-	clock = (Clock*)shmat(shmtid, NULL, 0);
+	shm_clock = (Clock*)shmat(shmtid, NULL, 0);
   
     int secs = atoi(argv[1]);     // Arg 1 will be secs, secs given from start to terminate
     int nanos = atoi(argv[2]);   // Arg 2 will be nanos
 
-    int start_secs = clock->secs;  // start time is current time at the start
-    int start_nanos = clock->nanos;
+    int start_secs = shm_clock->secs;  // start time is current time at the start
+    int start_nanos = shm_clock->nanos;
 
-    int recent_secs = clock->secs;  // recent time is used for update msg when time changes
-    int recent_nanos = clock->nanos;
+    int recent_secs = shm_clock->secs;  // recent time is used for update msg when time changes
+    int recent_nanos = shm_clock->nanos;
 
     int end_secs = start_secs + secs;   // end time is starting time plus time told to wait
     int end_nanos = start_nanos + nanos;  
@@ -40,21 +40,21 @@ int main(int argc, char** argv) {
         end_secs++;
     }          
         // starting message
-    printf("USER PID: %d  PPID: %d  SysClockS: %d  SysClockNano: %d  TermTimeS: %d  TermTimeNano: %d\n--Just Starting\n", getpid(), getppid(), clock->secs, clock->nanos, end_secs, end_nanos); 
+    printf("USER PID: %d  PPID: %d  SysClockS: %d  SysClockNano: %d  TermTimeS: %d  TermTimeNano: %d\n--Just Starting\n", getpid(), getppid(), shm_clock->secs, shm_clock->nanos, end_secs, end_nanos); 
 
     bool done = false;
     while(!done){
-        if (recent_secs != clock->secs || recent_nanos != clock->nanos){  // if clock changed
-            if(clock->secs > end_secs || clock->secs == end_secs && clock->nanos > end_nanos){  // check if end time has elapsed, if so, terminate
-                printf("USER PID: %d  PPID: %d  SysClockS: %d  SysClockNano: %d  TermTimeS: %d  TermTimeNano: %d\n--Terminating\n", getpid(), getppid(), clock->secs, clock->nanos, end_secs, end_nanos);
+        if (recent_secs != shm_clock->secs || recent_nanos != shm_clock->nanos){  // if clock changed
+            if(shm_clock->secs > end_secs || shm_clock->secs == end_secs && shm_clock->nanos > end_nanos){  // check if end time has elapsed, if so, terminate
+                printf("USER PID: %d  PPID: %d  SysClockS: %d  SysClockNano: %d  TermTimeS: %d  TermTimeNano: %d\n--Terminating\n", getpid(), getppid(), shm_clock->secs, shm_clock->nanos, end_secs, end_nanos);
                 done = true;
             } else if (recent_secs != clock->secs){  // if seconds changed and end time hasn't elapsed, print update msg
-                printf("USER PID: %d  PPID: %d  SysClockS: %d  SysClockNano: %d  TermTimeS: %d  TermTimeNano: %d\n--%d seconds have passed since starting\n", getpid(), getppid(), clock->secs, clock->nanos, end_secs, end_nanos, (clock->secs - start_secs));
+                printf("USER PID: %d  PPID: %d  SysClockS: %d  SysClockNano: %d  TermTimeS: %d  TermTimeNano: %d\n--%d seconds have passed since starting\n", getpid(), getppid(), shm_clock->secs, shm_clock->nanos, end_secs, end_nanos, (shm_clock->secs - start_secs));
             }          
-            int recent_secs = clock->secs;
-            int recent_nanos = clock->nanos;  
+            int recent_secs = shm_clock->secs;
+            int recent_nanos = shm_clock->nanos;  
         }
     }
-    shmdt(clock);
+    shmdt(shm_clock);
     return EXIT_SUCCESS;     
 }
