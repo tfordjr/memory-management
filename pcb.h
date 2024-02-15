@@ -47,11 +47,10 @@ void print_process_table(PCB processTable[], int simultaneous, int secs, int nan
     static int next_print_nanos = 0;   // process table print to be done
 
     if(secs > next_print_secs || secs == next_print_secs && nanos > next_print_nanos){
-        printf("\nOSS PID: %d  SysClockS: %d  SysClockNano: %d  \nProcess Table:\nEntry\tOccupied  PID\tStartS\tStartN\n", getpid(), secs, nanos);
+        printf("OSS PID: %d  SysClockS: %d  SysClockNano: %d  \nProcess Table:\nEntry\tOccupied  PID\tStartS\tStartN\n", getpid(), secs, nanos);
         for(int i = 0; i < simultaneous; i++){
             printf("%d\t%d\t%d\t%d\t%d\n", (i + 1), processTable[i].occupied, processTable[i].pid, processTable[i].startSecs, processTable[i].startNanos);
         }
-        printf("\n");
         next_print_nanos = next_print_nanos + 500000000;
         if (next_print_nanos >= 1000000000){   // if over 1 billion nanos, add 1 second, sub 1 bil nanos
             next_print_nanos = next_print_nanos - 1000000000;
