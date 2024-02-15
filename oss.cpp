@@ -9,13 +9,13 @@
 #include <cstring>
 #include <cstdlib>
 #include <csignal>
-#include <sys/mman.h>
 #include <fcntl.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <sys/msg.h>
+#include <sys/mman.h>
 #include <random>
 #include <chrono>
 #include "pcb.h"
@@ -65,6 +65,7 @@ int main(int argc, char** argv){
     clock = (Clock*)shmat(shmtid, NULL, 0);
     clock->secs = 0;   // init clock to 00:00
     clock->nanos = 0;         
+
                         //  ---------  MAIN LOOP  ---------   
     while(numChildren > 0 || !process_table_empty(processTable, simultaneous)){ 
         increment(clock);
@@ -82,19 +83,14 @@ int main(int argc, char** argv){
             numChildren--;
             launch_child(processTable, time_limit, simultaneous, clock);
         }               
-    }                   // --------- END OF MAIN LOOP --------- 
-
-    //         // BOTH BAD WAIT LOOPS, DON'T ALLOW CHILDREN TO FINSIH!
-    // while(!process_table_empty(processTable, simultaneous)){  
-    //     increment(clock);  // Parent waits until process table is empty after sends all children
-    //     print_process_table(processTable, simultaneous, clock->secs, clock->nanos);
-    // }
-    // // for (int i = 0; i < simultaneous; i++) 
-    // //     wait(NULL);	// Parent Waiting for children 
+    }                   // --------- END OF MAIN LOOP ---------  
 
 	printf("Child processes have completed.\n");
     printf("Parent is now ending.\n");
-    shmdt(clock);
+    
+    shmdt(clock);      // detatch shm
+    if (shmctl(shmtid, IPC_RMID, NULL) == -1) // delete shm
+        perror("Error: shmctl failed!!");    
     kill_all_processes(processTable);
     return 0;
 }
@@ -167,7 +163,9 @@ void timeout_handler(int signum) {
     std::cout << "Timeout occurred. Cleaning up before exiting..." << std::endl;
     term = 1;
     kill_all_processes(processTable);
-    // shmdt(clock);  // detatch from shared memory
+    shmdt(clock);  // detatch from shared memory
+    if (shmctl(shmtid, IPC_RMID, NULL) == -1) // delete shm
+        perror("Error: shmctl failed!!");   
     std::exit(EXIT_SUCCESS);
 }
 
@@ -175,6 +173,8 @@ void timeout_handler(int signum) {
 void ctrl_c_handler(int signum) {
     std::cout << "Ctrl+C detected. Cleaning up before exiting..." << std::endl;
     kill_all_processes(processTable);
-    // shmdt(clock);
+    shmdt(clock);
+    if (shmctl(shmtid, IPC_RMID, NULL) == -1) // delete shm
+        perror("Error: shmctl failed!!");    
     std::exit(EXIT_SUCCESS);
 }

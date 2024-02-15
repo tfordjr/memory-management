@@ -8,13 +8,13 @@
 #include <string>
 #include <cstring>
 #include <stdbool.h>
-#include <sys/mman.h>
 #include <fcntl.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <sys/msg.h>
+#include <sys/mman.h>
 #include "clock.h"
 using namespace std;
 
@@ -48,12 +48,13 @@ int main(int argc, char** argv) {
             if(clock->secs > end_secs || clock->secs == end_secs && clock->nanos > end_nanos){  // check if end time has elapsed, if so, terminate
                 printf("USER PID: %d  PPID: %d  SysClockS: %d  SysClockNano: %d  TermTimeS: %d  TermTimeNano: %d\n--Terminating\n", getpid(), getppid(), clock->secs, clock->nanos, end_secs, end_nanos);
                 done = true;
-            } else {  // if time changed and end time hasn't elapsed, print update msg
-                // printf("USER PID: %d  PPID: %d  SysClockS: %d  SysClockNano: %d  TermTimeS: %d  TermTimeNano: %d\n--%d seconds have passed since starting\n", getpid(), getppid(), clock->secs, clock->nanos, end_secs, end_nanos, (clock->secs - start_secs));
-                int recent_secs = clock->secs;
-                int recent_nanos = clock->nanos;
-            }            
+            } else if (recent_secs != clock->secs){  // if seconds changed and end time hasn't elapsed, print update msg
+                printf("USER PID: %d  PPID: %d  SysClockS: %d  SysClockNano: %d  TermTimeS: %d  TermTimeNano: %d\n--%d seconds have passed since starting\n", getpid(), getppid(), clock->secs, clock->nanos, end_secs, end_nanos, (clock->secs - start_secs));
+            }          
+            int recent_secs = clock->secs;
+            int recent_nanos = clock->nanos;  
         }
     }
+    shmdt(clock);
     return EXIT_SUCCESS;     
 }
