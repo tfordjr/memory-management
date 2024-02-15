@@ -48,7 +48,7 @@ int main(int argc, char** argv) {
             if(shm_clock->secs > end_secs || shm_clock->secs == end_secs && shm_clock->nanos > end_nanos){  // check if end time has elapsed, if so, terminate
                 printf("USER PID: %d  PPID: %d  SysClockS: %d  SysClockNano: %d  TermTimeS: %d  TermTimeNano: %d\n--Terminating\n", getpid(), getppid(), shm_clock->secs, shm_clock->nanos, end_secs, end_nanos);
                 done = true;
-            } else if (recent_secs != clock->secs){  // if seconds changed and end time hasn't elapsed, print update msg
+            } else if (recent_secs != shm_clock->secs){  // if seconds changed and end time hasn't elapsed, print update msg
                 printf("USER PID: %d  PPID: %d  SysClockS: %d  SysClockNano: %d  TermTimeS: %d  TermTimeNano: %d\n--%d seconds have passed since starting\n", getpid(), getppid(), shm_clock->secs, shm_clock->nanos, end_secs, end_nanos, (shm_clock->secs - start_secs));
             }          
             int recent_secs = shm_clock->secs;
