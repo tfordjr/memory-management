@@ -22,9 +22,9 @@
 #include "clock.h"
 using namespace std;
 
-void launch_child(PCB[], int, int, Clock*);
+void launch_child(PCB[], int, int);
 int generate_random_number(int, int);
-bool launch_interval_satisfied(int, Clock*);
+bool launch_interval_satisfied(int);
 void help();
 void timeout_handler(int);
 void ctrl_c_handler(int);
@@ -79,25 +79,25 @@ int main(int argc, char** argv){
             pid = 0;
         }
 
-        if(numChildren > 0 && launch_interval_satisfied(launch_interval, shm_clock)  
+        if(numChildren > 0 && launch_interval_satisfied(launch_interval)  
         && process_table_vacancy(processTable, simultaneous)){ // child process launch check
             cout << "Launching Child Process..." << endl;
             numChildren--;
-            launch_child(processTable, time_limit, simultaneous, shm_clock);
+            launch_child(processTable, time_limit, simultaneous);
         }               
     }                   // --------- END OF MAIN LOOP ---------  
 
 	printf("Child processes have completed.\n");
     printf("Parent is now ending.\n");
 
-    shmdt(shm_clock);      // detatch shm
-    if (shmctl(shmtid, IPC_RMID, NULL) == -1) // delete shm
+    shmdt(shm_clock);      // clock cleanup, detatch & delete shm
+    if (shmctl(shmtid, IPC_RMID, NULL) == -1) 
         perror("Error: shmctl failed!!");
     kill_all_processes(processTable);
     return 0;
 }
 
-void launch_child(PCB processTable[], int time_limit, int simultaneous, Clock* shm_clock){
+void launch_child(PCB processTable[], int time_limit, int simultaneous){
     string rand_secs = std::to_string(generate_random_number(1, (time_limit - 1)));
     string rand_nanos = std::to_string(generate_random_number(0, 999999999));
     // string user_parameters = std::to_string(rand_secs) + " " + std::to_string(rand_nanos); 
@@ -129,7 +129,7 @@ int generate_random_number(int min, int max) {  // pseudo rng for random child w
     return random_number;
 }
 
-bool launch_interval_satisfied(int launch_interval, Clock* shm_clock){
+bool launch_interval_satisfied(int launch_interval){
     static int last_launch_secs = 0;  // static ints used to keep track of 
     static int last_launch_nanos = 0;   // most recent process launch
 
@@ -165,9 +165,9 @@ void timeout_handler(int signum) {
     std::cout << "Timeout occurred. Cleaning up before exiting..." << std::endl;
     term = 1;
     kill_all_processes(processTable);
-    // shmdt(shm_clock);  // detatch from shared memory
-    // if (shmctl(shmtid, IPC_RMID, NULL) == -1) // delete shm
-    //     perror("Error: shmctl failed!!");   
+    shmdt(shm_clock);  // clock cleanup, detatch & delete shm
+    if (shmctl(shmtid, IPC_RMID, NULL) == -1) 
+        perror("Error: shmctl failed!!");   
     std::exit(EXIT_SUCCESS);
 }
 
@@ -175,8 +175,8 @@ void timeout_handler(int signum) {
 void ctrl_c_handler(int signum) {
     std::cout << "Ctrl+C detected. Cleaning up before exiting..." << std::endl;
     kill_all_processes(processTable);
-    // shmdt(shm_clock);
-    // if (shmctl(shmtid, IPC_RMID, NULL) == -1) // delete shm
-    //     perror("Error: shmctl failed!!");    
+    shmdt(shm_clock);       // clock cleanup, detatch & delete shm
+    if (shmctl(shmtid, IPC_RMID, NULL) == -1) 
+        perror("Error: shmctl failed!!");    
     std::exit(EXIT_SUCCESS);
 }
