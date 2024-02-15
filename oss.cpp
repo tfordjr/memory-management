@@ -61,7 +61,7 @@ int main(int argc, char** argv){
 
     std::signal(SIGALRM, timeout_handler);  // signal handlers setup
     std::signal(SIGINT, ctrl_c_handler);
-    alarm(6);   // timeout timer
+    alarm(60);   // timeout timer
           
     init_process_table(processTable); // init local process table
     // Clock* shm_clock;                             // declare clock locally
