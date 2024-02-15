@@ -33,6 +33,9 @@ volatile sig_atomic_t term = 0;  // signal handling global
 struct PCB processTable[20]; // Init Process Table Array of PCB structs (not shm)
 
 Clock* shm_clock;  // Declare global shm clock
+key_t key = ftok("/tmp", 35);             
+int shmtid = shmget(key, sizeof(Clock), IPC_CREAT | 0666);    // init shm clock
+ // Doing it up here because shmtid is needed to delete shm, needed for timeout/exit signal
 
 int main(int argc, char** argv){
     int option, numChildren = 1, simultaneous = 1, time_limit = 2, launch_interval = 100;  
@@ -62,8 +65,8 @@ int main(int argc, char** argv){
           
     init_process_table(processTable); // init local process table
     // Clock* shm_clock;                             // declare clock locally
-    key_t key = ftok("/tmp", 35);             
-    int shmtid = shmget(key, sizeof(Clock), IPC_CREAT | 0666);    // init shm clock
+    // key_t key = ftok("/tmp", 35);             
+    // int shmtid = shmget(key, sizeof(Clock), IPC_CREAT | 0666);    // init shm clock
     shm_clock = (Clock*)shmat(shmtid, NULL, 0);
     shm_clock->secs = 0;   // init clock to 00:00
     shm_clock->nanos = 0;         
