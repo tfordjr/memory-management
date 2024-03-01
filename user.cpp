@@ -62,7 +62,7 @@ int main(int argc, char** argv) {
             perror("failed to receive message from parent\n");
             exit(1);
         } // output message from parent	
-        printf("Child %d received message code: %d msg: %s\n",getpid(), rcvbuf.msgCode, rcvbuf.message);
+        // printf("Child %d received message code: %d msg: %s\n",getpid(), rcvbuf.msgCode, rcvbuf.message);
 
             // check if end time has elapsed, if so, terminate     
         if(shm_clock->secs > end_secs || shm_clock->secs == end_secs && shm_clock->nanos > end_nanos){ 
@@ -71,7 +71,7 @@ int main(int argc, char** argv) {
             buf.msgCode = MSG_TYPE_SUCCESS;    
             strcpy(buf.message,"Completed Successfully, now terminating...\n");
         } else {    // else program continues running
-            printf("USER PID: %d  PPID: %d  SysClockS: %d  SysClockNano: %d  TermTimeS: %d  TermTimeNano: %d\n--%d iteration(s) have passed since starting\n", getpid(), getppid(), shm_clock->secs, shm_clock->nanos, end_secs, end_nanos, iter);
+            // printf("USER PID: %d  PPID: %d  SysClockS: %d  SysClockNano: %d  TermTimeS: %d  TermTimeNano: %d\n--%d iteration(s) have passed since starting\n", getpid(), getppid(), shm_clock->secs, shm_clock->nanos, end_secs, end_nanos, iter);
             buf.msgCode = MSG_TYPE_RUNNING;
             strcpy(buf.message,"Still Running...\n");
         }      

@@ -110,19 +110,19 @@ int main(int argc, char** argv){
                     perror("msgsnd to child 1 failed\n");
                     exit(1);
                 }
-                outputFile << "OSS: Sending message to worker " << i + 1 << " PID: " << buf.address << " at time " << shm_clock->secs << ":" << shm_clock->nanos << std::endl;
+                // outputFile << "OSS: Sending message to worker " << i + 1 << " PID: " << buf.address << " at time " << shm_clock->secs << ":" << shm_clock->nanos << std::endl;
 
                 msgbuffer rcvbuf;     // BLOCKING WAIT TO RECEIVE MESSAGE FROM CHILD
                 if (msgrcv(msgqid, &rcvbuf, sizeof(msgbuffer), 0, 0) == -1) {
                     perror("failed to receive message in parent\n");
                     exit(1);
                 }
-                printf("Parent %d received message code: %d msg: %s\n",getpid(), buf.msgCode, buf.message);
-                outputFile << "OSS: Receiving message from worker " << i + 1 << " PID: " << buf.address << " at time " << shm_clock->secs << ":" << shm_clock->nanos << std::endl;
+                // printf("Parent %d received message code: %d msg: %s\n",getpid(), buf.msgCode, buf.message);
+                // outputFile << "OSS: Receiving message from worker " << i + 1 << " PID: " << buf.address << " at time " << shm_clock->secs << ":" << shm_clock->nanos << std::endl;
 
                 if(rcvbuf.msgCode == MSG_TYPE_SUCCESS){     // if child has been terminated
                     update_process_table_of_terminated_child(processTable, rcvbuf.address);
-                    outputFile << "OSS: Worker " << i + 1 << " PID: " << buf.address << " is planning to terminate" << std::endl;
+                    // outputFile << "OSS: Worker " << i + 1 << " PID: " << buf.address << " is planning to terminate" << std::endl;
                 }
             }
         }      
