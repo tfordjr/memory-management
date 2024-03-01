@@ -38,7 +38,7 @@ Clock* shm_clock;  // Declare global shm clock
 key_t clock_key = ftok("/tmp", 35);             
 int shmtid = shmget(clock_key, sizeof(Clock), IPC_CREAT | 0666);    // init shm clock
 std::ofstream outputFile;   // init file object
-int msqid;           // MSGQID GLOBAL FOR MSGQ CLEANUP
+int msgqid;           // MSGQID GLOBAL FOR MSGQ CLEANUP
  // Doing it up here because shmtid is needed to delete shm, needed for timeout/exit signal
 
 int main(int argc, char** argv){
@@ -82,14 +82,14 @@ int main(int argc, char** argv){
         return 1; // Exit with error
     }
     
-    msgbuffer buf;     //  INITIALIZE MESSAGE QUEUE	  (MSQID MOVED TO GLOBAL)
+    msgbuffer buf;     //  INITIALIZE MESSAGE QUEUE	  (MSGQID MOVED TO GLOBAL)
 	key_t msgq_key;
 	system("touch msgq.txt");
-	if ((msgq_key = ftok("msgq.txt", 1)) == -1) {   // get a key for our message queue
+	if ((msgq_key = ftok(MSGQ_FILE_PATH, MSGQ_PROJ_ID)) == -1) {   // get a key for our message queue
 		perror("ftok");
 		exit(1);
 	}	
-	if ((msqid = msgget(msgq_key, PERMS | IPC_CREAT)) == -1) {  // create our message queue
+	if ((msgqid = msgget(msgq_key, PERMS | IPC_CREAT)) == -1) {  // create our message queue
 		perror("msgget in parent");
 		exit(1);
 	}
@@ -100,26 +100,20 @@ int main(int argc, char** argv){
         increment(shm_clock, running_processes(processTable, simultaneous));
         print_process_table(processTable, simultaneous, shm_clock->secs, shm_clock->nanos, outputFile);        
       
-        // pid_t pid = waitpid(-1, nullptr, WNOHANG);  // non-blocking wait call for terminated child process
-        // if(pid != 0){     // if child has been terminated
-        //     update_process_table_of_terminated_child(processTable, pid);  // clear spot in pcb
-        //     pid = 0;
-        // }
-
             // FOR EACH PROCESS IN PCB, SEND A MESSAGE AND WAIT TO HEAR BACK!!!!!
         for (int i = 0; i < simultaneous; i++){
             if (processTable[i].occupied == 1){
                 buf.address = processTable[i].pid;     // SEND MESSAGE TO CHILD
                 buf.msgCode = MSG_TYPE_RUNNING;   // we will give it the pid we are sending to, so we know it received it
                 strcpy(buf.message, "Message to child\n");
-                if (msgsnd(msqid, &buf, sizeof(msgbuffer)-sizeof(long), 0) == -1) {
+                if (msgsnd(msgqid, &buf, sizeof(msgbuffer)-sizeof(long), 0) == -1) {
                     perror("msgsnd to child 1 failed\n");
                     exit(1);
                 }
                 outputFile << "OSS: Sending message to worker " << i + 1 << " PID: " << buf.address << " at time " << shm_clock->secs << ":" << shm_clock->nanos << std::endl;
 
                 msgbuffer rcvbuf;     // BLOCKING WAIT TO RECEIVE MESSAGE FROM CHILD
-                if (msgrcv(msqid, &rcvbuf,sizeof(msgbuffer), getpid(),0) == -1) {
+                if (msgrcv(msgqid, &rcvbuf,sizeof(msgbuffer), getpid(),0) == -1) {
                     perror("failed to receive message in parent\n");
                     exit(1);
                 }	
@@ -152,7 +146,7 @@ int main(int argc, char** argv){
         perror("Error: shmctl failed!!");
     kill_all_processes(processTable);
 
-    if (msgctl(msqid, IPC_RMID, NULL) == -1) {  // get rid of message queue
+    if (msgctl(msgqid, IPC_RMID, NULL) == -1) {  // get rid of message queue
 		perror("msgctl to get rid of queue in parent failed");
 		exit(1);
 	}
@@ -235,7 +229,7 @@ void timeout_handler(int signum) {
         perror("Error: shmctl failed!!");
         exit(1);
     }      
-    if (msgctl(msqid, IPC_RMID, NULL) == -1) {  // get rid of message queue
+    if (msgctl(msgqid, IPC_RMID, NULL) == -1) {  // get rid of message queue
 		perror("msgctl to get rid of queue in parent failed");
 		exit(1);
 	}
@@ -252,7 +246,7 @@ void ctrl_c_handler(int signum) {
         perror("Error: shmctl failed!!");
         exit(1);
     }            
-    if (msgctl(msqid, IPC_RMID, NULL) == -1) {  // get rid of message queue
+    if (msgctl(msgqid, IPC_RMID, NULL) == -1) {  // get rid of message queue
 		perror("msgctl to get rid of queue in parent failed");
 		exit(1);
 	}

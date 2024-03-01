@@ -41,13 +41,13 @@ int main(int argc, char** argv) {
 
     msgbuffer buf;   // init msg buffer
 	buf.address = getpid();
-	int msqid = 0;
+	int msgqid = 0;
 	key_t msgq_key;	
-	if ((msgq_key = ftok("msgq.txt", 1)) == -1) {   // get a key for our message queue
+	if ((msgq_key = ftok(MSGQ_FILE_PATH, MSGQ_PROJ_ID)) == -1) {   // get a key for our message queue
 		perror("ftok");
 		exit(1);
 	}	
-	if ((msqid = msgget(msgq_key, PERMS)) == -1) {  // create our message queue
+	if ((msgqid = msgget(msgq_key, PERMS)) == -1) {  // create our message queue
 		perror("msgget in child");
 		exit(1);
 	}
@@ -58,7 +58,7 @@ int main(int argc, char** argv) {
     bool done = false;
     while(!done){                 // Blocking msgrcv waiting for parent message
         iter++;
-        if ( msgrcv(msqid, &buf, sizeof(msgbuffer), getpid(), 0) == -1) {  
+        if ( msgrcv(msgqid, &buf, sizeof(msgbuffer), getpid(), 0) == -1) {  
             perror("failed to receive message from parent\n");
             exit(1);
         } // output message from parent	
@@ -76,7 +76,7 @@ int main(int argc, char** argv) {
             strcpy(buf.message,"Still Running...\n");
         }      
             // msgsnd(to parent saying if we are done or not);      
-        if (msgsnd(msqid,&buf,sizeof(msgbuffer)-sizeof(long),0) == -1) {
+        if (msgsnd(msgqid,&buf,sizeof(msgbuffer)-sizeof(long),0) == -1) {
             perror("msgsnd to parent failed\n");
             exit(1);
         }
