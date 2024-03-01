@@ -41,6 +41,8 @@ int main(int argc, char** argv) {
         // starting message
     printf("USER PID: %d  PPID: %d  SysClockS: %d  SysClockNano: %d  TermTimeS: %d  TermTimeNano: %d\n--Just Starting\n", getpid(), getppid(), shm_clock->secs, shm_clock->nanos, end_secs, end_nanos); 
 
+    // INITIALIZE/CONNECT TO MESSAGE QUEUE
+
     int iter = 1;
     bool done = false;
     while(!done){

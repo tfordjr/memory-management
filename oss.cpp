@@ -83,16 +83,27 @@ int main(int argc, char** argv){
         return 1; // Exit with error
     }
 
+    //  INITIALIZE MESSAGE QUEUE
+
                         //  ---------  MAIN LOOP  ---------   
     while(numChildren > 0 || !process_table_empty(processTable, simultaneous)){ 
-        increment(shm_clock);
+        increment(shm_clock, running_processes(processTable, simultaneous));
         print_process_table(processTable, simultaneous, shm_clock->secs, shm_clock->nanos, outputFile);        
-
+      
         pid_t pid = waitpid(-1, nullptr, WNOHANG);  // non-blocking wait call for terminated child process
         if(pid != 0){     // if child has been terminated
             update_process_table_of_terminated_child(processTable, pid);  // clear spot in pcb
             pid = 0;
         }
+
+        // ^^^^ REMOVE WAIT CALL FOR CHILDREN I BELIEVE,
+        // REPLACE WITH THIS PSEUDOCODE
+        // msgsnd(send message to next child process); (definitely nonblocking)
+        // msgrcv(message back from child process); (Surely nonblocking) 
+
+        // MESSAGE RECEIVED FROM CHILD
+        // child has decided to terminate: update PCB, possibly launch new child
+
 
         if(numChildren > 0 && launch_interval_satisfied(launch_interval)  
         && process_table_vacancy(processTable, simultaneous)){ // child process launch check

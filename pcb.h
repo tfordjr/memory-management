@@ -35,6 +35,16 @@ int process_table_vacancy(PCB processTable[], int simultaneous){
     return 0;
 }
 
+int running_processes(PCB processTable[], int simultaneous){
+    int numProcesses = 0;
+    for(int i = 0; i < simultaneous; i++){
+        if (processTable[i].occupied == 1){
+            numProcesses++;
+        }
+    }
+    return numProcesses;
+}
+
 bool process_table_empty(PCB processTable[], int simultaneous){
     for(int i = 0; i < simultaneous; i++){
         if (processTable[i].occupied){
