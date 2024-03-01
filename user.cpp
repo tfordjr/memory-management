@@ -39,7 +39,7 @@ int main(int argc, char** argv) {
         end_secs++;
     }                 
 
-    msgbuffer buf;   // init msg buffer
+    msgbuffer buf, rcvbuf;   // init msg buffer
 	buf.address = getpid();
 	int msgqid = 0;
 	key_t msgq_key;	
@@ -58,17 +58,17 @@ int main(int argc, char** argv) {
     bool done = false;
     while(!done){                 // Blocking msgrcv waiting for parent message
         iter++;
-        if ( msgrcv(msgqid, &buf, sizeof(msgbuffer), getpid(), 0) == -1) {  
+        if ( msgrcv(msgqid, &rcvbuf, sizeof(msgbuffer), getpid(), 0) == -1) {  
             perror("failed to receive message from parent\n");
             exit(1);
         } // output message from parent	
-        printf("Child %d received message code: %d msg: %s\n",getpid(), buf.msgCode, buf.message);
+        printf("Child %d received message code: %d msg: %s\n",getpid(), rcvbuf.msgCode, rcvbuf.message);
 
             // check if end time has elapsed, if so, terminate     
         if(shm_clock->secs > end_secs || shm_clock->secs == end_secs && shm_clock->nanos > end_nanos){ 
             printf("USER PID: %d  PPID: %d  SysClockS: %d  SysClockNano: %d  TermTimeS: %d  TermTimeNano: %d\n--Terminating after sending message back to oss after %d iterations.\n", getpid(), getppid(), shm_clock->secs, shm_clock->nanos, end_secs, end_nanos, iter);
             done = true;
-            buf.msgCode = MSG_TYPE_SUCCESS;    // 
+            buf.msgCode = MSG_TYPE_SUCCESS;    
             strcpy(buf.message,"Completed Successfully, now terminating...\n");
         } else {    // else program continues running
             printf("USER PID: %d  PPID: %d  SysClockS: %d  SysClockNano: %d  TermTimeS: %d  TermTimeNano: %d\n--%d iteration(s) have passed since starting\n", getpid(), getppid(), shm_clock->secs, shm_clock->nanos, end_secs, end_nanos, iter);
