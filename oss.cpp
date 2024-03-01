@@ -36,11 +36,12 @@ struct PCB processTable[20]; // Init Process Table Array of PCB structs (not shm
 Clock* shm_clock;  // Declare global shm clock
 key_t key = ftok("/tmp", 35);             
 int shmtid = shmget(key, sizeof(Clock), IPC_CREAT | 0666);    // init shm clock
+std::ofstream outputFile;   // init file object
  // Doing it up here because shmtid is needed to delete shm, needed for timeout/exit signal
 
+
 int main(int argc, char** argv){
-    int option, numChildren = 1, simultaneous = 1, time_limit = 2, launch_interval = 100;  
-    std::ofstream outputFile;   // init file object
+    int option, numChildren = 1, simultaneous = 1, time_limit = 2, launch_interval = 100;      
     string logfile = "logfile.txt";
     while ( (option = getopt(argc, argv, "hn:s:t:i:f:")) != -1) {   // getopt implementation
         switch(option) {
@@ -195,6 +196,7 @@ void timeout_handler(int signum) {
     std::cout << "Timeout occurred. Cleaning up before exiting..." << std::endl;
     term = 1;
     kill_all_processes(processTable);
+    outputFile.close();  // file object close
     shmdt(shm_clock);  // clock cleanup, detatch & delete shm
     if (shmctl(shmtid, IPC_RMID, NULL) == -1) 
         perror("Error: shmctl failed!!");   
@@ -205,6 +207,7 @@ void timeout_handler(int signum) {
 void ctrl_c_handler(int signum) {
     std::cout << "Ctrl+C detected. Cleaning up before exiting..." << std::endl;
     kill_all_processes(processTable);
+    outputFile.close();  // file object close
     shmdt(shm_clock);       // clock cleanup, detatch & delete shm
     if (shmctl(shmtid, IPC_RMID, NULL) == -1) 
         perror("Error: shmctl failed!!");    
