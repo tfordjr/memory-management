@@ -116,7 +116,7 @@ int main(int argc, char** argv){
                 if (msgrcv(msgqid, &rcvbuf,sizeof(msgbuffer), getpid(),0) == -1) {
                     perror("failed to receive message in parent\n");
                     exit(1);
-                }	
+                }
                 printf("Parent %d received message code: %d msg: %s\n",getpid(), buf.msgCode, buf.message);
                 outputFile << "OSS: Receiving message from worker " << i + 1 << " PID: " << buf.address << " at time " << shm_clock->secs << ":" << shm_clock->nanos << std::endl;
 
