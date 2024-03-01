@@ -24,5 +24,5 @@ parent.o:	parent.cpp
 	$(CC) $(CFLAGS) -c oss.cpp
 
 clean:
-	/bin/rm -f *.o $(TARGET1) $(TARGET2) logfile.txt
+	/bin/rm -f *.o $(TARGET1) $(TARGET2) logfile.txt msgq.txt
 	../memclean.sh

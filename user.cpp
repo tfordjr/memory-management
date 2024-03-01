@@ -40,7 +40,7 @@ int main(int argc, char** argv) {
     }                 
 
     msgbuffer buf;   // init msg buffer
-	buf.address = getppid();
+	buf.address = getpid();
 	int msqid = 0;
 	key_t key;	
 	if ((key = ftok("msgq.txt", 1)) == -1) {   // get a key for our message queue

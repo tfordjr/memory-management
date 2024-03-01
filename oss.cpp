@@ -38,8 +38,8 @@ Clock* shm_clock;  // Declare global shm clock
 key_t key = ftok("/tmp", 35);             
 int shmtid = shmget(key, sizeof(Clock), IPC_CREAT | 0666);    // init shm clock
 std::ofstream outputFile;   // init file object
+int msqid;           // MSGQID GLOBAL FOR MSGQ CLEANUP
  // Doing it up here because shmtid is needed to delete shm, needed for timeout/exit signal
-
 
 int main(int argc, char** argv){
     int option, numChildren = 1, simultaneous = 1, time_limit = 2, launch_interval = 100;      
@@ -67,16 +67,13 @@ int main(int argc, char** argv){
         }
 	}   // getopt loop completed here
 
-    std::signal(SIGALRM, timeout_handler);  // signal handlers setup
+    std::signal(SIGALRM, timeout_handler);  // init signal handlers 
     std::signal(SIGINT, ctrl_c_handler);
     alarm(60);   // timeout timer
           
-    init_process_table(processTable); // init local process table
-    // Clock* shm_clock;                             // declare clock locally
-    // key_t key = ftok("/tmp", 35);             
-    // int shmtid = shmget(key, sizeof(Clock), IPC_CREAT | 0666);    // init shm clock
-    shm_clock = (Clock*)shmat(shmtid, NULL, 0);
-    shm_clock->secs = 0;   // init clock to 00:00
+    init_process_table(processTable);      // init local process table
+    shm_clock = (Clock*)shmat(shmtid, NULL, 0);    // attatch to global clock
+    shm_clock->secs = 0;                        // init clock to 00:00
     shm_clock->nanos = 0;         
     
     outputFile.open(logfile); // This will create or overwrite the file "example.txt"    
@@ -84,32 +81,57 @@ int main(int argc, char** argv){
         std::cerr << "Error: logfile didn't open" << std::endl;
         return 1; // Exit with error
     }
-
-    //  INITIALIZE MESSAGE QUEUE
+    
+    msgbuffer buf;     //  INITIALIZE MESSAGE QUEUE	  (MSQID MOVED TO GLOBAL)
+	key_t key;
+	system("touch msgq.txt");
+	if ((key = ftok("msgq.txt", 1)) == -1) {   // get a key for our message queue
+		perror("ftok");
+		exit(1);
+	}	
+	if ((msqid = msgget(key, PERMS | IPC_CREAT)) == -1) {  // create our message queue
+		perror("msgget in parent");
+		exit(1);
+	}
+	printf("Message queue set up by OSS\n");
 
                         //  ---------  MAIN LOOP  ---------   
     while(numChildren > 0 || !process_table_empty(processTable, simultaneous)){ 
         increment(shm_clock, running_processes(processTable, simultaneous));
         print_process_table(processTable, simultaneous, shm_clock->secs, shm_clock->nanos, outputFile);        
       
-        pid_t pid = waitpid(-1, nullptr, WNOHANG);  // non-blocking wait call for terminated child process
-        if(pid != 0){     // if child has been terminated
-            update_process_table_of_terminated_child(processTable, pid);  // clear spot in pcb
-            pid = 0;
-        }
+        // pid_t pid = waitpid(-1, nullptr, WNOHANG);  // non-blocking wait call for terminated child process
+        // if(pid != 0){     // if child has been terminated
+        //     update_process_table_of_terminated_child(processTable, pid);  // clear spot in pcb
+        //     pid = 0;
+        // }
 
-        // ^^^^ REMOVE WAIT CALL FOR CHILDREN I BELIEVE,
-        // REPLACE WITH THIS PSEUDOCODE
-        // msgsnd(send message to next child process); (definitely nonblocking)
-        // logfile << OSS: Sending message to worker 7 PID 528 at time 1:3000000
-        
-        // msgrcv(message back from child process); (Surely nonblocking) 
-        // logfile << OSS: Recieving message from worker 7 PID 528 at time 1;3000000
-        // logfile << OSS: Worker 7 PID 519 is planning to terminate.
+            // FOR EACH PROCESS IN PCB, SEND A MESSAGE AND WAIT TO HEAR BACK!!!!!
+        for (int i = 0; i < simultaneous; i++){
+            if (processTable[i].occupied == 1){
+                buf.address = processTable[i].pid;     // SEND MESSAGE TO CHILD
+                buf.msgCode = MSG_TYPE_RUNNING   // we will give it the pid we are sending to, so we know it received it
+                strcpy(buf.message, "Message to child\n");
+                if (msgsnd(msqid, &buf1, sizeof(msgbuffer)-sizeof(long), 0) == -1) {
+                    perror("msgsnd to child 1 failed\n");
+                    exit(1);
+                }
+                outputFile << "OSS: Sending message to worker " << i + 1 << " PID: " << buf.address << " at time " << shm_clock->secs << ":" << shm_clock->nanos << std::endl;
 
-        // MESSAGE RECEIVED FROM CHILD
-        // child has decided to terminate: update PCB, possibly launch new child
+                msgbuffer rcvbuf;     // BLOCKING WAIT TO RECEIVE MESSAGE FROM CHILD
+                if (msgrcv(msqid, &rcvbuf,sizeof(msgbuffer), getpid(),0) == -1) {
+                    perror("failed to receive message in parent\n");
+                    exit(1);
+                }	
+                printf("Parent %d received message code: %d msg: %s\n",getpid(), buf.msgCode, buf.message);
+                outputFile << "OSS: Receiving message from worker " << i + 1 << " PID: " << buf.address << " at time " << shm_clock->secs << ":" << shm_clock->nanos << std::endl;
 
+                if(rcvbuf.msgCode == MSG_TYPE_SUCCESS){     // if child has been terminated
+                    update_process_table_of_terminated_child(processTable, rcvbuf.address);
+                    outputFile << "OSS: Worker " << i + 1 << " PID: " << buf.address << " is planning to terminate" << std::endl;
+                }
+            }
+        }      
 
         if(numChildren > 0 && launch_interval_satisfied(launch_interval)  
         && process_table_vacancy(processTable, simultaneous)){ // child process launch check
@@ -129,6 +151,12 @@ int main(int argc, char** argv){
     if (shmctl(shmtid, IPC_RMID, NULL) == -1) 
         perror("Error: shmctl failed!!");
     kill_all_processes(processTable);
+
+    if (msgctl(msqid, IPC_RMID, NULL) == -1) {  // get rid of message queue
+		perror("msgctl to get rid of queue in parent failed");
+		exit(1);
+	}
+
     return 0;
 }
 
@@ -203,8 +231,14 @@ void timeout_handler(int signum) {
     kill_all_processes(processTable);
     outputFile.close();  // file object close
     shmdt(shm_clock);  // clock cleanup, detatch & delete shm
-    if (shmctl(shmtid, IPC_RMID, NULL) == -1) 
-        perror("Error: shmctl failed!!");   
+    if (shmctl(shmtid, IPC_RMID, NULL) == -1) {
+        perror("Error: shmctl failed!!");
+        exit(1);
+    }      
+    if (msgctl(msqid, IPC_RMID, NULL) == -1) {  // get rid of message queue
+		perror("msgctl to get rid of queue in parent failed");
+		exit(1);
+	}
     std::exit(EXIT_SUCCESS);
 }
 
@@ -214,7 +248,13 @@ void ctrl_c_handler(int signum) {
     kill_all_processes(processTable);
     outputFile.close();  // file object close
     shmdt(shm_clock);       // clock cleanup, detatch & delete shm
-    if (shmctl(shmtid, IPC_RMID, NULL) == -1) 
-        perror("Error: shmctl failed!!");    
+    if (shmctl(shmtid, IPC_RMID, NULL) == -1) {
+        perror("Error: shmctl failed!!");
+        exit(1);
+    }            
+    if (msgctl(msqid, IPC_RMID, NULL) == -1) {  // get rid of message queue
+		perror("msgctl to get rid of queue in parent failed");
+		exit(1);
+	}
     std::exit(EXIT_SUCCESS);
 }
