@@ -36,13 +36,13 @@ int process_table_vacancy(PCB processTable[], int simultaneous){
 }
 
 int running_processes(PCB processTable[], int simultaneous){
-    int numProcesses = 1;
+    int numProcesses = 0;
     for(int i = 0; i < simultaneous; i++){
         if (processTable[i].occupied == 1){
             numProcesses++;
         }
-    }
-    return numProcesses;
+    }      // returns no lower than 1 to prevent divide by 0 error in clock.h::increment()
+    return (numProcesses == 0) ? 1 : numProcesses;  
 }
 
 bool process_table_empty(PCB processTable[], int simultaneous){
