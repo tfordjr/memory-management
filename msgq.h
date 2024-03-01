@@ -14,8 +14,8 @@
 #include <sys/msg.h>
 #include <unistd.h>
 
-#define MSGQ_FILE_PATH "msgq.txt"
-#define MSGQ_PROJ_ID 1
+#define MSGQ_FILE_PATH "/var/tmp"
+#define MSGQ_PROJ_ID 55
 #define PERMS 0644
 
 typedef struct msgbuffer {   // Had to change names, I was getting confused
