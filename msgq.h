@@ -18,9 +18,9 @@
 #define MSGQ_PROJ_ID 65
 #define PERMS 0644
 
-typedef struct msgbuffer {   // Had to change names, I was getting confused
-	pid_t address;           // type pid_t again so that I avoid confusion
-	char message[100];
+typedef struct msgbuffer {
+	long mtype;
+    char message[100];
 	int msgCode;
 } msgbuffer;
 

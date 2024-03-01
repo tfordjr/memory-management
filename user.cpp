@@ -40,7 +40,7 @@ int main(int argc, char** argv) {
     }                 
 
     msgbuffer buf, rcvbuf;   // init msg buffer
-	buf.address = getpid();
+	buf.mtype = getpid();
 	int msgqid = 0;
 	key_t msgq_key;	
 	if ((msgq_key = ftok(MSGQ_FILE_PATH, MSGQ_PROJ_ID)) == -1) {   // get a key for our message queue
@@ -58,7 +58,7 @@ int main(int argc, char** argv) {
     bool done = false;
     while(!done){                 // Blocking msgrcv waiting for parent message
         iter++;
-        if ( msgrcv(msgqid, &rcvbuf, sizeof(msgbuffer), 0, 0) == -1) {  
+        if ( msgrcv(msgqid, &rcvbuf, sizeof(msgbuffer), getpid(), 0) == -1) {
             perror("failed to receive message from parent\n");
             exit(1);
         } // output message from parent	
@@ -75,7 +75,7 @@ int main(int argc, char** argv) {
             buf.msgCode = MSG_TYPE_RUNNING;
             strcpy(buf.message,"Still Running...\n");
         }      
-            // msgsnd(to parent saying if we are done or not);      
+            // msgsnd(to parent saying if we are done or not);
         if (msgsnd(msgqid, &buf, sizeof(msgbuffer), 0) == -1) {
             perror("msgsnd to parent failed\n");
             exit(1);

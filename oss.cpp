@@ -103,26 +103,26 @@ int main(int argc, char** argv){
             // FOR EACH PROCESS IN PCB, SEND A MESSAGE AND WAIT TO HEAR BACK!!!!!
         for (int i = 0; i < simultaneous; i++){
             if (processTable[i].occupied == 1){
-                buf.address = processTable[i].pid;     // SEND MESSAGE TO CHILD
+                buf.mtype = processTable[i].pid;     // SEND MESSAGE TO CHILD
                 buf.msgCode = MSG_TYPE_RUNNING;   // we will give it the pid we are sending to, so we know it received it
                 strcpy(buf.message, "Message to child\n");
                 if (msgsnd(msgqid, &buf, sizeof(msgbuffer), 0) == -1) {
                     perror("msgsnd to child 1 failed\n");
                     exit(1);
                 }
-                // outputFile << "OSS: Sending message to worker " << i + 1 << " PID: " << buf.address << " at time " << shm_clock->secs << ":" << shm_clock->nanos << std::endl;
+                // outputFile << "OSS: Sending message to worker " << i + 1 << " PID: " << buf.mtype << " at time " << shm_clock->secs << ":" << shm_clock->nanos << std::endl;
 
                 msgbuffer rcvbuf;     // BLOCKING WAIT TO RECEIVE MESSAGE FROM CHILD
-                if (msgrcv(msgqid, &rcvbuf, sizeof(msgbuffer), buf.address, 0) == -1) {
+                if (msgrcv(msgqid, &rcvbuf, sizeof(msgbuffer), buf.mtype, 0) == -1) {
                     perror("failed to receive message in parent\n");
                     exit(1);
                 }
                 // printf("Parent %d received message code: %d msg: %s\n",getpid(), buf.msgCode, buf.message);
-                // outputFile << "OSS: Receiving message from worker " << i + 1 << " PID: " << buf.address << " at time " << shm_clock->secs << ":" << shm_clock->nanos << std::endl;
+                // outputFile << "OSS: Receiving message from worker " << i + 1 << " PID: " << buf.mtype << " at time " << shm_clock->secs << ":" << shm_clock->nanos << std::endl;
 
                 if(rcvbuf.msgCode == MSG_TYPE_SUCCESS){     // if child has been terminated
-                    update_process_table_of_terminated_child(processTable, rcvbuf.address);
-                    // outputFile << "OSS: Worker " << i + 1 << " PID: " << buf.address << " is planning to terminate" << std::endl;
+                    update_process_table_of_terminated_child(processTable, rcvbuf.mtype);
+                    // outputFile << "OSS: Worker " << i + 1 << " PID: " << buf.mtype << " is planning to terminate" << std::endl;
                 }
             }
         }      
