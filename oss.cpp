@@ -18,6 +18,7 @@
 #include <sys/mman.h>
 #include <random>
 #include <chrono>
+#include <fstream>
 #include "pcb.h"
 #include "clock.h"
 using namespace std;
@@ -39,7 +40,9 @@ int shmtid = shmget(key, sizeof(Clock), IPC_CREAT | 0666);    // init shm clock
 
 int main(int argc, char** argv){
     int option, numChildren = 1, simultaneous = 1, time_limit = 2, launch_interval = 100;  
-    while ( (option = getopt(argc, argv, "hn:s:t:i:")) != -1) {   // getopt implementation
+    std::ofstream outputFile;   // init file object
+    string logfile = "logfile.txt";
+    while ( (option = getopt(argc, argv, "hn:s:t:i:f:")) != -1) {   // getopt implementation
         switch(option) {
             case 'h':
                 help();
@@ -56,6 +59,9 @@ int main(int argc, char** argv){
             case 'i':
                 launch_interval = (1000000 * atoi(optarg));  // converting ms to nanos
                 break;            
+            case 'f':
+                logfile = optarg;
+                break;
         }
 	}   // getopt loop completed here
 
@@ -70,11 +76,17 @@ int main(int argc, char** argv){
     shm_clock = (Clock*)shmat(shmtid, NULL, 0);
     shm_clock->secs = 0;   // init clock to 00:00
     shm_clock->nanos = 0;         
+    
+    outputFile.open(logfile); // This will create or overwrite the file "example.txt"    
+    if (!outputFile.is_open()) {
+        std::cerr << "Error: logfile didn't open" << std::endl;
+        return 1; // Exit with error
+    }
 
                         //  ---------  MAIN LOOP  ---------   
     while(numChildren > 0 || !process_table_empty(processTable, simultaneous)){ 
         increment(shm_clock);
-        print_process_table(processTable, simultaneous, shm_clock->secs, shm_clock->nanos);        
+        print_process_table(processTable, simultaneous, shm_clock->secs, shm_clock->nanos, outputFile);        
 
         pid_t pid = waitpid(-1, nullptr, WNOHANG);  // non-blocking wait call for terminated child process
         if(pid != 0){     // if child has been terminated
@@ -92,6 +104,9 @@ int main(int argc, char** argv){
 
 	printf("Child processes have completed.\n");
     printf("Parent is now ending.\n");
+    outputFile << "Child processes have completed.\n";
+    outputFile << "Parent is now ending.\n";
+    outputFile.close();  // file object close
 
     shmdt(shm_clock);      // clock cleanup, detatch & delete shm
     if (shmctl(shmtid, IPC_RMID, NULL) == -1) 
@@ -160,7 +175,8 @@ void help(){   // Help message here
     printf("\t-n The argument following -n will be number of total processes to be run.\n");
     printf("\t-s The argument following -s will be max number of processes to be run simultaneously\n");
     printf("\t-t The argument following -t will be the max time limit for each user process created.\n");
-    printf("\t-i The argument following -i will be lauch interval between process launch in milliseconds.\n");
+    printf("\t-i The argument following -i will be launch interval between process launch in milliseconds.\n");
+    printf("\t-i The argument following -f will be the logfile name (please include file extention)\n");
     printf("\t args will default to appropriate values if not provided.\n");
 }
 

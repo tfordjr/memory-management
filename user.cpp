@@ -41,16 +41,22 @@ int main(int argc, char** argv) {
         // starting message
     printf("USER PID: %d  PPID: %d  SysClockS: %d  SysClockNano: %d  TermTimeS: %d  TermTimeNano: %d\n--Just Starting\n", getpid(), getppid(), shm_clock->secs, shm_clock->nanos, end_secs, end_nanos); 
 
+    int iter = 1;
     bool done = false;
-    while(!done){                        
-        if (shm_clock->secs > recent_secs){  // if seconds changed, print update msg
-            printf("USER PID: %d  PPID: %d  SysClockS: %d  SysClockNano: %d  TermTimeS: %d  TermTimeNano: %d\n--%d seconds have passed since starting\n", getpid(), getppid(), shm_clock->secs, shm_clock->nanos, end_secs, end_nanos, (shm_clock->secs - start_secs));
-        }
+    while(!done){
+
+        // msgrcv(from oss);  THIS MUST MEAN BLOCKING WAIT!
+        // PRINT UPDATE MESSAGE EVERY LOOP! 
+        // printf("USER PID: %d  PPID: %d  SysClockS: %d  SysClockNano: %d  TermTimeS: %d  TermTimeNano: %d\n--%d iteration(s) have passed since starting\n", getpid(), getppid(), shm_clock->secs, shm_clock->nanos, end_secs, end_nanos, iter);
+        
         if(shm_clock->secs > end_secs || shm_clock->secs == end_secs && shm_clock->nanos > end_nanos){  // check if end time has elapsed, if so, terminate
             printf("USER PID: %d  PPID: %d  SysClockS: %d  SysClockNano: %d  TermTimeS: %d  TermTimeNano: %d\n--Terminating\n", getpid(), getppid(), shm_clock->secs, shm_clock->nanos, end_secs, end_nanos);
             done = true;
         }        
         recent_secs = shm_clock->secs; 
+        iter++;
+        
+        // msgsnd(to oss saying if we are done or not);        
     }
     shmdt(shm_clock);
     return EXIT_SUCCESS;     

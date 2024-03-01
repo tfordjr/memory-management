@@ -42,7 +42,7 @@ bool process_table_empty(PCB processTable[], int simultaneous){
     return 1;
 }
 
-void print_process_table(PCB processTable[], int simultaneous, int secs, int nanos){
+void print_process_table(PCB processTable[], int simultaneous, int secs, int nanos, ofstream& file){
     static int next_print_secs = 0;  // static ints used to keep track of each 
     static int next_print_nanos = 0;   // process table print to be done
 
@@ -50,6 +50,7 @@ void print_process_table(PCB processTable[], int simultaneous, int secs, int nan
         printf("OSS PID: %d  SysClockS: %d  SysClockNano: %d  \nProcess Table:\nEntry\tOccupied  PID\tStartS\tStartN\n", getpid(), secs, nanos);
         for(int i = 0; i < simultaneous; i++){
             printf("%d\t%d\t%d\t%d\t%d\n", (i + 1), processTable[i].occupied, processTable[i].pid, processTable[i].startSecs, processTable[i].startNanos);
+            file << (i + 1) << "\t" << processTable[i].occupied << "\t" << processTable[i].pid << "\t" << processTable[i].startSecs << "\t" << processTable[i].startNanos << std::endl;
         }
         next_print_nanos = next_print_nanos + 500000000;
         if (next_print_nanos >= 1000000000){   // if over 1 billion nanos, add 1 second, sub 1 bil nanos
