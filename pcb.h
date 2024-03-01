@@ -36,7 +36,7 @@ int process_table_vacancy(PCB processTable[], int simultaneous){
 }
 
 int running_processes(PCB processTable[], int simultaneous){
-    int numProcesses = 0;
+    int numProcesses = 1;
     for(int i = 0; i < simultaneous; i++){
         if (processTable[i].occupied == 1){
             numProcesses++;
