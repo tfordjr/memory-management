@@ -1,8 +1,8 @@
 # CS4760-001SS - Terry Ford Jr. - Project 3 Message Queues - 02/29/2024
 # https://github.com/tfordjr/message-queues.git
 
-CC	= g++ -g3
-CFLAGS  = -g3
+CC	= g++ -g3 -std=c++11
+CFLAGS  = -g3 -std=c++11
 TARGET1 = user
 TARGET2 = oss 
 
