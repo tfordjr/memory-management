@@ -44,7 +44,7 @@ bool process_table_empty(PCB processTable[], int simultaneous){
     return 1;
 }
 
-void print_process_table(PCB processTable[], int simultaneous, int secs, int nanos, ofstream& outputFile){
+void print_process_table(PCB processTable[], int simultaneous, int secs, int nanos, std::ostream& outputFile){
     static int next_print_secs = 0;  // static ints used to keep track of each 
     static int next_print_nanos = 0;   // process table print to be done
 
