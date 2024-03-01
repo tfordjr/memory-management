@@ -21,6 +21,7 @@
 #include <fstream>
 #include "pcb.h"
 #include "clock.h"
+#include "msgq.h"
 using namespace std;
 
 void launch_child(PCB[], int, int);

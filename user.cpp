@@ -17,17 +17,8 @@
 #include <sys/mman.h>
 #include <errno.h>
 #include "clock.h"
+#include "msgq.h"
 using namespace std;
-
-#define PERMS 0644
-typedef struct msgbuffer {   // Had to change names, I was getting confused
-	pid_t address;           // type pid_t again so that I avoid confusion
-	char message[100];
-	int msgCode;
-} msgbuffer;
-
-#define MSG_TYPE_SUCCESS 1  // I'm getting confused, so I'm implementing these 
-#define MSG_TYPE_RUNNING 0  
 
 int main(int argc, char** argv) {
     Clock* shm_clock;           // init shm clock
