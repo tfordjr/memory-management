@@ -58,7 +58,7 @@ int main(int argc, char** argv) {
     bool done = false;
     while(!done){                 // Blocking msgrcv waiting for parent message
         iter++;
-        if ( msgrcv(msgqid, &rcvbuf, sizeof(msgbuffer), getpid(), 0) == -1) {  
+        if ( msgrcv(msgqid, &rcvbuf, sizeof(msgbuffer), 0, 0) == -1) {  
             perror("failed to receive message from parent\n");
             exit(1);
         } // output message from parent	
