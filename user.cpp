@@ -28,9 +28,7 @@ int main(int argc, char** argv) {
     int nanos = atoi(argv[2]);   // Arg 2 will be nanos
 
     int start_secs = shm_clock->secs;  // start time is current time at the start
-    int start_nanos = shm_clock->nanos;
-
-    int recent_secs = shm_clock->secs;  // recent time is used for update msg when time changes
+    int start_nanos = shm_clock->nanos;   
     
     int end_secs = start_secs + secs;   // end time is starting time plus time told to wait
     int end_nanos = start_nanos + nanos;  
@@ -52,14 +50,13 @@ int main(int argc, char** argv) {
         // printf("USER PID: %d  PPID: %d  SysClockS: %d  SysClockNano: %d  TermTimeS: %d  TermTimeNano: %d\n--%d iteration(s) have passed since starting\n", getpid(), getppid(), shm_clock->secs, shm_clock->nanos, end_secs, end_nanos, iter);
         
         if(shm_clock->secs > end_secs || shm_clock->secs == end_secs && shm_clock->nanos > end_nanos){  // check if end time has elapsed, if so, terminate
-            printf("USER PID: %d  PPID: %d  SysClockS: %d  SysClockNano: %d  TermTimeS: %d  TermTimeNano: %d\n--Terminating\n", getpid(), getppid(), shm_clock->secs, shm_clock->nanos, end_secs, end_nanos);
+            printf("USER PID: %d  PPID: %d  SysClockS: %d  SysClockNano: %d  TermTimeS: %d  TermTimeNano: %d\n--Terminating after sending message back to oss after %d iterations.\n", getpid(), getppid(), shm_clock->secs, shm_clock->nanos, end_secs, end_nanos, iter);
             done = true;
         }        
-        recent_secs = shm_clock->secs; 
         iter++;
         
         // msgsnd(to oss saying if we are done or not);        
     }
     shmdt(shm_clock);
-    return EXIT_SUCCESS;     
+    return EXIT_SUCCESS; 
 }
