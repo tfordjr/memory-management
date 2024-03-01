@@ -62,7 +62,7 @@ int main(int argc, char** argv) {
             perror("failed to receive message from parent\n");
             exit(1);
         } // output message from parent	
-        // printf("Child %d received message code: %d msg: %s\n",getpid(), rcvbuf.msgCode, rcvbuf.message);
+        printf("Child %d received message code: %d msg: %s\n",getpid(), rcvbuf.msgCode, rcvbuf.message);
 
             // check if end time has elapsed, if so, terminate     
         if(shm_clock->secs > end_secs || shm_clock->secs == end_secs && shm_clock->nanos > end_nanos){ 
