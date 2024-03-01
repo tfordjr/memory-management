@@ -100,7 +100,11 @@ int main(int argc, char** argv){
         // ^^^^ REMOVE WAIT CALL FOR CHILDREN I BELIEVE,
         // REPLACE WITH THIS PSEUDOCODE
         // msgsnd(send message to next child process); (definitely nonblocking)
+        // logfile << OSS: Sending message to worker 7 PID 528 at time 1:3000000
+        
         // msgrcv(message back from child process); (Surely nonblocking) 
+        // logfile << OSS: Recieving message from worker 7 PID 528 at time 1;3000000
+        // logfile << OSS: Worker 7 PID 519 is planning to terminate.
 
         // MESSAGE RECEIVED FROM CHILD
         // child has decided to terminate: update PCB, possibly launch new child
