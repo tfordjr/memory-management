@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <signal.h>
 #include <fstream>
+#include <string>
 
 struct PCB {
     int occupied;     // either true or false
