@@ -13,12 +13,22 @@ oss.cpp: processes args and handles child forking with fork_and_wait function.
 user.cpp: user executable takes one arg for number of iterations. prints and sleeps. 
 pcb.h: contains pcb struct and many related functions for process table utility.
 clock.h: logical clock struct.
+msgq.h houses msgbuffer struct, running states
 makefile: creates oss and user executables, oss executes user executable to perform work.
 readme: explains project
 
-Concerns: 
+Concerns/Points of confusion: 
 
 
 Known Problems or Bugs: 
     clock.h:13 - incrementing clock by 250 ns works perfectly, but incrementing by
         250ms/numProcesses leads to processes remaining on the process table for too long.
+    I ensured msgrcv 4th arg is set to correct mtype pid so that processes are reliably
+        using the message queue and the correct consumer is opening the messages as opposed
+        to 0 for the 4th arg which leads to every child opening the first message
+        they see (other child's msgs intended for parent), which heavily increased the rate
+        at which child processes are closing when intended, but still even after this fix
+        the children are staying in the pcb too long! Past the point by which they should
+        be leaving. I believe this problem started when I changed the rate of increment()
+        from 250ns to 250ms/numRunningProcesses, so I'm not sure how I can maintain this 
+        change while removing this error.
