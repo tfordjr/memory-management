@@ -1,5 +1,5 @@
-// CS4760-001SS - Terry Ford Jr. - Project 2 Process Tables - 02/12/2024
-// https://github.com/tfordjr/process-tables
+// CS4760-001SS - Terry Ford Jr. - Project 3 Message Queues - 02/29/2024
+// https://github.com/tfordjr/message-queues.git
 
 #include <unistd.h>
 #include <stdio.h>
