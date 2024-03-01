@@ -112,7 +112,7 @@ int main(int argc, char** argv){
                 buf.address = processTable[i].pid;     // SEND MESSAGE TO CHILD
                 buf.msgCode = MSG_TYPE_RUNNING   // we will give it the pid we are sending to, so we know it received it
                 strcpy(buf.message, "Message to child\n");
-                if (msgsnd(msqid, &buf1, sizeof(msgbuffer)-sizeof(long), 0) == -1) {
+                if (msgsnd(msqid, &buf, sizeof(msgbuffer)-sizeof(long), 0) == -1) {
                     perror("msgsnd to child 1 failed\n");
                     exit(1);
                 }
