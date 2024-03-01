@@ -1,7 +1,7 @@
 # CS4760-001SS - Terry Ford Jr. - Project 3 Message Queues - 02/29/2024
 # https://github.com/tfordjr/message-queues.git
 
-CC	= g++ -g3 -std=c++11
+CC	= g++ 
 CFLAGS  = -g3 -std=c++11
 TARGET1 = user
 TARGET2 = oss 
@@ -17,7 +17,7 @@ $(TARGET1):	$(OBJS1)
 $(TARGET2):	$(OBJS2)
 	$(CC) -o $(TARGET2) $(OBJS2)
 
-child.o:	child.cpp
+user.o:	user.cpp
 	$(CC) $(CFLAGS) -c user.cpp 
 
 parent.o:	parent.cpp
