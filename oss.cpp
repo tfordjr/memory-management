@@ -35,8 +35,8 @@ volatile sig_atomic_t term = 0;  // signal handling global
 struct PCB processTable[20]; // Init Process Table Array of PCB structs (not shm)
 
 Clock* shm_clock;  // Declare global shm clock
-key_t key = ftok("/tmp", 35);             
-int shmtid = shmget(key, sizeof(Clock), IPC_CREAT | 0666);    // init shm clock
+key_t clock_key = ftok("/tmp", 35);             
+int shmtid = shmget(clock_key, sizeof(Clock), IPC_CREAT | 0666);    // init shm clock
 std::ofstream outputFile;   // init file object
 int msqid;           // MSGQID GLOBAL FOR MSGQ CLEANUP
  // Doing it up here because shmtid is needed to delete shm, needed for timeout/exit signal
@@ -83,13 +83,13 @@ int main(int argc, char** argv){
     }
     
     msgbuffer buf;     //  INITIALIZE MESSAGE QUEUE	  (MSQID MOVED TO GLOBAL)
-	key_t key;
+	key_t msgq_key;
 	system("touch msgq.txt");
-	if ((key = ftok("msgq.txt", 1)) == -1) {   // get a key for our message queue
+	if ((msgq_key = ftok("msgq.txt", 1)) == -1) {   // get a key for our message queue
 		perror("ftok");
 		exit(1);
 	}	
-	if ((msqid = msgget(key, PERMS | IPC_CREAT)) == -1) {  // create our message queue
+	if ((msqid = msgget(msgq_key, PERMS | IPC_CREAT)) == -1) {  // create our message queue
 		perror("msgget in parent");
 		exit(1);
 	}

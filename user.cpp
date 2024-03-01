@@ -22,8 +22,8 @@ using namespace std;
 
 int main(int argc, char** argv) {
     Clock* shm_clock;           // init shm clock
-	key_t key = ftok("/tmp", 35);
-	int shmtid = shmget(key, sizeof(Clock), 0666);
+	key_t clock_key = ftok("/tmp", 35);
+	int shmtid = shmget(clock_key, sizeof(Clock), 0666);
 	shm_clock = (Clock*)shmat(shmtid, NULL, 0);
 
     int start_secs = shm_clock->secs;  // start time is current time at the start
@@ -42,12 +42,12 @@ int main(int argc, char** argv) {
     msgbuffer buf;   // init msg buffer
 	buf.address = getpid();
 	int msqid = 0;
-	key_t key;	
-	if ((key = ftok("msgq.txt", 1)) == -1) {   // get a key for our message queue
+	key_t msgq_key;	
+	if ((msgq_key = ftok("msgq.txt", 1)) == -1) {   // get a key for our message queue
 		perror("ftok");
 		exit(1);
 	}	
-	if ((msqid = msgget(key, PERMS)) == -1) {  // create our message queue
+	if ((msqid = msgget(msgq_key, PERMS)) == -1) {  // create our message queue
 		perror("msgget in child");
 		exit(1);
 	}
