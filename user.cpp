@@ -19,6 +19,16 @@
 #include "clock.h"
 using namespace std;
 
+#define PERMS 0644
+typedef struct msgbuffer {   // Had to change names, I was getting confused
+	pid_t address;           // type pid_t again so that I avoid confusion
+	char message[100];
+	int msgCode;
+} msgbuffer;
+
+#define MSG_TYPE_SUCCESS 1  // I'm getting confused, so I'm implementing these 
+#define MSG_TYPE_RUNNING 0  
+
 int main(int argc, char** argv) {
     Clock* shm_clock;           // init shm clock
 	key_t key = ftok("/tmp", 35);
@@ -36,28 +46,51 @@ int main(int argc, char** argv) {
     if (end_nanos >= 1000000000){   // if over 1 billion nanos, add 1 second, sub 1 bil nanos
         end_nanos = end_nanos - 1000000000;
         end_secs++;
-    }          
-        // starting message
+    }                 
+
+    msgbuffer buf;   // init msg buffer
+	buf.address = getppid();
+	int msqid = 0;
+	key_t key;	
+	if ((key = ftok("msgq.txt", 1)) == -1) {   // get a key for our message queue
+		perror("ftok");
+		exit(1);
+	}	
+	if ((msqid = msgget(key, PERMS)) == -1) {  // create our message queue
+		perror("msgget in child");
+		exit(1);
+	}
+	printf("Child %d has access to the queue\n",getpid());   // starting messages    
     printf("USER PID: %d  PPID: %d  SysClockS: %d  SysClockNano: %d  TermTimeS: %d  TermTimeNano: %d\n--Just Starting\n", getpid(), getppid(), shm_clock->secs, shm_clock->nanos, end_secs, end_nanos); 
 
-    // INITIALIZE/CONNECT TO MESSAGE QUEUE
-
-    int iter = 1;
+    int iter = 0;
     bool done = false;
-    while(!done){
+    while(!done){                 // Blocking msgrcv waiting for parent message
+        iter++;
+        if ( msgrcv(msqid, &buf, sizeof(msgbuffer), getpid(), 0) == -1) {  
+            perror("failed to receive message from parent\n");
+            exit(1);
+        } // output message from parent	
+        printf("Child %d received message code: %d msg: %s\n",getpid(), buf.msgCode, buf.message);
 
-        // msgrcv(from oss);  THIS MUST MEAN BLOCKING WAIT!
-        // PRINT UPDATE MESSAGE EVERY LOOP! 
-        // printf("USER PID: %d  PPID: %d  SysClockS: %d  SysClockNano: %d  TermTimeS: %d  TermTimeNano: %d\n--%d iteration(s) have passed since starting\n", getpid(), getppid(), shm_clock->secs, shm_clock->nanos, end_secs, end_nanos, iter);
-        
-        if(shm_clock->secs > end_secs || shm_clock->secs == end_secs && shm_clock->nanos > end_nanos){  // check if end time has elapsed, if so, terminate
+            // check if end time has elapsed, if so, terminate     
+        if(shm_clock->secs > end_secs || shm_clock->secs == end_secs && shm_clock->nanos > end_nanos){ 
             printf("USER PID: %d  PPID: %d  SysClockS: %d  SysClockNano: %d  TermTimeS: %d  TermTimeNano: %d\n--Terminating after sending message back to oss after %d iterations.\n", getpid(), getppid(), shm_clock->secs, shm_clock->nanos, end_secs, end_nanos, iter);
             done = true;
-        }        
-        iter++;
-        
-        // msgsnd(to oss saying if we are done or not);        
-    }
+            buf.msgCode = MSG_TYPE_SUCCESS;    // 
+            strcpy(buf.message,"Completed Successfully, now terminating...\n");
+        } else {    // else program continues running
+            printf("USER PID: %d  PPID: %d  SysClockS: %d  SysClockNano: %d  TermTimeS: %d  TermTimeNano: %d\n--%d iteration(s) have passed since starting\n", getpid(), getppid(), shm_clock->secs, shm_clock->nanos, end_secs, end_nanos, iter);
+            buf.msgCode = MSG_TYPE_RUNNING;
+            strcpy(buf.message,"Still Running...\n");
+        }      
+            // msgsnd(to parent saying if we are done or not);      
+        if (msgsnd(msqid,&buf,sizeof(msgbuffer)-sizeof(long),0) == -1) {
+            perror("msgsnd to parent failed\n");
+            exit(1);
+        }
+    }    
     shmdt(shm_clock);
+    printf("Child %d is ending\n",getpid());
     return EXIT_SUCCESS; 
 }
