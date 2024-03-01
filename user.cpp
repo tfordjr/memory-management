@@ -15,6 +15,7 @@
 #include <sys/wait.h>
 #include <sys/msg.h>
 #include <sys/mman.h>
+#include <errno.h>
 #include "clock.h"
 using namespace std;
 
@@ -23,12 +24,12 @@ int main(int argc, char** argv) {
 	key_t key = ftok("/tmp", 35);
 	int shmtid = shmget(key, sizeof(Clock), 0666);
 	shm_clock = (Clock*)shmat(shmtid, NULL, 0);
-  
-    int secs = atoi(argv[1]);     // Arg 1 will be secs, secs given from start to terminate
-    int nanos = atoi(argv[2]);   // Arg 2 will be nanos
 
     int start_secs = shm_clock->secs;  // start time is current time at the start
-    int start_nanos = shm_clock->nanos;   
+    int start_nanos = shm_clock->nanos; // Is this our issue leaving child in sys too long?
+  
+    int secs = atoi(argv[1]);     // Arg 1 will be secs, secs given from start to terminate
+    int nanos = atoi(argv[2]);   // Arg 2 will be nanos  
     
     int end_secs = start_secs + secs;   // end time is starting time plus time told to wait
     int end_nanos = start_nanos + nanos;  
