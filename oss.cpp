@@ -102,7 +102,9 @@ int main(int argc, char** argv){
         i = next_occupied_process(processTable, simultaneous, i);
         print_process_table(processTable, simultaneous, shm_clock->secs, shm_clock->nanos, outputFile);        
         
-        if (!process_table_empty(processTable, simultaneous) || (i+1)){  // comm with next child, parameter same as saying if pcb not empty but also prevents oss attempt to comm with child in slot i=-1 error
+        if (!process_table_empty(processTable, simultaneous)){  // comm with next child
+            if(i == -1)  // prevents oss attempt to comm with child in slot i=-1 error
+                break;
             buf.mtype = processTable[i].pid;     // SEND MESSAGE TO CHILD
             buf.msgCode = MSG_TYPE_RUNNING;   // we will give it the pid we are sending to, so we know it received it
             strcpy(buf.message, "Message to child\n");
