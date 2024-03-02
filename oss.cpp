@@ -102,7 +102,7 @@ int main(int argc, char** argv){
         i = next_occupied_process(processTable, simultaneous, i);
         print_process_table(processTable, simultaneous, shm_clock->secs, shm_clock->nanos, outputFile);        
              
-        if (!process_table_empty(processTable, simultaneous)){ 
+        if (!process_table_empty(processTable, simultaneous)){  // comm with next child
             buf.mtype = processTable[i].pid;     // SEND MESSAGE TO CHILD
             buf.msgCode = MSG_TYPE_RUNNING;   // we will give it the pid we are sending to, so we know it received it
             strcpy(buf.message, "Message to child\n");
@@ -120,13 +120,12 @@ int main(int argc, char** argv){
             printf("Parent %d received message code: %d msg: %s\n",getpid(), buf.msgCode, buf.message);
             outputFile << "OSS: Receiving message from worker " << i + 1 << " PID: " << buf.mtype << " at time " << shm_clock->secs << ":" << shm_clock->nanos << std::endl;
 
-            if(rcvbuf.msgCode == MSG_TYPE_SUCCESS){     // if child has been terminated                
+            if(rcvbuf.msgCode == MSG_TYPE_SUCCESS){     // if child is terminating                
                 outputFile << "OSS: Worker " << i + 1 << " PID: " << buf.mtype << " is planning to terminate" << std::endl;
                 wait(0);  // give terminating process time to clear out of system
                 update_process_table_of_terminated_child(processTable, rcvbuf.mtype);
             }
-        }
-        // }      
+        }    
 
         if(numChildren > 0 && launch_interval_satisfied(launch_interval)  
         && process_table_vacancy(processTable, simultaneous)){ // child process launch check
