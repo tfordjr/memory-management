@@ -99,6 +99,7 @@ int main(int argc, char** argv){
                         //  ---------  MAIN LOOP  ---------   
     while(numChildren > 0 || !process_table_empty(processTable, simultaneous)){ 
         increment(shm_clock, running_processes(processTable, simultaneous));
+        i = next_occupied_process(processTable, simultaneous, i);
         print_process_table(processTable, simultaneous, shm_clock->secs, shm_clock->nanos, outputFile);        
              
         if (!process_table_empty(processTable, simultaneous)){ 
@@ -119,9 +120,10 @@ int main(int argc, char** argv){
             printf("Parent %d received message code: %d msg: %s\n",getpid(), buf.msgCode, buf.message);
             outputFile << "OSS: Receiving message from worker " << i + 1 << " PID: " << buf.mtype << " at time " << shm_clock->secs << ":" << shm_clock->nanos << std::endl;
 
-            if(rcvbuf.msgCode == MSG_TYPE_SUCCESS){     // if child has been terminated
-                update_process_table_of_terminated_child(processTable, rcvbuf.mtype);
+            if(rcvbuf.msgCode == MSG_TYPE_SUCCESS){     // if child has been terminated                
                 outputFile << "OSS: Worker " << i + 1 << " PID: " << buf.mtype << " is planning to terminate" << std::endl;
+                std::wait(0);  // give terminating process time to clear out of system
+                update_process_table_of_terminated_child(processTable, rcvbuf.mtype);
             }
         }
         // }      
@@ -131,9 +133,7 @@ int main(int argc, char** argv){
             cout << "Launching Child Process..." << endl;
             numChildren--;
             launch_child(processTable, time_limit, simultaneous);
-        }
-        
-        i = next_occupied_process(processTable, simultaneous, i);
+        }     
     }                   // --------- END OF MAIN LOOP ---------  
 
 	printf("Child processes have completed.\n");
