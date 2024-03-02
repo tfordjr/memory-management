@@ -95,44 +95,45 @@ int main(int argc, char** argv){
 	}
 	printf("Message queue set up by OSS\n");
 
+    int i = 0;  // will hold location of next process on PCB
                         //  ---------  MAIN LOOP  ---------   
     while(numChildren > 0 || !process_table_empty(processTable, simultaneous)){ 
         increment(shm_clock, running_processes(processTable, simultaneous));
         print_process_table(processTable, simultaneous, shm_clock->secs, shm_clock->nanos, outputFile);        
-      
-            // FOR EACH PROCESS IN PCB, SEND A MESSAGE AND WAIT TO HEAR BACK!!!!!
-        for (int i = 0; i < simultaneous; i++){
-            if (processTable[i].occupied == 1){
-                buf.mtype = processTable[i].pid;     // SEND MESSAGE TO CHILD
-                buf.msgCode = MSG_TYPE_RUNNING;   // we will give it the pid we are sending to, so we know it received it
-                strcpy(buf.message, "Message to child\n");
-                if (msgsnd(msgqid, &buf, sizeof(msgbuffer), 0) == -1) {
-                    perror("msgsnd to child 1 failed\n");
-                    exit(1);
-                }
-                // outputFile << "OSS: Sending message to worker " << i + 1 << " PID: " << buf.mtype << " at time " << shm_clock->secs << ":" << shm_clock->nanos << std::endl;
-
-                msgbuffer rcvbuf;     // BLOCKING WAIT TO RECEIVE MESSAGE FROM CHILD
-                if (msgrcv(msgqid, &rcvbuf, sizeof(msgbuffer), buf.mtype, 0) == -1) {
-                    perror("failed to receive message in parent\n");
-                    exit(1);
-                }
-                // printf("Parent %d received message code: %d msg: %s\n",getpid(), buf.msgCode, buf.message);
-                // outputFile << "OSS: Receiving message from worker " << i + 1 << " PID: " << buf.mtype << " at time " << shm_clock->secs << ":" << shm_clock->nanos << std::endl;
-
-                if(rcvbuf.msgCode == MSG_TYPE_SUCCESS){     // if child has been terminated
-                    update_process_table_of_terminated_child(processTable, rcvbuf.mtype);
-                    // outputFile << "OSS: Worker " << i + 1 << " PID: " << buf.mtype << " is planning to terminate" << std::endl;
-                }
+             
+        if (!process_table_empty(processTable, simultaneous)){ 
+            buf.mtype = processTable[i].pid;     // SEND MESSAGE TO CHILD
+            buf.msgCode = MSG_TYPE_RUNNING;   // we will give it the pid we are sending to, so we know it received it
+            strcpy(buf.message, "Message to child\n");
+            if (msgsnd(msgqid, &buf, sizeof(msgbuffer), 0) == -1) {
+                perror("msgsnd to child 1 failed\n");
+                exit(1);
             }
-        }      
+            outputFile << "OSS: Sending message to worker " << i + 1 << " PID: " << buf.mtype << " at time " << shm_clock->secs << ":" << shm_clock->nanos << std::endl;
+
+            msgbuffer rcvbuf;     // BLOCKING WAIT TO RECEIVE MESSAGE FROM CHILD
+            if (msgrcv(msgqid, &rcvbuf, sizeof(msgbuffer), buf.mtype, 0) == -1) {
+                perror("failed to receive message in parent\n");
+                exit(1);
+            }
+            printf("Parent %d received message code: %d msg: %s\n",getpid(), buf.msgCode, buf.message);
+            outputFile << "OSS: Receiving message from worker " << i + 1 << " PID: " << buf.mtype << " at time " << shm_clock->secs << ":" << shm_clock->nanos << std::endl;
+
+            if(rcvbuf.msgCode == MSG_TYPE_SUCCESS){     // if child has been terminated
+                update_process_table_of_terminated_child(processTable, rcvbuf.mtype);
+                outputFile << "OSS: Worker " << i + 1 << " PID: " << buf.mtype << " is planning to terminate" << std::endl;
+            }
+        }
+        // }      
 
         if(numChildren > 0 && launch_interval_satisfied(launch_interval)  
         && process_table_vacancy(processTable, simultaneous)){ // child process launch check
             cout << "Launching Child Process..." << endl;
             numChildren--;
             launch_child(processTable, time_limit, simultaneous);
-        }               
+        }
+        
+        i = next_occupied_process(processTable, simultaneous, i);
     }                   // --------- END OF MAIN LOOP ---------  
 
 	printf("Child processes have completed.\n");
