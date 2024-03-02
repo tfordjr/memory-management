@@ -107,7 +107,7 @@ int main(int argc, char** argv){
             buf.msgCode = MSG_TYPE_RUNNING;   // we will give it the pid we are sending to, so we know it received it
             strcpy(buf.message, "Message to child\n");
             if (msgsnd(msgqid, &buf, sizeof(msgbuffer), 0) == -1) {
-                perror("msgsnd to child 1 failed\n");
+                perror(("msgsnd to child " + to_string(i + 1) + " failed\n").c_str());
                 exit(1);
             }
             outputFile << "OSS: Sending message to worker " << i + 1 << " PID: " << buf.mtype << " at time " << shm_clock->secs << ":" << shm_clock->nanos << std::endl;
