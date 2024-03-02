@@ -122,7 +122,7 @@ int main(int argc, char** argv){
 
             if(rcvbuf.msgCode == MSG_TYPE_SUCCESS){     // if child has been terminated                
                 outputFile << "OSS: Worker " << i + 1 << " PID: " << buf.mtype << " is planning to terminate" << std::endl;
-                std::wait(0);  // give terminating process time to clear out of system
+                wait(0);  // give terminating process time to clear out of system
                 update_process_table_of_terminated_child(processTable, rcvbuf.mtype);
             }
         }
