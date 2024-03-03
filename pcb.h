@@ -92,19 +92,6 @@ void kill_all_processes(PCB processTable[]){
         } 
     }
 }
-    // This function starts at input slot and checks all slots until it finds an occupied
-    // ex: input 3, max 5, check 3,4,0,1,2 if all unoccupied, return -1 else return occupied
-// int next_occupied_process(PCB processTable[], int simultaneous, int i){
-//     int count = (i >= simultaneous - 1) ? i = 0 : ++i;  // count equals spot after input on pcb
-//     do {
-//         if(processTable[count].occupied){ 
-//             return count;
-//         } else {     // // increments count unless count would be >= than simul 
-//             (count >= simultaneous - 1) ? count = 0 : ++count; 
-//         }
-//     } while (count != (i >= simultaneous - 1) ? i = 0 : ++i); // While count is not equal to the spot after input on pcb
-//     return -1;  // only returns -1 if process table is empty
-// }
 
 int next_occupied_process(PCB processTable[], int simultaneous, int i){
     if (process_table_empty(processTable, simultaneous)){
