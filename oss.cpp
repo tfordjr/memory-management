@@ -137,7 +137,7 @@ int main(int argc, char** argv){
         }     
     }                   // --------- END OF MAIN LOOP ---------  
 
-	printf("Child processes have completed.\n");
+	printf("Child processes have completed. (%d remaining)\n", numChildren);
     printf("Parent is now ending.\n");
     outputFile << "Child processes have completed.\n";
     outputFile << "Parent is now ending.\n";
