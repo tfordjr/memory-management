@@ -93,9 +93,10 @@ int main(int argc, char** argv){
 		perror("msgget in parent");
 		exit(1);
 	}
-	printf("Message queue set up by OSS\n");
+	cout << "Message queue set up by OSS\n";
+    outputFile << "Message queue set up by OSS\n";
 
-    int i = 0;  // will hold location of next process on PCB
+    int i = 0;  // will hold location of next process on PCB that oss will comm with each loop
                         //  ---------  MAIN LOOP  ---------   
     while(numChildren > 0 || !process_table_empty(processTable, simultaneous)){ 
         increment(shm_clock, running_processes(processTable, simultaneous));
@@ -103,13 +104,14 @@ int main(int argc, char** argv){
         print_process_table(processTable, simultaneous, shm_clock->secs, shm_clock->nanos, outputFile);        
         
         if (!process_table_empty(processTable, simultaneous) && i != -1){  // comm with next child            
-            buf.mtype = processTable[i].pid;     // SEND MESSAGE TO CHILD
+            buf.mtype = processTable[i].pid;     // SEND MESSAGE TO CHILD NONBLOCKING
             buf.msgCode = MSG_TYPE_RUNNING;   // we will give it the pid we are sending to, so we know it received it
             strcpy(buf.message, "Message to child\n");
             if (msgsnd(msgqid, &buf, sizeof(msgbuffer), 0) == -1) {
                 perror(("msgsnd to child " + to_string(i + 1) + " failed\n").c_str());
                 exit(1);
             }
+            cout << "OSS: Sending message to worker " << i + 1 << " PID: " << processTable[i].pid << " at time " << shm_clock->secs << ":" << shm_clock->nanos << std::endl;
             outputFile << "OSS: Sending message to worker " << i + 1 << " PID: " << processTable[i].pid << " at time " << shm_clock->secs << ":" << shm_clock->nanos << std::endl;
 
             msgbuffer rcvbuf;     // BLOCKING WAIT TO RECEIVE MESSAGE FROM CHILD
@@ -117,10 +119,11 @@ int main(int argc, char** argv){
                 perror("failed to receive message in parent\n");
                 exit(1);
             }
-            printf("Parent %d received message code: %d msg: %s\n", getpid(), buf.msgCode, buf.message);
-            outputFile << "OSS: Receiving message from worker " << i + 1 << " PID: " << processTable[i].pid << " at time " << shm_clock->secs << ":" << shm_clock->nanos << std::endl;
+            cout << "OSS: Receiving message code " << rcvbuf.msgCode << " from worker " << i + 1 << " PID: " << processTable[i].pid << " at time " << shm_clock->secs << ":" << shm_clock->nanos << std::endl;
+            outputFile << "OSS: Receiving message code " << rcvbuf.msgCode << " from worker " << i + 1 << " PID: " << processTable[i].pid << " at time " << shm_clock->secs << ":" << shm_clock->nanos << std::endl;
 
-            if(rcvbuf.msgCode == MSG_TYPE_SUCCESS){     // if child is terminating                
+            if(rcvbuf.msgCode == MSG_TYPE_SUCCESS){     // if child is terminating   
+                cout << "OSS: Worker " << i + 1 << " PID: " << processTable[i].pid << " is planning to terminate" << std::endl;             
                 outputFile << "OSS: Worker " << i + 1 << " PID: " << processTable[i].pid << " is planning to terminate" << std::endl;
                 wait(0);  // give terminating process time to clear out of system
                 update_process_table_of_terminated_child(processTable, rcvbuf.mtype);
@@ -130,14 +133,15 @@ int main(int argc, char** argv){
         if(numChildren > 0 && launch_interval_satisfied(launch_interval)  
         && process_table_vacancy(processTable, simultaneous)){ // child process launch check
             cout << "Launching Child Process..." << endl;
+            outputFile << "Launching Child Process..." << endl;
             numChildren--;
             launch_child(processTable, time_limit, simultaneous);
         }     
     }                   // --------- END OF MAIN LOOP ---------  
 
-	printf("Child processes have completed. (%d remaining)\n", numChildren);
-    printf("Parent is now ending.\n");
-    outputFile << "Child processes have completed.\n";
+	cout << "Child processes have completed. (" << numChildren << " remaining)\n";
+    cout << "Parent is now ending.\n";
+    outputFile << "Child processes have completed. (" << numChildren << " remaining)\n";
     outputFile << "Parent is now ending.\n";
     outputFile.close();  // file object close
 
@@ -221,6 +225,7 @@ void help(){   // Help message here
 
 void timeout_handler(int signum) {
     std::cout << "Timeout occurred. Cleaning up before exiting..." << std::endl;
+    outputFile << "Timeout occurred. Cleaning up before exiting..." << std::endl;
     term = 1;
     kill_all_processes(processTable);
     outputFile.close();  // file object close
@@ -239,6 +244,7 @@ void timeout_handler(int signum) {
 // Signal handler for Ctrl+C (SIGINT)
 void ctrl_c_handler(int signum) {
     std::cout << "Ctrl+C detected. Cleaning up before exiting..." << std::endl;
+    outputFile << "Ctrl+C detected. Cleaning up before exiting..." << std::endl;
     kill_all_processes(processTable);
     outputFile.close();  // file object close
     shmdt(shm_clock);       // clock cleanup, detatch & delete shm
