@@ -93,8 +93,8 @@ int main(int argc, char** argv){
 		perror("msgget in parent");
 		exit(1);
 	}
-	cout << "Message queue set up by OSS\n";
-    outputFile << "Message queue set up by OSS\n";
+	cout << "OSS: Message queue set up\n";
+    outputFile << "OSS: Message queue set up\n";
 
     int i = 0;  // will hold location of next process on PCB that oss will comm with each loop
                         //  ---------  MAIN LOOP  ---------   
@@ -132,17 +132,17 @@ int main(int argc, char** argv){
 
         if(numChildren > 0 && launch_interval_satisfied(launch_interval)  
         && process_table_vacancy(processTable, simultaneous)){ // child process launch check
-            cout << "Launching Child Process..." << endl;
-            outputFile << "Launching Child Process..." << endl;
+            cout << "OSS: Launching Child Process..." << endl;
+            outputFile << "OSS: Launching Child Process..." << endl;
             numChildren--;
             launch_child(processTable, time_limit, simultaneous);
         }     
     }                   // --------- END OF MAIN LOOP ---------  
 
-	cout << "Child processes have completed. (" << numChildren << " remaining)\n";
-    cout << "Parent is now ending.\n";
-    outputFile << "Child processes have completed. (" << numChildren << " remaining)\n";
-    outputFile << "Parent is now ending.\n";
+	cout << "OSS: Child processes have completed. (" << numChildren << " remaining)\n";
+    cout << "OSS: Parent is now ending.\n";
+    outputFile << "OSS: Child processes have completed. (" << numChildren << " remaining)\n";
+    outputFile << "OSS: Parent is now ending.\n";
     outputFile.close();  // file object close
 
     shmdt(shm_clock);      // clock cleanup, detatch & delete shm

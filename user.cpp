@@ -51,7 +51,7 @@ int main(int argc, char** argv) {
 		perror("msgget in child");
 		exit(1);
 	}
-	printf("Child %d has access to the queue\n",getpid());   // starting messages    
+	printf("%d: Child has access to the msg queue\n",getpid());   // starting messages    
     printf("USER PID: %d  PPID: %d  SysClockS: %d  SysClockNano: %d  TermTimeS: %d  TermTimeNano: %d\n--Just Starting\n", getpid(), getppid(), shm_clock->secs, shm_clock->nanos, end_secs, end_nanos); 
 
     int iter = 0;
@@ -62,7 +62,7 @@ int main(int argc, char** argv) {
             perror("failed to receive message from parent\n");
             exit(1);
         } // output message from parent	
-        printf("Child %d received message code: %d from parent\n",getpid(), rcvbuf.msgCode);
+        printf("%d: Child received message code: %d from parent\n",getpid(), rcvbuf.msgCode);
 
             // check if end time has elapsed, if so, terminate     
         if(shm_clock->secs > end_secs || shm_clock->secs == end_secs && shm_clock->nanos > end_nanos){ 
@@ -82,6 +82,6 @@ int main(int argc, char** argv) {
         }
     }    
     shmdt(shm_clock);
-    printf("Child %d is ending\n",getpid());
+    printf("%d: Child is terminating...\n",getpid());
     return EXIT_SUCCESS; 
 }
