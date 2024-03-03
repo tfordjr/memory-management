@@ -115,11 +115,11 @@ int main(int argc, char** argv){
             outputFile << "OSS: Sending message to worker " << i + 1 << " PID: " << buf.mtype << " at time " << shm_clock->secs << ":" << shm_clock->nanos << std::endl;
 
             msgbuffer rcvbuf;     // BLOCKING WAIT TO RECEIVE MESSAGE FROM CHILD
-            if (msgrcv(msgqid, &rcvbuf, sizeof(msgbuffer), rcvbuf.mtype, 0) == -1) {
+            if (msgrcv(msgqid, &rcvbuf, sizeof(msgbuffer), getpid(), 0) == -1) {
                 perror("failed to receive message in parent\n");
                 exit(1);
             }
-            printf("Parent %d received message code: %d msg: %s\n",getpid(), buf.msgCode, buf.message);
+            printf("Parent %d received message code: %d msg: %s\n", getpid(), buf.msgCode, buf.message);
             outputFile << "OSS: Receiving message from worker " << i + 1 << " PID: " << buf.mtype << " at time " << shm_clock->secs << ":" << shm_clock->nanos << std::endl;
 
             if(rcvbuf.msgCode == MSG_TYPE_SUCCESS){     // if child is terminating                
