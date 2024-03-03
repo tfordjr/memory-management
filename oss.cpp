@@ -112,18 +112,18 @@ int main(int argc, char** argv){
                 perror(("msgsnd to child " + to_string(i + 1) + " failed\n").c_str());
                 exit(1);
             }
-            outputFile << "OSS: Sending message to worker " << i + 1 << " PID: " << buf.mtype << " at time " << shm_clock->secs << ":" << shm_clock->nanos << std::endl;
+            outputFile << "OSS: Sending message to worker " << i + 1 << " PID: " << processTable[i].pid << " at time " << shm_clock->secs << ":" << shm_clock->nanos << std::endl;
 
             msgbuffer rcvbuf;     // BLOCKING WAIT TO RECEIVE MESSAGE FROM CHILD
-            if (msgrcv(msgqid, &rcvbuf, sizeof(msgbuffer), buf.mtype, 0) == -1) {
+            if (msgrcv(msgqid, &rcvbuf, sizeof(msgbuffer), processTable[i].pid, 0) == -1) {
                 perror("failed to receive message in parent\n");
                 exit(1);
             }
             printf("Parent %d received message code: %d msg: %s\n", getpid(), buf.msgCode, buf.message);
-            outputFile << "OSS: Receiving message from worker " << i + 1 << " PID: " << buf.mtype << " at time " << shm_clock->secs << ":" << shm_clock->nanos << std::endl;
+            outputFile << "OSS: Receiving message from worker " << i + 1 << " PID: " << processTable[i].pid << " at time " << shm_clock->secs << ":" << shm_clock->nanos << std::endl;
 
             if(rcvbuf.msgCode == MSG_TYPE_SUCCESS){     // if child is terminating                
-                outputFile << "OSS: Worker " << i + 1 << " PID: " << buf.mtype << " is planning to terminate" << std::endl;
+                outputFile << "OSS: Worker " << i + 1 << " PID: " << processTable[i].pid << " is planning to terminate" << std::endl;
                 wait(0);  // give terminating process time to clear out of system
                 update_process_table_of_terminated_child(processTable, rcvbuf.mtype);
             }
