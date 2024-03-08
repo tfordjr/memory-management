@@ -11,12 +11,18 @@
 // Q1 20 ms or 20000000 ns
 // Q2 40 ms or 40000000 ns
 
-int scheduler(PCB processTable[], int simultaneous, int *time_slice){  
+// WHO MOVES PROCESSES FROM QUEUE TO QUEUE????
+// child proc determines run result, messages this to oss
+// 
+
+        // scheduler() determines i (next process location) and associated time slice
+void scheduler(PCB processTable[], int simultaneous, int *i, int *time_slice){  
     if (process_table_empty(processTable, simultaneous)){
-        return -1;
+        *i = -1;
+        return;
     }
     
-    int i;
+    
 
 
     // CHECK Q0
@@ -31,7 +37,7 @@ int scheduler(PCB processTable[], int simultaneous, int *time_slice){
     // PROCESS TERMINATES!
 
 
-    return i; // returning pcb slot of next process
+    return; // returning pcb slot of next process
 }    
 
 #endif

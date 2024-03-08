@@ -101,10 +101,11 @@ int main(int argc, char** argv){
     int time_slice; // holds time slice of next process in ns, updated by scheduler()
                         //  ---------  MAIN LOOP  ---------   
     while(numChildren > 0 || !process_table_empty(processTable, simultaneous)){         
-        i = scheduler(processTable, simultaneous, &time_slice);
+        scheduler(processTable, simultaneous, &i, &time_slice); // assigns i to next child
         increment(shm_clock, DISPATCH_AMOUNT);
         print_process_table(processTable, simultaneous, shm_clock->secs, shm_clock->nanos, outputFile);        
         
+                // MSG SEND
         if (!process_table_empty(processTable, simultaneous) && i != -1){  // comm with next child            
             buf.mtype = processTable[i].pid;     // SEND MESSAGE TO CHILD NONBLOCKING
             buf.msgCode = MSG_TYPE_RUNNING;   // we will give it the pid we are sending to, so we know it received it
@@ -112,17 +113,20 @@ int main(int argc, char** argv){
             if (msgsnd(msgqid, &buf, sizeof(msgbuffer), 0) == -1) {
                 perror(("msgsnd to child " + to_string(i + 1) + " failed\n").c_str());
                 exit(1);
-            }
+            }       // LOG MSG SEND
             cout << "OSS: Sending message to worker " << i + 1 << " PID: " << processTable[i].pid << " at time " << shm_clock->secs << ":" << shm_clock->nanos << std::endl;
             outputFile << "OSS: Sending message to worker " << i + 1 << " PID: " << processTable[i].pid << " at time " << shm_clock->secs << ":" << shm_clock->nanos << std::endl;
 
+
+                    // MSG RECEIVE
             msgbuffer rcvbuf;     // BLOCKING WAIT TO RECEIVE MESSAGE FROM CHILD
             if (msgrcv(msgqid, &rcvbuf, sizeof(msgbuffer), processTable[i].pid, 0) == -1) {
                 perror("failed to receive message in parent\n");
                 exit(1);
-            }
+            }       // LOG MSG RECEIVE
             cout << "OSS: Receiving message code " << rcvbuf.msgCode << " from worker " << i + 1 << " PID: " << processTable[i].pid << " at time " << shm_clock->secs << ":" << shm_clock->nanos << std::endl;
             outputFile << "OSS: Receiving message code " << rcvbuf.msgCode << " from worker " << i + 1 << " PID: " << processTable[i].pid << " at time " << shm_clock->secs << ":" << shm_clock->nanos << std::endl;
+            increment(shm_clock, abs(rcvbuf.time_slice_used)); // increment absolute value of time used, sign only indicates process state, not time used
 
             if(rcvbuf.msgCode == MSG_TYPE_SUCCESS){     // if child is terminating   
                 cout << "OSS: Worker " << i + 1 << " PID: " << processTable[i].pid << " is planning to terminate" << std::endl;             
@@ -132,7 +136,7 @@ int main(int argc, char** argv){
             }
         }    
 
-        if(numChildren > 0 && launch_interval_satisfied(launch_interval)  
+        if(numChildren > 0 && launch_interval_satisfied(launch_interval)  // check conditions to launch child
         && process_table_vacancy(processTable, simultaneous)){ // child process launch check
             cout << "OSS: Launching Child Process..." << endl;
             outputFile << "OSS: Launching Child Process..." << endl;

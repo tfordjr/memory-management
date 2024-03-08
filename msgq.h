@@ -19,10 +19,10 @@
 #define PERMS 0644
 
 typedef struct msgbuffer {
-	long mtype;
-    char message[100]; // WANT TO CHANGE TO INT FOR ACTUAL TIME SLICE USED
-	int time_slice_used;  // int sufficient, holds -2 to 2 bil, only need -40 to 40 mil (40 ms converted to ns)
-	int msgCode;
+	long mtype;			  // pid
+    char message[100];    // string message
+	int time_slice_used;  // time used in nanos (int sufficient for this as max quantum is 40ms)
+	int msgCode;		  // process state code
 } msgbuffer;
 
 #define MSG_TYPE_BLOCKED 2   // BLOCKED
