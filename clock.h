@@ -9,6 +9,8 @@ typedef struct Clock {
     int nanos;
 } Clock;
 
+// OSS WILL NEED TO START INCREMENTING BY THE TIMESLICE USED!!!
+
 void increment(Clock* c, int numProcesses){
     c->nanos = c->nanos + (250000000/numProcesses); // 1/4 second (250ms) / num processes
     // c->nanos = c->nanos + 250;
