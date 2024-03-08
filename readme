@@ -1,5 +1,5 @@
-CS4760-001SS - Terry Ford Jr. - Project 3 Message Queues - 02/29/2024
-https://github.com/tfordjr/message-queues.git
+CS4760-001SS - Terry Ford Jr. - Project 4 OSS Scheduler - 03/08/2024
+https://github.com/tfordjr/oss-scheduler.git
 
 Compile and run instructions:
 simply run make command and oss command in the following format:
@@ -15,6 +15,7 @@ pcb.h: contains pcb struct and many related functions for process table utility.
 clock.h: logical clock struct.
 msgq.h houses msgbuffer struct, running states
 makefile: creates oss and user executables, oss executes user executable to perform work.
+memclean.sh: cleans up lingering memory on make clean command
 readme: explains project
 
 Concerns/Points of confusion: 

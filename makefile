@@ -1,5 +1,5 @@
-# CS4760-001SS - Terry Ford Jr. - Project 3 Message Queues - 02/29/2024
-# https://github.com/tfordjr/message-queues.git
+# CS4760-001SS - Terry Ford Jr. - Project 4 OSS Scheduler - 03/08/2024
+# https://github.com/tfordjr/oss-scheduler.git
 
 CC	= g++ 
 CFLAGS  = -g3 -std=c++11
