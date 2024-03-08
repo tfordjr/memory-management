@@ -97,13 +97,12 @@ int main(int argc, char** argv){
 	cout << "OSS: Message queue set up\n";
     outputFile << "OSS: Message queue set up\n";
 
-    int i = 0;  // holds PCB location of next process
-    int time_slice = 10; // holds time slice of next process in ms, updated by scheduler()
+    int i = -1;  // holds PCB location of next process
+    int time_slice; // holds time slice of next process in ns, updated by scheduler()
                         //  ---------  MAIN LOOP  ---------   
-    while(numChildren > 0 || !process_table_empty(processTable, simultaneous)){ 
-        increment(shm_clock, running_processes(processTable, simultaneous));
-        // i = scheduler(processTable, simultaneous, &time_slice);
-        i = next_occupied_process(processTable, simultaneous, i);
+    while(numChildren > 0 || !process_table_empty(processTable, simultaneous)){         
+        i = scheduler(processTable, simultaneous, &time_slice);
+        increment(shm_clock, DISPATCH_AMOUNT);
         print_process_table(processTable, simultaneous, shm_clock->secs, shm_clock->nanos, outputFile);        
         
         if (!process_table_empty(processTable, simultaneous) && i != -1){  // comm with next child            
@@ -139,7 +138,9 @@ int main(int argc, char** argv){
             outputFile << "OSS: Launching Child Process..." << endl;
             numChildren--;
             launch_child(processTable, time_limit, simultaneous);
-        }     
+        }
+
+        // FOR EACH BLOCKED PROCESS, CHECK IF NO LONGER BLOCKED
     }                   // --------- END OF MAIN LOOP ---------  
 
 	cout << "OSS: Child processes have completed. (" << numChildren << " remaining)\n";
@@ -182,6 +183,10 @@ void launch_child(PCB processTable[], int time_limit, int simultaneous){
         processTable[i].pid = childPid;
         processTable[i].startSecs = shm_clock->secs;
         processTable[i].startNanos = shm_clock->nanos;
+        processTable[i].blocked = 0;
+        processTable[i].eventBlockedUntilSec = 0;
+        processTable[i].eventBlockedUntilNano = 0;
+        increment(shm_clock, CHILD_LAUNCH_AMOUNT);
     }
 }
 

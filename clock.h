@@ -4,16 +4,16 @@
 #ifndef CLOCK_H
 #define CLOCK_H
 
+#define DISPATCH_AMOUNT 1000000      // 1 ms dispatch time
+#define CHILD_LAUNCH_AMOUNT 1000000  // 1 ms child launch time
+
 typedef struct Clock {
     int secs;
     int nanos;
 } Clock;
 
-// OSS WILL NEED TO START INCREMENTING BY THE TIMESLICE USED!!!
-
-void increment(Clock* c, int numProcesses){
-    c->nanos = c->nanos + (250000000/numProcesses); // 1/4 second (250ms) / num processes
-    // c->nanos = c->nanos + 250;
+void increment(Clock* c, int increment_amount){
+    c->nanos = c->nanos + increment_amount; 
     if (c->nanos >= 1000000000){   // if over 1 billion nanos, add 1 second, sub 1 bil nanos
         c->nanos = c->nanos - 1000000000;
         c->secs++;

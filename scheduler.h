@@ -7,15 +7,15 @@
 #include "pcb.h"
 
 // DEFINE THREE QUEUES    as arrays of size simultaneous?  
-// Q0 10 ms 
-// Q1 20 ms
-// Q2 40 ms
+// Q0 10 ms or 10000000 ns
+// Q1 20 ms or 20000000 ns
+// Q2 40 ms or 40000000 ns
 
 int scheduler(PCB processTable[], int simultaneous, int *time_slice){  
     if (process_table_empty(processTable, simultaneous)){
         return -1;
     }
-    // I don't think we care about i, which process ran last. may delete parameter
+    
     int i;
 
 
