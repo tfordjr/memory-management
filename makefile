@@ -25,4 +25,4 @@ parent.o:	parent.cpp
 
 clean:
 	/bin/rm -f *.o $(TARGET1) $(TARGET2) logfile.txt msgq.txt
-	../memclean.sh
+	./memclean.sh
