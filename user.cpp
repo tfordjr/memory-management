@@ -37,7 +37,7 @@ int main(int argc, char** argv) {
     if (end_nanos >= 1000000000){   // if over 1 billion nanos, add 1 second, sub 1 bil nanos
         end_nanos = end_nanos - 1000000000;
         end_secs++;
-    }                 
+    } 
 
     msgbuffer buf, rcvbuf;   // init msg buffer
 	buf.mtype = getpid();
@@ -64,12 +64,32 @@ int main(int argc, char** argv) {
         } // output message from parent	
         printf("%d: Child received message code: %d from parent\n",getpid(), rcvbuf.msgCode);
 
+        // -------------- IO BLOCKING TEST CODE --------------
+        // int chance_to_terminate = 25; 
+        // srand(getpid() + time(NULL)); // Should be different for every run of every proc.
+        // int random_number = rand() % 100;  // 25 percent chance to terminate every run.
+
+        // if (random_number < 25){ // If we do terminate
+        //     printf("USER PID: %d  PPID: %d  SysClockS: %d  SysClockNano: %d  TermTimeS: %d  TermTimeNano: %d\n--Terminating after sending message back to oss after %d iterations.\n", getpid(), getppid(), shm_clock->secs, shm_clock->nanos, end_secs, end_nanos, iter);
+        //     done = true;
+        //     buf.msgCode = MSG_TYPE_SUCCESS;    
+        //     strcpy(buf.message,"Completed Successfully (RANDOM TERMINATION), now terminating...\n");
+        //     // ALSO USE RANDOM AMOUNT OF TIMESLICE BEFORE TERMINATING!!!!!!!
+        // } else if (random_number < 50){
+        //     // USE RANDOM AMOUNT OF TIMESLICE AND IO BLOCK!!!!!!!
+        //     // MSG OS SO THAT THEY KNOW WE ARE IO BLOCKED
+        //     // WHILE LOOP UNTIL NOT IO BLOCKED
+
+        // }
+        
+            
+
             // check if end time has elapsed, if so, terminate     
         if(shm_clock->secs > end_secs || shm_clock->secs == end_secs && shm_clock->nanos > end_nanos){ 
             printf("USER PID: %d  PPID: %d  SysClockS: %d  SysClockNano: %d  TermTimeS: %d  TermTimeNano: %d\n--Terminating after sending message back to oss after %d iterations.\n", getpid(), getppid(), shm_clock->secs, shm_clock->nanos, end_secs, end_nanos, iter);
             done = true;
             buf.msgCode = MSG_TYPE_SUCCESS;    
-            strcpy(buf.message,"Completed Successfully, now terminating...\n");
+            strcpy(buf.message,"Completed Successfully (TIME LIMIT HIT), now terminating...\n");
         } else {    // else program continues running
             printf("USER PID: %d  PPID: %d  SysClockS: %d  SysClockNano: %d  TermTimeS: %d  TermTimeNano: %d\n--%d iteration(s) have passed since starting\n", getpid(), getppid(), shm_clock->secs, shm_clock->nanos, end_secs, end_nanos, iter);
             buf.msgCode = MSG_TYPE_RUNNING;

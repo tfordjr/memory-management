@@ -24,7 +24,8 @@ typedef struct msgbuffer {
 	int msgCode;
 } msgbuffer;
 
-#define MSG_TYPE_SUCCESS 1  // I'm getting confused, so I'm implementing these 
+#define MSG_TYPE_BLOCKED 2
+#define MSG_TYPE_SUCCESS 1  
 #define MSG_TYPE_RUNNING 0  
 
 #endif
