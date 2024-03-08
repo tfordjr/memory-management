@@ -20,12 +20,13 @@
 
 typedef struct msgbuffer {
 	long mtype;
-    char message[100];
+    char message[100]; // WANT TO CHANGE TO INT FOR ACTUAL TIME SLICE USED
+	int time_slice_used;  // int sufficient, holds -2 to 2 bil, only need -40 to 40 mil (40 ms converted to ns)
 	int msgCode;
 } msgbuffer;
 
 #define MSG_TYPE_BLOCKED 2   // BLOCKED
 #define MSG_TYPE_RUNNING 1   // STILL RUNNING
-#define MSG_TYPE_SUCCESS 0   // TERMINATED
+#define MSG_TYPE_SUCCESS 0   // TERMINATING
 
 #endif

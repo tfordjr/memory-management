@@ -97,10 +97,12 @@ int main(int argc, char** argv){
 	cout << "OSS: Message queue set up\n";
     outputFile << "OSS: Message queue set up\n";
 
-    int i = 0;  // will hold location of next process on PCB that oss will comm with each loop
+    int i = 0;  // holds PCB location of next process
+    int time_slice = 10; // holds time slice of next process in ms, updated by scheduler()
                         //  ---------  MAIN LOOP  ---------   
     while(numChildren > 0 || !process_table_empty(processTable, simultaneous)){ 
         increment(shm_clock, running_processes(processTable, simultaneous));
+        // i = scheduler(processTable, simultaneous, &time_slice);
         i = next_occupied_process(processTable, simultaneous, i);
         print_process_table(processTable, simultaneous, shm_clock->secs, shm_clock->nanos, outputFile);        
         

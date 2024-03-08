@@ -11,7 +11,7 @@
 // Q1 20 ms
 // Q2 40 ms
 
-int scheduler(PCB processTable[], int simultaneous){
+int scheduler(PCB processTable[], int simultaneous, int *time_slice){  
     if (process_table_empty(processTable, simultaneous)){
         return -1;
     }
@@ -31,7 +31,7 @@ int scheduler(PCB processTable[], int simultaneous){
     // PROCESS TERMINATES!
 
 
-    return i; // this case we're returning to comm with same process as last time, 
+    return i; // returning pcb slot of next process
 }    
 
 #endif
