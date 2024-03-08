@@ -7,6 +7,9 @@
 #include "pcb.h"
 
 // DEFINE THREE QUEUES    as arrays of size simultaneous?  
+// Q0 10 ms 
+// Q1 20 ms
+// Q2 40 ms
 
 int scheduler(PCB processTable[], int simultaneous){
     if (process_table_empty(processTable, simultaneous)){

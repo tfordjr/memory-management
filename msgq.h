@@ -24,8 +24,8 @@ typedef struct msgbuffer {
 	int msgCode;
 } msgbuffer;
 
-#define MSG_TYPE_BLOCKED 2
-#define MSG_TYPE_SUCCESS 1  
-#define MSG_TYPE_RUNNING 0  
+#define MSG_TYPE_BLOCKED 2   // BLOCKED
+#define MSG_TYPE_RUNNING 1   // STILL RUNNING
+#define MSG_TYPE_SUCCESS 0   // TERMINATED
 
 #endif

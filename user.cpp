@@ -79,7 +79,7 @@ int main(int argc, char** argv) {
         //     // USE RANDOM AMOUNT OF TIMESLICE AND IO BLOCK!!!!!!!
         //     // MSG OS SO THAT THEY KNOW WE ARE IO BLOCKED
         //     // WHILE LOOP UNTIL NOT IO BLOCKED
-
+                // WHEN PROCESS IS UNBLOCKED, THEY GO TO HIGHEST PRIORITY QUEUE!!!!
         // }
         
             
