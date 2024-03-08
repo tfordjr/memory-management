@@ -11,10 +11,13 @@
 #include <string>
 
 struct PCB {
-    int occupied;     // either true or false
-    pid_t pid;        // process id of this child
-    int startSecs; // time when it was forked
-    int startNanos;    // time when it was forked
+    int occupied;        // either true or false
+    pid_t pid;           // process id of this child
+    int startSecs;       // time when it was forked
+    int startNanos;      // time when it was forked
+    int blocked;         // bool blocked or not
+    int eventBlockedUntilSec;   // Time when blocked process unblocks
+    int eventBlockedUntilNano;
 };
 
 void init_process_table(PCB processTable[]){
