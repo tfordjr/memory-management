@@ -111,6 +111,8 @@ int main(int argc, char** argv){
             buf.mtype = processTable[i].pid;     // SEND MESSAGE TO CHILD NONBLOCKING
             buf.time_slice = time_slice;    // set local variable to msg struct parameter!
             buf.msgCode = MSG_TYPE_RUNNING;   // we will give it the pid we are sending to, so we know it received it
+            buf.blocked_until_secs = 0;
+            buf.blocked_until_nanos = 0;
             strcpy(buf.message, "Message to child\n");
             if (msgsnd(msgqid, &buf, sizeof(msgbuffer), 0) == -1) {
                 perror(("msgsnd to child " + to_string(i + 1) + " failed\n").c_str());
