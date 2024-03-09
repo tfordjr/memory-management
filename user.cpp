@@ -63,6 +63,7 @@ int main(int argc, char** argv) {
 
     int iter = 0;
     bool done = false;
+    
     while(!done){      // ----------- MAIN LOOP -----------     
         iter++;       // MSGRCV BLOCKING WAIT, WAITS HERE WHILE IO BLOCKED ALSO
         if ( msgrcv(msgqid, &rcvbuf, sizeof(msgbuffer), getpid(), 0) == -1) {
