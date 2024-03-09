@@ -23,8 +23,8 @@ typedef struct msgbuffer {
     char message[100];   	 // string message
 	int time_slice; 	 // OSS SENDS TO CHILD: TIME SLICE ALLOTTED TO CHILD!
 						// CHILD SENDS TO OSS: TIME SLICE ACTUALLY USED!
-	int blocked_until_secs;	 // time when process becomes unblocked
-	int blocked_until_nanos;
+	int blocked_until_secs;	 // time when process becomes unblocked, MSGSEND CHILD TO PARENT ONLY,
+	int blocked_until_nanos; // PARENT ONLY SENDS 0s FOR THESE ARGS TO CHILD
 	int msgCode;			  // process state code
 } msgbuffer;
 

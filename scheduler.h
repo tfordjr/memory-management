@@ -20,7 +20,7 @@ int check_blocked_processes(PCB[], int, int, int);
 
         // scheduler() determines i (next process location) and associated time slice
 void scheduler(PCB processTable[], int simultaneous, int *i, int *time_slice, int *unblocks, int secs, int nanos){  
-    if (process_table_empty(processTable, simultaneous)){
+    if (process_table_empty(processTable, simultaneous) || all_processes_blocked(processTable, simultaneous)){ 
         *i = -1;
         *time_slice = 0;
         return;
@@ -30,7 +30,7 @@ void scheduler(PCB processTable[], int simultaneous, int *i, int *time_slice, in
     *unblocks = check_blocked_processes(processTable, simultaneous, secs, nanos);
 
     pid_t pid;    
-    if(!Q0.empty()){
+    if(!Q0.empty()){   // THIS IS SCHEDULING BLOCKED PROCS, right????
         pid = Q0.front();
         *time_slice = 10000000;  // 10ms 
     } else if(!Q1.empty()){
@@ -40,6 +40,8 @@ void scheduler(PCB processTable[], int simultaneous, int *i, int *time_slice, in
         pid = Q2.front();
         *time_slice = 40000000;  // 40ms 
     } 
+
+    // IF ALL PROCS BLOCKED, RETURN i=-1, right?????
 
     *i = return_position_of_given_pid(processTable, simultaneous, pid);
     return; 
