@@ -246,7 +246,7 @@ void help(){   // Help message here
     printf("\t args will default to appropriate values if not provided.\n");
 }
 
-void timeout_handler(int signum, int simultaneous) {
+void timeout_handler(int signum) {
     std::cout << "Timeout occurred. Cleaning up before exiting..." << std::endl;
     outputFile << "Timeout occurred. Cleaning up before exiting..." << std::endl;
     term = 1;
@@ -265,7 +265,7 @@ void timeout_handler(int signum, int simultaneous) {
 }
 
 // Signal handler for Ctrl+C (SIGINT)
-void ctrl_c_handler(int signum, int simultaneous) {
+void ctrl_c_handler(int signum) {
     std::cout << "Ctrl+C detected. Cleaning up before exiting..." << std::endl;
     outputFile << "Ctrl+C detected. Cleaning up before exiting..." << std::endl;
     kill_all_processes(processTable, simultaneous);
