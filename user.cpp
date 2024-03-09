@@ -80,38 +80,40 @@ int main(int argc, char** argv) {
         if (random_number < TERMINATION_CHANCE){   
             printf("USER PID: %d  PPID: %d  SysClockS: %d  SysClockNano: %d  TermTimeS: %d  TermTimeNano: %d\n--Terminating after sending message back to oss after %d iterations.\n", getpid(), getppid(), shm_clock->secs, shm_clock->nanos, end_secs, end_nanos, iter);
             done = true;
-            buf.msgCode = MSG_TYPE_SUCCESS;    
-            strcpy(buf.message,"Completed Successfully (RANDOM TERMINATION), now terminating...\n");
+            buf.msgCode = MSG_TYPE_SUCCESS;                
             buf.time_slice = rand() % rcvbuf.time_slice;  // use random amount of timeslice before terminating            
+            strcpy(buf.message,"Completed Successfully (RANDOM TERMINATION), now terminating...\n");
                     // IF WE RANDOMLY IO BLOCK
-        } else if (random_number < ACUTAL_IO_BLOCK_CHANCE){   
-            buf.time_slice = rand() % rcvbuf.time_slice;  // use random amount of timeslice before IO Block
-            buf.msgCode = MSG_TYPE_BLOCKED;            
+        } else if (random_number < ACUTAL_IO_BLOCK_CHANCE){                        
             int nanos_blocked = 1000000000; // IO BLOCK ALWAYS LASTS 1 SEC
             int temp_unblock_secs, temp_unblock_nanos;
             calculate_time_until_unblocked(shm_clock->secs, shm_clock->nanos, nanos_blocked, &temp_unblock_secs, &temp_unblock_nanos);
             buf.blocked_until_secs = temp_unblock_secs;
             buf.blocked_until_nanos = temp_unblock_nanos;
+            buf.msgCode = MSG_TYPE_BLOCKED;   
+            buf.time_slice = rand() % rcvbuf.time_slice;  // use random amount of timeslice before IO Block
+            strcpy(buf.message,"IO BLOCKED!!!...\n");
                     // IF WE NEITHER TERM EARLY OR IO BLOCK
-        } else { // check if end time has already elapsed, if so, terminate asap
-            int secs_plus_quantum, nanos_plus_quantum, time_slice_used;
+        } else { // THEN CHECK IF TERMINATION TIME HAS PASSED
+            int secs_plus_quantum, nanos_plus_quantum, time_slice_used = rcvbuf.time_slice;
             if(shm_clock->secs > end_secs || shm_clock->secs == end_secs && shm_clock->nanos > end_nanos){ 
                 printf("USER PID: %d  PPID: %d  SysClockS: %d  SysClockNano: %d  TermTimeS: %d  TermTimeNano: %d\n--Terminating after sending message back to oss after %d iterations.\n", getpid(), getppid(), shm_clock->secs, shm_clock->nanos, end_secs, end_nanos, iter);
                 done = true;
-                buf.msgCode = MSG_TYPE_SUCCESS; 
-                strcpy(buf.message,"Completed Successfully (END TIME ELAPSED), now terminating...\n");
-                    // HOW MUCH OF THE TIME SLICE DID YOU USE ?
+                buf.msgCode = MSG_TYPE_SUCCESS;
+                buf.time_slice = 0;  // TIME SLICE NOT USED, ENDED BEFORE SEEN BY CPU
+                strcpy(buf.message,"Completed Successfully (END TIME ELAPSED BEFORE RUNTIME), now terminating...\n");
+                    // ELSE WILL IT TERMINATE DURING THIS QUANTUM
             } else if(will_process_terminate_during_quantum(shm_clock->secs, shm_clock->nanos, end_secs, end_nanos, rcvbuf.time_slice, secs_plus_quantum, nanos_plus_quantum, &time_slice_used)){
-
-            } else {    // else program continues running
-                // IF TERM WOULD ELAPSE DURING RUNTIME, CALC USED TIME SLICE, EXECUTE,
-                // ELSE, TERM TIME WOULD NOT ELASE DURING RUNTIME, TIME SLICE IS FULL QUANTUM
-                
+                printf("USER PID: %d  PPID: %d  SysClockS: %d  SysClockNano: %d  TermTimeS: %d  TermTimeNano: %d\n--Terminating after sending message back to oss after %d iterations.\n", getpid(), getppid(), shm_clock->secs, shm_clock->nanos, end_secs, end_nanos, iter);
+                done = true;
+                buf.msgCode = MSG_TYPE_SUCCESS;
+                buf.time_slice = time_slice_used;
+                strcpy(buf.message,"Completed Successfully (END TIME ELAPSED DURING RUNTIME), now terminating...\n");
+            } else {    // ELSE TERMINATION WILL NOT OCCUR IN THIS QUANTUM 
                 printf("USER PID: %d  PPID: %d  SysClockS: %d  SysClockNano: %d  TermTimeS: %d  TermTimeNano: %d\n--%d iteration(s) have passed since starting\n", getpid(), getppid(), shm_clock->secs, shm_clock->nanos, end_secs, end_nanos, iter);
                 buf.msgCode = MSG_TYPE_RUNNING;
                 buf.time_slice = rcvbuf.time_slice;  // used full time slice
                 strcpy(buf.message,"Still Running...\n");
-                // Check again that process doesn't term naturally during runtime
             }
         }
         
@@ -161,7 +163,7 @@ bool will_process_terminate_during_quantum(int secs, int nanos, int end_secs, in
         *time_slice_used = abs(elapsed_secs * 1000000000 + elapsed_nanos);
         return true;
     }
-         // Try using this if the above is too dangerous, with how short our quantums are,
+         // Try using this if the above if is too dangerous, with how short our quantums are,
          // this will suffice for all of the cases we will see.
     // if(elapsed_secs == -1){   
     //     *time_slice_used = abs(1000000000 + elapsed_nanos);

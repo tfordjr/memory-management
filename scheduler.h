@@ -27,7 +27,7 @@ void scheduler(PCB processTable[], int simultaneous, int *i, int *time_slice, in
     }
 
         // FOR EACH BLOCKED PROCESS, CHECK IF NO LONGER BLOCKED, SEND TO Q0
-    unblocks = check_blocked_processes(processTable, simultaneous, secs, nanos);
+    *unblocks = check_blocked_processes(processTable, simultaneous, secs, nanos);
 
     pid_t pid;    
     if(!Q0.empty()){
