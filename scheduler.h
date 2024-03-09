@@ -72,7 +72,7 @@ void remove_process_from_scheduling_queues(pid_t pid){ // when proc is terminate
     }
 }
     
-void schedule_unblocked_process(pid_t pid){  // Move recently unblocked proc to back of Q0
+void schedule_process(pid_t pid){  // Move recently unblocked proc to back of Q0
     Q0.push(pid);
 }
 
@@ -82,7 +82,7 @@ int check_blocked_processes(PCB processTable[], int simultaneous, int secs, int 
     for(int i = 0; i < simultaneous; i++){
         if(processTable[i].blocked && (secs > processTable[i].eventBlockedUntilSec || 
         secs == processTable[i].eventBlockedUntilSec && nanos > processTable[i].eventBlockedUntilNano)){          
-            schedule_unblocked_process(processTable[i].pid);
+            schedule_process(processTable[i].pid);
             unblocks++;            
         } 
     }
