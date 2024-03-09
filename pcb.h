@@ -104,9 +104,9 @@ void update_process_table_of_blocked_child(PCB processTable[], pid_t pid, int si
         } 
     }
 }
-        // ISN'T THIS DANGEROUS? MAKE SIMULTANEOUS TO GET IT TO SIGHANDLERS!!!!!!
-void kill_all_processes(PCB processTable[]){
-    for(int i = 0; i < 20; i++){
+    
+void kill_all_processes(PCB processTable[], int simultaneous){
+    for(int i = 0; i < simultaneous; i++){
         if(processTable[i].occupied){  // if PCB pid equal to killed pid
             kill(processTable[i].pid, SIGKILL);
         } 

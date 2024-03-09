@@ -40,10 +40,11 @@ key_t clock_key = ftok("/tmp", 35);
 int shmtid = shmget(clock_key, sizeof(Clock), IPC_CREAT | 0666);    // init shm clock
 std::ofstream outputFile;   // init file object
 int msgqid;           // MSGQID GLOBAL FOR MSGQ CLEANUP
+int simultaneous = 1;  // simultaneous global so that sighandlers know PCB table size to avoid segfaults when killing all procs on PCB
  // Doing it up here because shmtid is needed to delete shm, needed for timeout/exit signal
 
 int main(int argc, char** argv){
-    int option, numChildren = 1, simultaneous = 1, time_limit = 2, launch_interval = 100;      
+    int option, numChildren = 1, time_limit = 2, launch_interval = 100;      
     string logfile = "logfile.txt";
     while ( (option = getopt(argc, argv, "hn:s:t:i:f:")) != -1) {   // getopt implementation
         switch(option) {
@@ -245,11 +246,11 @@ void help(){   // Help message here
     printf("\t args will default to appropriate values if not provided.\n");
 }
 
-void timeout_handler(int signum) {
+void timeout_handler(int signum, int simultaneous) {
     std::cout << "Timeout occurred. Cleaning up before exiting..." << std::endl;
     outputFile << "Timeout occurred. Cleaning up before exiting..." << std::endl;
     term = 1;
-    kill_all_processes(processTable);
+    kill_all_processes(processTable, simultaneous);
     outputFile.close();  // file object close
     shmdt(shm_clock);  // clock cleanup, detatch & delete shm
     if (shmctl(shmtid, IPC_RMID, NULL) == -1) {
@@ -264,10 +265,10 @@ void timeout_handler(int signum) {
 }
 
 // Signal handler for Ctrl+C (SIGINT)
-void ctrl_c_handler(int signum) {
+void ctrl_c_handler(int signum, int simultaneous) {
     std::cout << "Ctrl+C detected. Cleaning up before exiting..." << std::endl;
     outputFile << "Ctrl+C detected. Cleaning up before exiting..." << std::endl;
-    kill_all_processes(processTable);
+    kill_all_processes(processTable, simultaneous);
     outputFile.close();  // file object close
     shmdt(shm_clock);       // clock cleanup, detatch & delete shm
     if (shmctl(shmtid, IPC_RMID, NULL) == -1) {
