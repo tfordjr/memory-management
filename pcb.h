@@ -94,12 +94,12 @@ void update_process_table_of_terminated_child(PCB processTable[], pid_t pid, int
     }
 }
         // FUNCTION NOT COMPLETE
-void update_process_table_of_blocked_child(PCB processTable[], pid_t pid, int simultaneous){
+void update_process_table_of_blocked_child(PCB processTable[], pid_t pid, int simultaneous, int blockedUntilSec, int blockedUntilNano){
     for(int i = 0; i < simultaneous; i++){
         if(processTable[i].pid == pid){  // if PCB pid equal to blocked pid            
             processTable[i].blocked = 1;
-            processTable[i].eventBlockedUntilSec = 0;
-            processTable[i].eventBlockedUntilNano = 0;
+            processTable[i].eventBlockedUntilSec = blockedUntilSec;
+            processTable[i].eventBlockedUntilNano = blockedUntilNano;
             return;
         } 
     }

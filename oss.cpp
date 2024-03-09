@@ -102,7 +102,7 @@ int main(int argc, char** argv){
                         //  ---------  MAIN LOOP  ---------   
     while(numChildren > 0 || !process_table_empty(processTable, simultaneous)){         
         scheduler(processTable, simultaneous, &i, &time_slice); // assigns i to next child
-        increment(shm_clock, DISPATCH_AMOUNT);
+        increment(shm_clock, DISPATCH_AMOUNT);  // dispatcher overhead
         print_process_table(processTable, simultaneous, shm_clock->secs, shm_clock->nanos, outputFile);        
         
                 // MSG SEND
@@ -128,6 +128,7 @@ int main(int argc, char** argv){
             outputFile << "OSS: Receiving message code " << rcvbuf.msgCode << " from worker " << i + 1 << " PID: " << processTable[i].pid << " at time " << shm_clock->secs << ":" << shm_clock->nanos << std::endl;
             increment(shm_clock, abs(rcvbuf.time_slice_used)); // increment absolute value of time used, sign only indicates process state, not time used
 
+                    // UNPACK RECEIVED MESSAGE
             if (time_slice == rcvbuf.time_slice_used) { // If total time slice used
                 descend_queues(processTable[i].pid); 
             } else if (rcvbuf.msgCode == MSG_TYPE_BLOCKED) {  // Child blocked
@@ -141,7 +142,7 @@ int main(int argc, char** argv){
                 remove_process_from_scheduling_queues(processTable[i].pid);
             }
         }
-
+                // CHECK IF CONDITIONS ARE RIGHT TO LAUNCH ANOTHER CHILD
         if(numChildren > 0 && launch_interval_satisfied(launch_interval)  // check conditions to launch child
         && process_table_vacancy(processTable, simultaneous)){ // child process launch check
             cout << "OSS: Launching Child Process..." << endl;
@@ -149,8 +150,8 @@ int main(int argc, char** argv){
             numChildren--;
             launch_child(processTable, time_limit, simultaneous);
         }
-
-        // FOR EACH BLOCKED PROCESS, CHECK IF NO LONGER BLOCKED
+                // FOR EACH BLOCKED PROCESS, CHECK IF NO LONGER BLOCKED
+        
     }                   // --------- END OF MAIN LOOP ---------  
 
 	cout << "OSS: Child processes have completed. (" << numChildren << " remaining)\n";
@@ -196,7 +197,7 @@ void launch_child(PCB processTable[], int time_limit, int simultaneous){
         processTable[i].blocked = 0;
         processTable[i].eventBlockedUntilSec = 0;
         processTable[i].eventBlockedUntilNano = 0;
-        increment(shm_clock, CHILD_LAUNCH_AMOUNT);
+        increment(shm_clock, CHILD_LAUNCH_AMOUNT);  // child launch overhead simulated
     }
 }
 
