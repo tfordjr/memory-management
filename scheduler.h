@@ -20,14 +20,14 @@ int check_blocked_processes(PCB[], int, int, int);
 
         // scheduler() determines i (next process location) and associated time slice
 void scheduler(PCB processTable[], int simultaneous, int *i, int *time_slice, int *unblocks, int secs, int nanos){  
+        // FOR EACH BLOCKED PROCESS, CHECK IF NO LONGER BLOCKED, SEND TO Q0
+    *unblocks = check_blocked_processes(processTable, simultaneous, secs, nanos);
+    
     if (process_table_empty(processTable, simultaneous) || all_processes_blocked(processTable, simultaneous)){ 
         *i = -1;
         *time_slice = 0;
         return;
     }
-
-        // FOR EACH BLOCKED PROCESS, CHECK IF NO LONGER BLOCKED, SEND TO Q0
-    *unblocks = check_blocked_processes(processTable, simultaneous, secs, nanos);
 
     pid_t pid;    
     if(!Q0.empty()){   // THIS IS SCHEDULING BLOCKED PROCS, right????
@@ -74,7 +74,7 @@ void remove_process_from_scheduling_queues(pid_t pid){ // when proc is terminate
     }
 }
     
-void schedule_process(pid_t pid){  // Move recently unblocked proc to back of Q0
+void queue_process(pid_t pid){  // Move recently unblocked proc to back of Q0
     Q0.push(pid);
 }
 
@@ -84,7 +84,7 @@ int check_blocked_processes(PCB processTable[], int simultaneous, int secs, int 
     for(int i = 0; i < simultaneous; i++){
         if(processTable[i].blocked && (secs > processTable[i].eventBlockedUntilSec || 
         secs == processTable[i].eventBlockedUntilSec && nanos > processTable[i].eventBlockedUntilNano)){          
-            schedule_process(processTable[i].pid);
+            queue_process(processTable[i].pid);
             processTable[i].blocked = 0;
             processTable[i].eventBlockedUntilSec = 0;
             processTable[i].eventBlockedUntilNano = 0;

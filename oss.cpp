@@ -200,7 +200,7 @@ void launch_child(PCB processTable[], int time_limit, int simultaneous){
         processTable[i].blocked = 0;
         processTable[i].eventBlockedUntilSec = 0;
         processTable[i].eventBlockedUntilNano = 0;
-        schedule_process(processTable[i].pid);
+        queue_process(processTable[i].pid);
         increment(shm_clock, CHILD_LAUNCH_AMOUNT);  // child launch overhead simulated
     }
 }
