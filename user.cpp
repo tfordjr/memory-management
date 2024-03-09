@@ -78,8 +78,9 @@ int main(int argc, char** argv) {
         // } else if (random_number < 50){
         //     // USE RANDOM AMOUNT OF TIMESLICE AND IO BLOCK!!!!!!!
         //     // MSG OS SO THAT THEY KNOW WE ARE IO BLOCKED
+        //     // MSG OS HOW LONG WE WILL BE BLOCKED (OS WILL UPDATE PCB)
         //     // WHILE LOOP UNTIL NOT IO BLOCKED
-                // WHEN PROCESS IS UNBLOCKED, THEY GO TO HIGHEST PRIORITY QUEUE!!!!
+        // WHEN PROCESS IS UNBLOCKED, THEY GO TO HIGHEST PRIORITY QUEUE!!!!
         // }
         
             

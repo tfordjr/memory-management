@@ -79,8 +79,8 @@ void print_process_table(PCB processTable[], int simultaneous, int secs, int nan
     }
 }
 
-void update_process_table_of_terminated_child(PCB processTable[], pid_t pid){
-    for(int i = 0; i < 20; i++){
+void update_process_table_of_terminated_child(PCB processTable[], pid_t pid, int simultaneous){
+    for(int i = 0; i < simultaneous; i++){
         if(processTable[i].pid == pid){  // if PCB pid equal to killed pid
             processTable[i].occupied = 0;
             processTable[i].pid = 0;
@@ -93,7 +93,18 @@ void update_process_table_of_terminated_child(PCB processTable[], pid_t pid){
         } 
     }
 }
-
+        // FUNCTION NOT COMPLETE
+void update_process_table_of_blocked_child(PCB processTable[], pid_t pid, int simultaneous){
+    for(int i = 0; i < simultaneous; i++){
+        if(processTable[i].pid == pid){  // if PCB pid equal to blocked pid            
+            processTable[i].blocked = 1;
+            processTable[i].eventBlockedUntilSec = 0;
+            processTable[i].eventBlockedUntilNano = 0;
+            return;
+        } 
+    }
+}
+        // ISN'T THIS DANGEROUS? MAKE SIMULTANEOUS TO GET IT TO SIGHANDLERS!!!!!!
 void kill_all_processes(PCB processTable[]){
     for(int i = 0; i < 20; i++){
         if(processTable[i].occupied){  // if PCB pid equal to killed pid
@@ -101,27 +112,14 @@ void kill_all_processes(PCB processTable[]){
         } 
     }
 }
-    // this function determines to next occupied process in the system. 
-int next_occupied_process(PCB processTable[], int simultaneous, int i){
-    if (process_table_empty(processTable, simultaneous)){
-        return -1;
+
+int return_position_of_given_pid(PCB processTable[], int simultaneous, pid_t pid){
+    for(int i = 0; i < simultaneous; i++){
+        if(processTable[i].pid == pid){  // if PCB pid equal to given pid
+            return i;                    // return position
+        } 
     }
-
-    int initial_i_value = i;
-    i++; 
-    if (i == simultaneous){
-        i = 0;
-    }  
-
-    while(i != initial_i_value){
-        if(processTable[i].occupied)
-            return i;  // this case we switch to a different occupied process on PCB
-        i++;
-        if (i == simultaneous){  // ensures we don't go out of processTable[] array bounds
-            i = 0;
-        }
-    }  
-    return i; // this case we're returning to comm with same process as last time, 
-}             // because that process is the only process on the process table
+    return -1;  // pid not found on process table
+}
 
 # endif
