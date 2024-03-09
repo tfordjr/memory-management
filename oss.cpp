@@ -16,13 +16,12 @@
 #include <sys/wait.h>
 #include <sys/msg.h>
 #include <sys/mman.h>
-#include <random>
-#include <chrono>
 #include <fstream>
 #include "pcb.h"
 #include "clock.h"
 #include "msgq.h"
 #include "scheduler.h"
+#include "rng.h"
 using namespace std;
 
 void launch_child(PCB[], int, int);
@@ -203,14 +202,6 @@ void launch_child(PCB processTable[], int time_limit, int simultaneous){
         queue_process(processTable[i].pid);
         increment(shm_clock, CHILD_LAUNCH_AMOUNT);  // child launch overhead simulated
     }
-}
-
-int generate_random_number(int min, int max) {  // pseudo rng for random child workload
-    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-    std::default_random_engine generator(seed);
-    std::uniform_int_distribution<int> distribution(min, max);
-    int random_number = distribution(generator);
-    return random_number;
 }
 
 bool launch_interval_satisfied(int launch_interval){
