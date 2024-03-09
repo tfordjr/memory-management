@@ -142,7 +142,7 @@ int main(int argc, char** argv){
             }else if(rcvbuf.msgCode == MSG_TYPE_SUCCESS){     // if child is terminating   
                 cout << "OSS: Worker " << i + 1 << " PID: " << processTable[i].pid << " is planning to terminate" << std::endl;             
                 outputFile << "OSS: Worker " << i + 1 << " PID: " << processTable[i].pid << " is planning to terminate" << std::endl;
-                wait(0);  // give terminating process time to clear out of system
+                wait(NULL);  // give terminating process time to clear out of system
                 update_process_table_of_terminated_child(processTable, processTable[i].pid, simultaneous);
                 remove_process_from_scheduling_queues(processTable[i].pid);
             }
