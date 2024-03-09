@@ -85,8 +85,11 @@ int check_blocked_processes(PCB processTable[], int simultaneous, int secs, int 
         if(processTable[i].blocked && (secs > processTable[i].eventBlockedUntilSec || 
         secs == processTable[i].eventBlockedUntilSec && nanos > processTable[i].eventBlockedUntilNano)){          
             schedule_process(processTable[i].pid);
+            processTable[i].blocked = 0;
+            processTable[i].eventBlockedUntilSec = 0;
+            processTable[i].eventBlockedUntilNano = 0;
             unblocks++;            
-        } 
+        }
     }
     return unblocks;
 }
