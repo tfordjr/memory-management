@@ -108,6 +108,7 @@ int main(int argc, char** argv){
                 // MSG SEND
         if (!process_table_empty(processTable, simultaneous) && i != -1){  // comm with next child            
             buf.mtype = processTable[i].pid;     // SEND MESSAGE TO CHILD NONBLOCKING
+            buf.time_slice = time_slice;    // set local variable to msg struct parameter!
             buf.msgCode = MSG_TYPE_RUNNING;   // we will give it the pid we are sending to, so we know it received it
             strcpy(buf.message, "Message to child\n");
             if (msgsnd(msgqid, &buf, sizeof(msgbuffer), 0) == -1) {
@@ -126,10 +127,10 @@ int main(int argc, char** argv){
             }       // LOG MSG RECEIVE
             cout << "OSS: Receiving message code " << rcvbuf.msgCode << " from worker " << i + 1 << " PID: " << processTable[i].pid << " at time " << shm_clock->secs << ":" << shm_clock->nanos << std::endl;
             outputFile << "OSS: Receiving message code " << rcvbuf.msgCode << " from worker " << i + 1 << " PID: " << processTable[i].pid << " at time " << shm_clock->secs << ":" << shm_clock->nanos << std::endl;
-            increment(shm_clock, abs(rcvbuf.time_slice_used)); // increment absolute value of time used, sign only indicates process state, not time used
+            increment(shm_clock, abs(rcvbuf.time_slice)); // increment absolute value of time used, sign only indicates process state, not time used
 
                     // UNPACK RECEIVED MESSAGE
-            if (time_slice == rcvbuf.time_slice_used) { // If total time slice used
+            if (time_slice == rcvbuf.time_slice) { // If total time slice used
                 descend_queues(processTable[i].pid); 
             } else if (rcvbuf.msgCode == MSG_TYPE_BLOCKED) {  // Child blocked
                 update_process_table_of_blocked_child(processTable, processTable[i].pid, simultaneous);

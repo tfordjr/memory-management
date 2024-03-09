@@ -21,7 +21,8 @@
 typedef struct msgbuffer {
 	long mtype;			 	 // pid
     char message[100];   	 // string message
-	int time_slice_used; 	 // time used in nanos (int sufficient for this as max quantum is 40ms)
+	int time_slice; 	 // OSS SENDS TO CHILD: TIME SLICE ALLOTTED TO CHILD!
+						// CHILD SENDS TO OSS: TIME SLICE ACTUALLY USED!
 	int blocked_until_secs;	 // time when process becomes unblocked
 	int blocked_until_nanos;
 	int msgCode;			  // process state code

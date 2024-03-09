@@ -20,6 +20,10 @@
 #include "msgq.h"
 using namespace std;
 
+#define TERMINATION_CHANCE 10
+#define IO_BLOCK_CHANCE 25
+#define ACUTAL_IO_BLOCK_CHANCE (TERMINATION_CHANCE + IO_BLOCK_CHANCE)
+
 int main(int argc, char** argv) {
     Clock* shm_clock;           // init shm clock
 	key_t clock_key = ftok("/tmp", 35);
@@ -56,46 +60,47 @@ int main(int argc, char** argv) {
 
     int iter = 0;
     bool done = false;
-    while(!done){                 // Blocking msgrcv waiting for parent message
-        iter++;
+    while(!done){            
+        iter++;       // Blocking msgrcv waiting for parent message
         if ( msgrcv(msgqid, &rcvbuf, sizeof(msgbuffer), getpid(), 0) == -1) {
             perror("failed to receive message from parent\n");
             exit(1);
-        } // output message from parent	
+        }       // output message from parent	
         printf("%d: Child received message code: %d from parent\n",getpid(), rcvbuf.msgCode);
 
-        // -------------- IO BLOCKING TEST CODE --------------
-        // int chance_to_terminate = 25; 
-        // srand(getpid() + time(NULL)); // Should be different for every run of every proc.
-        // int random_number = rand() % 100;  // 25 percent chance to terminate every run.
+                // init random chance variables to terminate or block        
+        srand(getpid() + time(NULL)); // Should be different for every run of every proc.
+        int random_number = rand() % 100;  
 
-        // if (random_number < 25){ // If we do terminate
-        //     printf("USER PID: %d  PPID: %d  SysClockS: %d  SysClockNano: %d  TermTimeS: %d  TermTimeNano: %d\n--Terminating after sending message back to oss after %d iterations.\n", getpid(), getppid(), shm_clock->secs, shm_clock->nanos, end_secs, end_nanos, iter);
-        //     done = true;
-        //     buf.msgCode = MSG_TYPE_SUCCESS;    
-        //     strcpy(buf.message,"Completed Successfully (RANDOM TERMINATION), now terminating...\n");
-        //     // ALSO USE RANDOM AMOUNT OF TIMESLICE BEFORE TERMINATING!!!!!!!
-        // } else if (random_number < 50){
-        //     // USE RANDOM AMOUNT OF TIMESLICE AND IO BLOCK!!!!!!!
-        //     // MSG OS SO THAT THEY KNOW WE ARE IO BLOCKED
-        //     // MSG OS HOW LONG WE WILL BE BLOCKED (OS WILL UPDATE PCB)
-        //     // WHILE LOOP UNTIL NOT IO BLOCKED
-        // WHEN PROCESS IS UNBLOCKED, THEY GO TO HIGHEST PRIORITY QUEUE!!!!
-        // }
-        
-            
-
-            // check if end time has elapsed, if so, terminate     
-        if(shm_clock->secs > end_secs || shm_clock->secs == end_secs && shm_clock->nanos > end_nanos){ 
+        if (random_number < TERMINATION_CHANCE){    // If we do terminate
             printf("USER PID: %d  PPID: %d  SysClockS: %d  SysClockNano: %d  TermTimeS: %d  TermTimeNano: %d\n--Terminating after sending message back to oss after %d iterations.\n", getpid(), getppid(), shm_clock->secs, shm_clock->nanos, end_secs, end_nanos, iter);
             done = true;
             buf.msgCode = MSG_TYPE_SUCCESS;    
-            strcpy(buf.message,"Completed Successfully (TIME LIMIT HIT), now terminating...\n");
-        } else {    // else program continues running
-            printf("USER PID: %d  PPID: %d  SysClockS: %d  SysClockNano: %d  TermTimeS: %d  TermTimeNano: %d\n--%d iteration(s) have passed since starting\n", getpid(), getppid(), shm_clock->secs, shm_clock->nanos, end_secs, end_nanos, iter);
-            buf.msgCode = MSG_TYPE_RUNNING;
-            strcpy(buf.message,"Still Running...\n");
-        }      
+            strcpy(buf.message,"Completed Successfully (RANDOM TERMINATION), now terminating...\n");
+            buf.time_slice = rand() % rcvbuf.time_slice;  // use random amount of timeslice before terminating            
+        } else if (random_number < ACUTAL_IO_BLOCK_CHANCE){   // If we IO Block
+            buf.time_slice = rand() % rcvbuf.time_slice;  // use random amount of timeslice before IO Block
+            buf.msgCode = MSG_TYPE_BLOCKED;
+            // MSG OS HOW LONG WE WILL BE BLOCKED (OS WILL UPDATE PCB)
+            // WHILE LOOP UNTIL NOT IO BLOCKED
+            // WHEN PROCESS IS UNBLOCKED, THEY GO TO HIGHEST PRIORITY QUEUE!!!!
+            // HOW MUCH OF THE TIME SLICE DID YOU USE ?
+        } else { // process doesn't prematurely term or block, check if end time has elapsed, if so, terminate   
+            if(shm_clock->secs > end_secs || shm_clock->secs == end_secs && shm_clock->nanos > end_nanos){ 
+                printf("USER PID: %d  PPID: %d  SysClockS: %d  SysClockNano: %d  TermTimeS: %d  TermTimeNano: %d\n--Terminating after sending message back to oss after %d iterations.\n", getpid(), getppid(), shm_clock->secs, shm_clock->nanos, end_secs, end_nanos, iter);
+                done = true;
+                buf.msgCode = MSG_TYPE_SUCCESS;                    
+                strcpy(buf.message,"Completed Successfully (TIME LIMIT HIT), now terminating...\n");
+                    // HOW MUCH OF THE TIME SLICE DID YOU USE ?
+            } else {    // else program continues running
+                printf("USER PID: %d  PPID: %d  SysClockS: %d  SysClockNano: %d  TermTimeS: %d  TermTimeNano: %d\n--%d iteration(s) have passed since starting\n", getpid(), getppid(), shm_clock->secs, shm_clock->nanos, end_secs, end_nanos, iter);
+                buf.msgCode = MSG_TYPE_RUNNING;
+                strcpy(buf.message,"Still Running...\n");
+                // HOW MUCH OF THE TIME SLICE DID YOU USE ?  The full slice
+                // Check again that process doesn't term naturally during runtime
+            }
+        }
+        
             // msgsnd(to parent saying if we are done or not);
         if (msgsnd(msgqid, &buf, sizeof(msgbuffer), 0) == -1) {
             perror("msgsnd to parent failed\n");
