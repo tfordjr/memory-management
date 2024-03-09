@@ -101,7 +101,7 @@ int main(int argc, char** argv){
     int time_slice; // holds time slice of next process in ns, updated by scheduler()
                         //  ---------  MAIN LOOP  ---------   
     while(numChildren > 0 || !process_table_empty(processTable, simultaneous)){         
-        scheduler(processTable, simultaneous, &i, &time_slice); // assigns i to next child
+        scheduler(processTable, simultaneous, &i, &time_slice, shm_clock->secs, shm_clock->nanos); // assigns i to next child
         increment(shm_clock, DISPATCH_AMOUNT);  // dispatcher overhead
         print_process_table(processTable, simultaneous, shm_clock->secs, shm_clock->nanos, outputFile);        
         
@@ -133,8 +133,8 @@ int main(int argc, char** argv){
             if (time_slice == rcvbuf.time_slice) { // If total time slice used
                 descend_queues(processTable[i].pid); 
             } else if (rcvbuf.msgCode == MSG_TYPE_BLOCKED) {  // Child blocked
-                update_process_table_of_blocked_child(processTable, processTable[i].pid, simultaneous);
-                remove_process_from_scheduling_queues(processTable[i].pid); 
+                update_process_table_of_blocked_child(processTable, processTable[i].pid, simultaneous, rcvbuf.blocked_until_secs, rcvbuf.blocked_until_nanos);
+                remove_process_from_scheduling_queues(processTable[i].pid);
             }else if(rcvbuf.msgCode == MSG_TYPE_SUCCESS){     // if child is terminating   
                 cout << "OSS: Worker " << i + 1 << " PID: " << processTable[i].pid << " is planning to terminate" << std::endl;             
                 outputFile << "OSS: Worker " << i + 1 << " PID: " << processTable[i].pid << " is planning to terminate" << std::endl;
@@ -150,9 +150,7 @@ int main(int argc, char** argv){
             outputFile << "OSS: Launching Child Process..." << endl;
             numChildren--;
             launch_child(processTable, time_limit, simultaneous);
-        }
-                // FOR EACH BLOCKED PROCESS, CHECK IF NO LONGER BLOCKED
-        
+        }        
     }                   // --------- END OF MAIN LOOP ---------  
 
 	cout << "OSS: Child processes have completed. (" << numChildren << " remaining)\n";

@@ -24,6 +24,8 @@ using namespace std;
 #define IO_BLOCK_CHANCE 25
 #define ACUTAL_IO_BLOCK_CHANCE (TERMINATION_CHANCE + IO_BLOCK_CHANCE)
 
+void calculate_time_until_unblocked(int, int, int, int *, int *);
+
 int main(int argc, char** argv) {
     Clock* shm_clock;           // init shm clock
 	key_t clock_key = ftok("/tmp", 35);
@@ -71,6 +73,7 @@ int main(int argc, char** argv) {
                 // init random chance variables to terminate or block        
         srand(getpid() + time(NULL)); // Should be different for every run of every proc.
         int random_number = rand() % 100;  
+        srand(getpid() + time(NULL));  // reseeding rand()
 
         if (random_number < TERMINATION_CHANCE){    // If we do terminate
             printf("USER PID: %d  PPID: %d  SysClockS: %d  SysClockNano: %d  TermTimeS: %d  TermTimeNano: %d\n--Terminating after sending message back to oss after %d iterations.\n", getpid(), getppid(), shm_clock->secs, shm_clock->nanos, end_secs, end_nanos, iter);
@@ -81,10 +84,13 @@ int main(int argc, char** argv) {
         } else if (random_number < ACUTAL_IO_BLOCK_CHANCE){   // If we IO Block
             buf.time_slice = rand() % rcvbuf.time_slice;  // use random amount of timeslice before IO Block
             buf.msgCode = MSG_TYPE_BLOCKED;
-            // MSG OS HOW LONG WE WILL BE BLOCKED (OS WILL UPDATE PCB)
-            // WHILE LOOP UNTIL NOT IO BLOCKED
-            // WHEN PROCESS IS UNBLOCKED, THEY GO TO HIGHEST PRIORITY QUEUE!!!!
-            // HOW MUCH OF THE TIME SLICE DID YOU USE ?
+            srand(getpid() + time(NULL));  // reseeding rand()
+            int nanos_blocked = rand() % 1000000000; // max 1 second blocked
+            int temp_unblock_secs, temp_unblock_nanos;
+            calculate_time_until_unblocked(shm_clock->secs, shm_clock->nanos, nanos_blocked, &temp_unblock_secs, &temp_unblock_nanos);
+            buf.blocked_until_secs = temp_unblock_secs;
+            buf.blocked_until_nanos = temp_unblock_nanos;
+            // WHAT TO DO WHILE IO BLOCKED?
         } else { // process doesn't prematurely term or block, check if end time has elapsed, if so, terminate   
             if(shm_clock->secs > end_secs || shm_clock->secs == end_secs && shm_clock->nanos > end_nanos){ 
                 printf("USER PID: %d  PPID: %d  SysClockS: %d  SysClockNano: %d  TermTimeS: %d  TermTimeNano: %d\n--Terminating after sending message back to oss after %d iterations.\n", getpid(), getppid(), shm_clock->secs, shm_clock->nanos, end_secs, end_nanos, iter);
@@ -110,4 +116,15 @@ int main(int argc, char** argv) {
     shmdt(shm_clock);
     printf("%d: Child is terminating...\n",getpid());
     return EXIT_SUCCESS; 
+}
+
+void calculate_time_until_unblocked(int secs, int nanos, int nanos_blocked, int *temp_unblock_secs, int *temp_unblock_nanos){
+    nanos += nanos_blocked;
+    if (nanos >= 1000000000){   // if over 1 billion nanos, add 1 second, sub 1 bil nanos
+        nanos = nanos - 1000000000;
+        secs++;
+    }
+    *temp_unblock_secs = secs;
+    *temp_unblock_nanos = nanos;
+    return;
 }
