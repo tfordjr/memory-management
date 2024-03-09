@@ -23,9 +23,13 @@ memclean.sh: cleans up lingering memory on make clean command
 readme: explains project
 
 Concerns/Points of confusion: 
+USER.CPP NATURAL TERMINATION, HOW TO FIGURE WHAT'S THE TIME SLICE?
 
 Known Problems or Bugs: 
 when user.cpp determines random amount of time slice to use before terminating or IO block,
     it's possible that we choose an amount of time that is over the TermTime of the process
     The only time we check term time is if we do not IO block or randomly terminate
 Also, user.cpp does not actually check if it terms naturally during runtime
+
+IMPLEMENT REPORT ON AVERAGE WAIT TIME, CPU UTILIZATION, AND AVG BLOCKED TIME
+ALSO HOW LONG THE CPU WAS IDLE WITH NO READY PROCESSES

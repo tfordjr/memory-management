@@ -25,6 +25,7 @@ using namespace std;
 #define ACUTAL_IO_BLOCK_CHANCE (TERMINATION_CHANCE + IO_BLOCK_CHANCE)
 
 void calculate_time_until_unblocked(int, int, int, int *, int *);
+bool will_process_terminate_during_quantum(int, int, int, int, int, int, int, int*);
 
 int main(int argc, char** argv) {
     Clock* shm_clock;           // init shm clock
@@ -92,14 +93,20 @@ int main(int argc, char** argv) {
             buf.blocked_until_secs = temp_unblock_secs;
             buf.blocked_until_nanos = temp_unblock_nanos;
                     // IF WE NEITHER TERM EARLY OR IO BLOCK
-        } else { // check if end time has elapsed, if so, terminate
+        } else { // check if end time has already elapsed, if so, terminate asap
+            int secs_plus_quantum, nanos_plus_quantum, time_slice_used;
             if(shm_clock->secs > end_secs || shm_clock->secs == end_secs && shm_clock->nanos > end_nanos){ 
                 printf("USER PID: %d  PPID: %d  SysClockS: %d  SysClockNano: %d  TermTimeS: %d  TermTimeNano: %d\n--Terminating after sending message back to oss after %d iterations.\n", getpid(), getppid(), shm_clock->secs, shm_clock->nanos, end_secs, end_nanos, iter);
                 done = true;
-                buf.msgCode = MSG_TYPE_SUCCESS;                    
-                strcpy(buf.message,"Completed Successfully (TIME LIMIT HIT), now terminating...\n");
+                buf.msgCode = MSG_TYPE_SUCCESS; 
+                strcpy(buf.message,"Completed Successfully (END TIME ELAPSED), now terminating...\n");
                     // HOW MUCH OF THE TIME SLICE DID YOU USE ?
+            } else if(will_process_terminate_during_quantum(shm_clock->secs, shm_clock->nanos, end_secs, end_nanos, rcvbuf.time_slice, secs_plus_quantum, nanos_plus_quantum, &time_slice_used)){
+
             } else {    // else program continues running
+                // IF TERM WOULD ELAPSE DURING RUNTIME, CALC USED TIME SLICE, EXECUTE,
+                // ELSE, TERM TIME WOULD NOT ELASE DURING RUNTIME, TIME SLICE IS FULL QUANTUM
+                
                 printf("USER PID: %d  PPID: %d  SysClockS: %d  SysClockNano: %d  TermTimeS: %d  TermTimeNano: %d\n--%d iteration(s) have passed since starting\n", getpid(), getppid(), shm_clock->secs, shm_clock->nanos, end_secs, end_nanos, iter);
                 buf.msgCode = MSG_TYPE_RUNNING;
                 buf.time_slice = rcvbuf.time_slice;  // used full time slice
@@ -123,10 +130,44 @@ int main(int argc, char** argv) {
 void calculate_time_until_unblocked(int secs, int nanos, int nanos_blocked, int *temp_unblock_secs, int *temp_unblock_nanos){
     nanos += nanos_blocked;
     if (nanos >= 1000000000){   // if over 1 billion nanos, add 1 second, sub 1 bil nanos
-        nanos = nanos - 1000000000;
+        nanos -= 1000000000;
         secs++;
     }
     *temp_unblock_secs = secs;
     *temp_unblock_nanos = nanos;
     return;
+}
+
+bool will_process_terminate_during_quantum(int secs, int nanos, int end_secs, int end_nanos, int quantum, int secs_plus_quantum, int nanos_plus_quantum, int* time_slice_used){
+    secs_plus_quantum = secs;
+    nanos_plus_quantum = nanos;
+    
+    nanos_plus_quantum += quantum;
+
+    if (nanos >= 1000000000){   // if over 1 billion nanos, add 1 second, sub 1 bil nanos
+        nanos_plus_quantum -= 1000000000;
+        secs_plus_quantum++;
+    }
+    
+    int elapsed_secs = end_secs - secs_plus_quantum;  // difference between termination time and clock time
+    int elapsed_nanos = end_nanos - nanos_plus_quantum;    
+   
+    if (elapsed_nanos < 0) {  
+        elapsed_secs--;       
+        elapsed_nanos += 1000000000;
+    }
+        // if difference is negative, process will end during quantum
+    if(elapsed_secs < 0){
+        *time_slice_used = abs(elapsed_secs * 1000000000 + elapsed_nanos);
+        return true;
+    }
+         // Try using this if the above is too dangerous, with how short our quantums are,
+         // this will suffice for all of the cases we will see.
+    // if(elapsed_secs == -1){   
+    //     *time_slice_used = abs(1000000000 + elapsed_nanos);
+    //     return true;
+    // }
+
+        // else program will not end during next quantum
+    return false;
 }

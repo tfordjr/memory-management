@@ -133,7 +133,7 @@ int main(int argc, char** argv){
                     // UNPACK RECEIVED MESSAGE
             if (time_slice == rcvbuf.time_slice) { // If total time slice used
                 descend_queues(processTable[i].pid); 
-            } else if (rcvbuf.msgCode == MSG_TYPE_BLOCKED) {  // Child blocked
+            } else if (rcvbuf.msgCode == MSG_TYPE_BLOCKED) {  // Process blocked
                 update_process_table_of_blocked_child(processTable, processTable[i].pid, simultaneous, rcvbuf.blocked_until_secs, rcvbuf.blocked_until_nanos);
                 remove_process_from_scheduling_queues(processTable[i].pid);
             }else if(rcvbuf.msgCode == MSG_TYPE_SUCCESS){     // if child is terminating   
