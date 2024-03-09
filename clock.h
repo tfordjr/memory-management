@@ -6,6 +6,7 @@
 
 #define DISPATCH_AMOUNT 1000000      // 1 ms dispatch time
 #define CHILD_LAUNCH_AMOUNT 1000000  // 1 ms child launch time
+#define UNBLOCK_AMOUNT 1000000       // 1 ms process unblock/reschedule time
 
 typedef struct Clock {
     int secs;

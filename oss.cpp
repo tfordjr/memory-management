@@ -97,12 +97,13 @@ int main(int argc, char** argv){
 	cout << "OSS: Message queue set up\n";
     outputFile << "OSS: Message queue set up\n";
 
-    int i = -1;  // holds PCB location of next process
+    int i;          // holds PCB location of next process
     int time_slice; // holds time slice of next process in ns, updated by scheduler()
+    int unblocks;   // holds number of unblocks performed to simulate scheduling overhead
                         //  ---------  MAIN LOOP  ---------   
     while(numChildren > 0 || !process_table_empty(processTable, simultaneous)){         
-        scheduler(processTable, simultaneous, &i, &time_slice, shm_clock->secs, shm_clock->nanos); // assigns i to next child
-        increment(shm_clock, DISPATCH_AMOUNT);  // dispatcher overhead
+        scheduler(processTable, simultaneous, &i, &time_slice, &unblocks shm_clock->secs, shm_clock->nanos); // assigns i to next child
+        increment(shm_clock, (DISPATCH_AMOUNT + (unblocks * UNBLOCK_AMOUNT)));  // dispatcher overhead and unblocked reschedule overhead
         print_process_table(processTable, simultaneous, shm_clock->secs, shm_clock->nanos, outputFile);        
         
                 // MSG SEND

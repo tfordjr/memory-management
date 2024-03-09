@@ -45,7 +45,7 @@ int main(int argc, char** argv) {
         end_secs++;
     } 
 
-    msgbuffer buf, rcvbuf;   // init msg buffer
+    msgbuffer buf, rcvbuf;   // buf for msgsnd buffer, rcvbuf for msgrcv buffer
 	buf.mtype = getpid();
 	int msgqid = 0;
 	key_t msgq_key;	
@@ -62,36 +62,37 @@ int main(int argc, char** argv) {
 
     int iter = 0;
     bool done = false;
-    while(!done){            
-        iter++;       // Blocking msgrcv waiting for parent message
+    while(!done){      // ----------- MAIN LOOP -----------     
+        iter++;       // MSGRCV BLOCKING WAIT, WAITS HERE WHILE IO BLOCKED ALSO
         if ( msgrcv(msgqid, &rcvbuf, sizeof(msgbuffer), getpid(), 0) == -1) {
             perror("failed to receive message from parent\n");
             exit(1);
-        }       // output message from parent	
+        }       // MSGRCV PRINT MSG	
         printf("%d: Child received message code: %d from parent\n",getpid(), rcvbuf.msgCode);
 
-                // init random chance variables to terminate or block        
+                // INIT RANDOM CHANCE VARS       
         srand(getpid() + time(NULL)); // Should be different for every run of every proc.
         int random_number = rand() % 100;  
         srand(getpid() + time(NULL));  // reseeding rand()
 
-        if (random_number < TERMINATION_CHANCE){    // If we do terminate
+                    // IF WE RANDOMLY TERM EARLY
+        if (random_number < TERMINATION_CHANCE){   
             printf("USER PID: %d  PPID: %d  SysClockS: %d  SysClockNano: %d  TermTimeS: %d  TermTimeNano: %d\n--Terminating after sending message back to oss after %d iterations.\n", getpid(), getppid(), shm_clock->secs, shm_clock->nanos, end_secs, end_nanos, iter);
             done = true;
             buf.msgCode = MSG_TYPE_SUCCESS;    
             strcpy(buf.message,"Completed Successfully (RANDOM TERMINATION), now terminating...\n");
             buf.time_slice = rand() % rcvbuf.time_slice;  // use random amount of timeslice before terminating            
-        } else if (random_number < ACUTAL_IO_BLOCK_CHANCE){   // If we IO Block
+                    // IF WE RANDOMLY IO BLOCK
+        } else if (random_number < ACUTAL_IO_BLOCK_CHANCE){   
             buf.time_slice = rand() % rcvbuf.time_slice;  // use random amount of timeslice before IO Block
-            buf.msgCode = MSG_TYPE_BLOCKED;
-            srand(getpid() + time(NULL));  // reseeding rand()
-            int nanos_blocked = rand() % 1000000000; // max 1 second blocked
+            buf.msgCode = MSG_TYPE_BLOCKED;            
+            int nanos_blocked = 1000000000; // IO BLOCK ALWAYS LASTS 1 SEC
             int temp_unblock_secs, temp_unblock_nanos;
             calculate_time_until_unblocked(shm_clock->secs, shm_clock->nanos, nanos_blocked, &temp_unblock_secs, &temp_unblock_nanos);
             buf.blocked_until_secs = temp_unblock_secs;
             buf.blocked_until_nanos = temp_unblock_nanos;
-            // WHAT TO DO WHILE IO BLOCKED?
-        } else { // process doesn't prematurely term or block, check if end time has elapsed, if so, terminate   
+                    // IF WE NEITHER TERM EARLY OR IO BLOCK
+        } else { // check if end time has elapsed, if so, terminate
             if(shm_clock->secs > end_secs || shm_clock->secs == end_secs && shm_clock->nanos > end_nanos){ 
                 printf("USER PID: %d  PPID: %d  SysClockS: %d  SysClockNano: %d  TermTimeS: %d  TermTimeNano: %d\n--Terminating after sending message back to oss after %d iterations.\n", getpid(), getppid(), shm_clock->secs, shm_clock->nanos, end_secs, end_nanos, iter);
                 done = true;
@@ -101,8 +102,8 @@ int main(int argc, char** argv) {
             } else {    // else program continues running
                 printf("USER PID: %d  PPID: %d  SysClockS: %d  SysClockNano: %d  TermTimeS: %d  TermTimeNano: %d\n--%d iteration(s) have passed since starting\n", getpid(), getppid(), shm_clock->secs, shm_clock->nanos, end_secs, end_nanos, iter);
                 buf.msgCode = MSG_TYPE_RUNNING;
+                buf.time_slice = rcvbuf.time_slice;  // used full time slice
                 strcpy(buf.message,"Still Running...\n");
-                // HOW MUCH OF THE TIME SLICE DID YOU USE ?  The full slice
                 // Check again that process doesn't term naturally during runtime
             }
         }
@@ -112,8 +113,9 @@ int main(int argc, char** argv) {
             perror("msgsnd to parent failed\n");
             exit(1);
         }
-    }    
-    shmdt(shm_clock);
+    }   // ----------- MAIN LOOP -----------     
+
+    shmdt(shm_clock);  // deallocate shm and terminate
     printf("%d: Child is terminating...\n",getpid());
     return EXIT_SUCCESS; 
 }

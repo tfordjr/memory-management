@@ -16,10 +16,10 @@ std::queue<pid_t> Q2;  // Q2 40 ms or 40000000 ns
 // oss checks child run result, updates process_table
 // oss passes process_table to us, we handle queue movements
 
-void check_blocked_processes(PCB[], int, int, int);
+int = check_blocked_processes(PCB[], int, int, int);
 
         // scheduler() determines i (next process location) and associated time slice
-void scheduler(PCB processTable[], int simultaneous, int *i, int *time_slice, int secs, int nanos){  
+void scheduler(PCB processTable[], int simultaneous, int *i, int *time_slice, int *unblocks, int secs, int nanos){  
     if (process_table_empty(processTable, simultaneous)){
         *i = -1;
         *time_slice = 0;
@@ -27,7 +27,7 @@ void scheduler(PCB processTable[], int simultaneous, int *i, int *time_slice, in
     }
 
         // FOR EACH BLOCKED PROCESS, CHECK IF NO LONGER BLOCKED, SEND TO Q0
-    check_blocked_processes(processTable, simultaneous, secs, nanos);
+    unblocks = check_blocked_processes(processTable, simultaneous, secs, nanos);
 
     pid_t pid;    
     if(!Q0.empty()){
@@ -77,14 +77,16 @@ void schedule_unblocked_process(pid_t pid){  // Move recently unblocked proc to 
 }
 
     // This says if blocked process is no longer io blocked, schedule it
-void check_blocked_processes(PCB processTable[], int simultaneous, int secs, int nanos){
+int check_blocked_processes(PCB processTable[], int simultaneous, int secs, int nanos){
+    int unblocks = 0;
     for(int i = 0; i < simultaneous; i++){
         if(processTable[i].blocked && (secs > processTable[i].eventBlockedUntilSec || 
         secs == processTable[i].eventBlockedUntilSec && nanos > processTable[i].eventBlockedUntilNano)){          
             schedule_unblocked_process(processTable[i].pid);
-            return;
+            unblocks++;            
         } 
     }
+    return unblocks;
 }
 
 #endif
