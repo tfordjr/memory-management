@@ -166,7 +166,7 @@ int main(int argc, char** argv){
     shmdt(shm_clock);      // clock cleanup, detatch & delete shm
     if (shmctl(shmtid, IPC_RMID, NULL) == -1) 
         perror("Error: shmctl failed!!");
-    kill_all_processes(processTable);
+    kill_all_processes(processTable, simultaneous);
 
     if (msgctl(msgqid, IPC_RMID, NULL) == -1) {  // get rid of message queue
 		perror("msgctl to get rid of queue in parent failed");
