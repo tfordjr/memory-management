@@ -77,8 +77,10 @@ void print_process_table(PCB processTable[], int simultaneous, int secs, int nan
         printf("OSS PID: %d  SysClockS: %d  SysClockNano: %d  \nProcess Table:\nEntry\tOccupied  PID\tStartS\tStartN\t\tBlocked\tUnblockedS  UnblockedN\n", getpid(), secs, nanos);
         outputFile << "OSS PID: " << getpid() << "  SysClockS: " << secs << "  SysClockNano " << nanos << "  \nProcess Table:\nEntry\tOccupied  PID\tStartS\tStartN\t\tBlocked\tUnblockedS  UnblockedN\n";
         for(int i = 0; i < simultaneous; i++){
-            printf("%d\t%d\t%d\t%d\t%d\t\t%d\t%d\t\t%d\n", (i + 1), processTable[i].occupied, processTable[i].pid, processTable[i].startSecs, processTable[i].startNanos, processTable[i].blocked, processTable[i].eventBlockedUntilSec, processTable[i].eventBlockedUntilNano);
-            outputFile << std::to_string(i + 1) << "\t" << std::to_string(processTable[i].occupied) << "\t" << std::to_string(processTable[i].pid) << "\t" << std::to_string(processTable[i].startSecs) << "\t" << std::to_string(processTable[i].startNanos) << "\t" << std::to_string(processTable[i].blocked) << "\t" << std::to_string(processTable[i].eventBlockedUntilSec) << "\t\t" << std::to_string(processTable[i].eventBlockedUntilNano) << std::endl;
+            std::string tab = (processTable[i].startNanos == 0) ? "\t\t" : "\t";
+
+            printf("%d\t%d\t%d\t%d\t%d" + tab + "%d\t%d\t\t%d\n", (i + 1), processTable[i].occupied, processTable[i].pid, processTable[i].startSecs, processTable[i].startNanos, processTable[i].blocked, processTable[i].eventBlockedUntilSec, processTable[i].eventBlockedUntilNano);
+            outputFile << std::to_string(i + 1) << "\t" << std::to_string(processTable[i].occupied) << "\t" << std::to_string(processTable[i].pid) << "\t" << std::to_string(processTable[i].startSecs) << "\t" << std::to_string(processTable[i].startNanos) << tab << std::to_string(processTable[i].blocked) << "\t" << std::to_string(processTable[i].eventBlockedUntilSec) << "\t\t" << std::to_string(processTable[i].eventBlockedUntilNano) << std::endl;
         }
         next_print_nanos = next_print_nanos + 500000000;
         if (next_print_nanos >= 1000000000){   // if over 1 billion nanos, add 1 second, sub 1 bil nanos
