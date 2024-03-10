@@ -47,8 +47,7 @@ int main(int argc, char** argv) {
         end_secs++;
     } 
 
-    msgbuffer buf, rcvbuf;   // buf for msgsnd buffer, rcvbuf for msgrcv buffer
-	buf.mtype = getpid();
+    msgbuffer buf, rcvbuf;   // buf for msgsnd buffer, rcvbuf for msgrcv buffer	
 	int msgqid = 0;
 	key_t msgq_key;	
 	if ((msgq_key = ftok(MSGQ_FILE_PATH, MSGQ_PROJ_ID)) == -1) {   // get a key for our message queue
@@ -67,6 +66,8 @@ int main(int argc, char** argv) {
 
     while(!done){      // ----------- MAIN LOOP -----------     
         iter++;       // MSGRCV BLOCKING WAIT, WAITS HERE WHILE IO BLOCKED ALSO
+        clean_msgbuffer(buf);
+        clean_msgbuffer(rcvbuf);        
         if ( msgrcv(msgqid, &rcvbuf, sizeof(msgbuffer), getpid(), 0) == -1) {
             perror("failed to receive message from parent\n");
             exit(1);
@@ -121,6 +122,7 @@ int main(int argc, char** argv) {
         }
         
             // msgsnd(to parent saying if we are done or not);
+        buf.mtype = getpid();
         if (msgsnd(msgqid, &buf, sizeof(msgbuffer), 0) == -1) {
             perror("msgsnd to parent failed\n");
             exit(1);
