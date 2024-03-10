@@ -17,19 +17,22 @@ oss.cpp: processes args and managles child forking, msgq, pcb, logical clock, et
 user.cpp: user executable takes one arg for number of iterations. prints and sleeps. 
 pcb.h: contains pcb struct and many related functions for process table utility.
 clock.h: logical clock struct.
-msgq.h houses msgbuffer struct, running states
-makefile: creates oss and user executables, oss executes user executable to perform work.
+msgq.h: houses msgbuffer struct, running states
+rng.h: holds generate_random_number() to be used in user.cpp and oss.cpp
 memclean.sh: cleans up lingering memory on make clean command
+makefile: creates oss and user executables, oss executes user executable to perform work.
 readme: explains project
 
-Concerns/Points of confusion: 
-USER.CPP NATURAL TERMINATION, HOW TO FIGURE WHAT'S THE TIME SLICE?
+Lack of adhearance to specifications:
+Instead of sending a "-" on the time slice used to convey blocked or unblocked,
+    In my project the time slice never has "-" symbol and that info is in the msgCode var.
 
 Known Problems or Bugs: 
 when user.cpp determines random amount of time slice to use before terminating or IO block,
     it's possible that we choose an amount of time that is over the TermTime of the process
     The only time we check term time is if we do not IO block or randomly terminate
-Also, user.cpp does not actually check if it terms naturally during runtime
+
+
 
 IMPLEMENT REPORT ON AVERAGE WAIT TIME, CPU UTILIZATION, AND AVG BLOCKED TIME
 ALSO HOW LONG THE CPU WAS IDLE WITH NO READY PROCESSES
