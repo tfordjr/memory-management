@@ -30,6 +30,7 @@ bool launch_interval_satisfied(int);
 void help();
 void timeout_handler(int);
 void ctrl_c_handler(int);
+void cleanup(string);
 
 volatile sig_atomic_t term = 0;  // signal handling global
 struct PCB processTable[20]; // Init Process Table Array of PCB structs (not shm)
