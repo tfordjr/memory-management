@@ -32,4 +32,14 @@ typedef struct msgbuffer {
 #define MSG_TYPE_RUNNING 1   // STILL RUNNING
 #define MSG_TYPE_SUCCESS 0   // TERMINATING
  
+
+void clean_msgbuffer(msgbuffer& buf) {
+    buf.mtype = 0;    
+    strcpy(buf.message, "");
+    buf.time_slice = 0;
+    buf.blocked_until_secs = 0;
+    buf.blocked_until_nanos = 0;
+    buf.msgCode = 0;
+}
+
 #endif
