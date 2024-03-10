@@ -4,7 +4,7 @@
 #ifndef CLOCK_H
 #define CLOCK_H
 
-#define DISPATCH_AMOUNT 2000000      // 2 ms dispatch time
+#define DISPATCH_AMOUNT 1000000      // 2 ms dispatch time
 #define CHILD_LAUNCH_AMOUNT 1000000  // 1 ms child launch time
 #define UNBLOCK_AMOUNT 1000000       // 1 ms process unblock/reschedule time
 
