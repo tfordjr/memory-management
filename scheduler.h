@@ -49,6 +49,20 @@ void scheduler(PCB processTable[], int simultaneous, int *i, int *time_slice, in
     return; 
 }    
 
+int return_position_of_given_pid(PCB processTable[], int simultaneous, pid_t pid){
+    for(int i = 0; i < simultaneous; i++){
+        if(processTable[i].pid == pid){  // if PCB pid equal to given pid
+            return i;                    // return position
+        } 
+    }
+    
+    perror("Scheduler.h: Error: failed to find pid of process chosen to be scheduled from scheduling queue in the process table.");
+    cleanup("perror encountered.");
+    exit(1);   
+
+    // return -1;  // pid not found on process table
+}
+
 // DURING OSS MAIN LOOP, I LEAVE PID BEING WORKED ON AT THE FRONT OF LINE IT WAS IN
 // AT THE END OF MAIN LOOP, WE REMOVE PROCESS FROM THE QUEUE IT WAS IN, AND DETERMINE 
 // WHERE IT SHOULD GO AS A RESULT OF ITS RUNTIME RESULT
@@ -63,6 +77,10 @@ void descend_queues(pid_t pid){  // If full time quantum is used, move down ONE 
     } else if (Q2.front() == pid){  // If in bottom queue, move to back of the line
         Q2.pop();
         Q2.push(pid);
+    } else {
+        perror("Scheduler.h: Error: failed to find process to descend scheduling queues");
+        cleanup("perror encountered.");
+        exit(1);
     }
 }   
 

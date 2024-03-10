@@ -122,13 +122,4 @@ void kill_all_processes(PCB processTable[], int simultaneous){
     }
 }
 
-int return_position_of_given_pid(PCB processTable[], int simultaneous, pid_t pid){
-    for(int i = 0; i < simultaneous; i++){
-        if(processTable[i].pid == pid){  // if PCB pid equal to given pid
-            return i;                    // return position
-        } 
-    }
-    return -1;  // pid not found on process table
-}
-
 # endif
