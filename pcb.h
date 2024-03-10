@@ -79,7 +79,7 @@ void print_process_table(PCB processTable[], int simultaneous, int secs, int nan
         for(int i = 0; i < simultaneous; i++){
             std::string tab = (processTable[i].startNanos == 0) ? "\t\t" : "\t";
 
-            printf("%d\t%d\t%d\t%d\t%d" + tab + "%d\t%d\t\t%d\n", (i + 1), processTable[i].occupied, processTable[i].pid, processTable[i].startSecs, processTable[i].startNanos, processTable[i].blocked, processTable[i].eventBlockedUntilSec, processTable[i].eventBlockedUntilNano);
+            cout << std::to_string(i + 1) << "\t" << std::to_string(processTable[i].occupied) << "\t" << std::to_string(processTable[i].pid) << "\t" << std::to_string(processTable[i].startSecs) << "\t" << std::to_string(processTable[i].startNanos) << tab << std::to_string(processTable[i].blocked) << "\t" << std::to_string(processTable[i].eventBlockedUntilSec) << "\t\t" << std::to_string(processTable[i].eventBlockedUntilNano) << std::endl;
             outputFile << std::to_string(i + 1) << "\t" << std::to_string(processTable[i].occupied) << "\t" << std::to_string(processTable[i].pid) << "\t" << std::to_string(processTable[i].startSecs) << "\t" << std::to_string(processTable[i].startNanos) << tab << std::to_string(processTable[i].blocked) << "\t" << std::to_string(processTable[i].eventBlockedUntilSec) << "\t\t" << std::to_string(processTable[i].eventBlockedUntilNano) << std::endl;
         }
         next_print_nanos = next_print_nanos + 500000000;
