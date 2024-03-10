@@ -123,7 +123,6 @@ int main(int argc, char** argv){
             cout << "OSS: Sending message code "<< buf.msgCode << " to worker " << i + 1 << " PID: " << processTable[i].pid << " at time " << shm_clock->secs << ":" << shm_clock->nanos << std::endl;
             outputFile << "OSS: Sending message code "<< buf.msgCode << " to worker " << i + 1 << " PID: " << processTable[i].pid << " at time " << shm_clock->secs << ":" << shm_clock->nanos << std::endl;
 
-
                     // MSG RECEIVE
             msgbuffer rcvbuf;     // BLOCKING WAIT TO RECEIVE MESSAGE FROM CHILD
             if (msgrcv(msgqid, &rcvbuf, sizeof(msgbuffer), processTable[i].pid, 0) == -1) {
