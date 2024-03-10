@@ -33,6 +33,7 @@ void scheduler(PCB processTable[], int simultaneous, int *i, int *time_slice, in
     }
 
     pid_t pid;  
+    *time_slice = 0;
        
     if(!Q0.empty()){   // THIS IS SCHEDULING BLOCKED PROCS, right????
         pid = Q0.front();
