@@ -1,6 +1,11 @@
 // CS4760-001SS - Terry Ford Jr. - Project 4 OSS Scheduler - 03/08/2024
 // https://github.com/tfordjr/oss-scheduler.git
 
+// WHO MOVES PROCESSES FROM QUEUE TO QUEUE????
+// child proc determines run result, messages this to oss
+// oss checks child msg, updates process_table
+// oss passes process_table to us, we handle queue movements here
+
 #ifndef SCHEDULER_H
 #define SCHEDULER_H
 
@@ -12,19 +17,13 @@ std::queue<pid_t> Q0;  // Q0 10 ms or 10000000 ns
 std::queue<pid_t> Q1;  // Q1 20 ms or 20000000 ns
 std::queue<pid_t> Q2;  // Q2 40 ms or 40000000 ns
 
-// WHO MOVES PROCESSES FROM QUEUE TO QUEUE????
-// child proc determines run result, messages this to oss
-// oss checks child run result, updates process_table
-// oss passes process_table to us, we handle queue movements
-
 int return_position_of_given_pid(PCB[], int, pid_t);
 int check_blocked_processes(PCB[], int, int, int);
 void cleanup(std::string);
 
-
         // scheduler() determines i (next process location) and associated time slice
 void scheduler(PCB processTable[], int simultaneous, int *i, int *time_slice, int *unblocks, int secs, int nanos){  
-        // FOR EACH BLOCKED PROCESS, CHECK IF NO LONGER BLOCKED, SEND TO Q0
+        // CHECK EACH BLOCKED PROCESS, IF NO LONGER BLOCKED, SEND TO Q0
     *unblocks = check_blocked_processes(processTable, simultaneous, secs, nanos);
     
     if (process_table_empty(processTable, simultaneous) || all_processes_blocked(processTable, simultaneous)){ 
@@ -34,8 +33,7 @@ void scheduler(PCB processTable[], int simultaneous, int *i, int *time_slice, in
     }
 
     pid_t pid;  
-
-    // do {      
+       
     if(!Q0.empty()){   // THIS IS SCHEDULING BLOCKED PROCS, right????
         pid = Q0.front();
         *time_slice = 10000000;  // 10ms 
@@ -47,11 +45,7 @@ void scheduler(PCB processTable[], int simultaneous, int *i, int *time_slice, in
         *time_slice = 40000000;  // 40ms 
     }     
 
-    *i = return_position_of_given_pid(processTable, simultaneous, pid);
-    // } while (*i == -1);
-
-    // This should stop MSG TO TERMED CHILD ERRS 
-    // AS OSS WILL NOT ATTEMPT COMM WITH CHILD IN SLOT i == -1
+    *i = return_position_of_given_pid(processTable, simultaneous, pid);    
 
     return; 
 }    
@@ -65,9 +59,7 @@ int return_position_of_given_pid(PCB processTable[], int simultaneous, pid_t pid
     
     perror("Scheduler.h: Error: failed to find pid of process chosen to be scheduled from scheduling queue in the process table.");
     cleanup("perror encountered.");
-    exit(1);   
-
-    // now we repeat scheduling process until i != -1, so no perror necessary
+    exit(1);       
 
     // return -1;  // pid not found on process table
 }
