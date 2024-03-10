@@ -114,6 +114,7 @@ int main(int argc, char** argv){
             buf.blocked_until_secs = 0;
             buf.blocked_until_nanos = 0;
             strcpy(buf.message, "Message to child\n");
+            printf("%d: PARENT SENDING message code: %d and given quantum %d\n",getpid(), buf.msgCode, buf.time_slice);
             if (msgsnd(msgqid, &buf, sizeof(msgbuffer), 0) == -1) {
                 perror(("oss.cpp: Error: msgsnd to child " + to_string(i + 1) + " failed\n").c_str());
                 cleanup("perror encountered.");
