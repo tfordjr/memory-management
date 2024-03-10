@@ -17,8 +17,10 @@ std::queue<pid_t> Q2;  // Q2 40 ms or 40000000 ns
 // oss checks child run result, updates process_table
 // oss passes process_table to us, we handle queue movements
 
+int return_position_of_given_pid(PCB[], int, pid_t);
 int check_blocked_processes(PCB[], int, int, int);
 void cleanup(std::string);
+
 
         // scheduler() determines i (next process location) and associated time slice
 void scheduler(PCB processTable[], int simultaneous, int *i, int *time_slice, int *unblocks, int secs, int nanos){  
