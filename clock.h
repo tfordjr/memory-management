@@ -4,9 +4,9 @@
 #ifndef CLOCK_H
 #define CLOCK_H
 
-#define DISPATCH_AMOUNT 10000000      // 10 ms dispatch time
-#define CHILD_LAUNCH_AMOUNT 10000000  // 10 ms child launch time
-#define UNBLOCK_AMOUNT 10000000       // 10 ms process unblock/reschedule time
+#define DISPATCH_AMOUNT 1000000      // 1 ms dispatch time
+#define CHILD_LAUNCH_AMOUNT 1000000  // 1 ms child launch time
+#define UNBLOCK_AMOUNT 1000000       // 1 ms process unblock/reschedule time
 
 typedef struct Clock {
     int secs;

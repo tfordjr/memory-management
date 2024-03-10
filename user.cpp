@@ -71,7 +71,7 @@ int main(int argc, char** argv) {
             perror("failed to receive message from parent\n");
             exit(1);
         }       // MSGRCV PRINT MSG	
-        printf("%d: Child received message code: %d from parent\n",getpid(), rcvbuf.msgCode);
+        printf("%d: Child received message code: %d from parent (%d)\n",getpid(), rcvbuf.msgCode, getppid());
 
                 // INIT RANDOM CHANCE VARS       
         // srand(getpid() + time(NULL)); // Should be different for every run of every proc.
