@@ -72,11 +72,7 @@ int main(int argc, char** argv) {
             exit(1);
         }       // MSGRCV PRINT MSG	
         printf("%d: Child received message code: %d from parent (%d) and given quantum %d\n",getpid(), rcvbuf.msgCode, getppid(), rcvbuf.time_slice);
-
-                // INIT RANDOM CHANCE VARS       
-        // srand(getpid() + time(NULL)); // Should be different for every run of every proc.
-        // int random_number = rand() % 100;  
-        // srand(getpid() + time(NULL));  // reseeding rand()
+          
         int random_number = generate_random_number(1, 100, getpid());
 
                     // IF WE RANDOMLY TERM EARLY

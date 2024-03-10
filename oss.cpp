@@ -34,14 +34,14 @@ void cleanup(std::string);
 volatile sig_atomic_t term = 0;  // signal handling global
 struct PCB processTable[20]; // Init Process Table Array of PCB structs (not shm)
 
+// Declaring globals needed for signal handlers to clean up at anytime
 Clock* shm_clock;  // Declare global shm clock
 key_t clock_key = ftok("/tmp", 35);             
 int shmtid = shmget(clock_key, sizeof(Clock), IPC_CREAT | 0666);    // init shm clock
 std::ofstream outputFile;   // init file object
 int msgqid;           // MSGQID GLOBAL FOR MSGQ CLEANUP
 int simultaneous = 1;  // simultaneous global so that sighandlers know PCB table size to avoid segfaults when killing all procs on PCB
- // Doing it up here because shmtid is needed to delete shm, needed for timeout/exit signal
-
+ 
 int main(int argc, char** argv){
     int option, numChildren = 1, time_limit = 2, launch_interval = 100;      
     string logfile = "logfile.txt";
