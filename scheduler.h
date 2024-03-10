@@ -35,7 +35,7 @@ void scheduler(PCB processTable[], int simultaneous, int *i, int *time_slice, in
 
     pid_t pid;  
 
-    do {      
+    // do {      
     if(!Q0.empty()){   // THIS IS SCHEDULING BLOCKED PROCS, right????
         pid = Q0.front();
         *time_slice = 10000000;  // 10ms 
@@ -48,7 +48,7 @@ void scheduler(PCB processTable[], int simultaneous, int *i, int *time_slice, in
     }     
 
     *i = return_position_of_given_pid(processTable, simultaneous, pid);
-    } while (*i == -1);
+    // } while (*i == -1);
 
     // This should stop MSG TO TERMED CHILD ERRS 
     // AS OSS WILL NOT ATTEMPT COMM WITH CHILD IN SLOT i == -1
@@ -63,13 +63,13 @@ int return_position_of_given_pid(PCB processTable[], int simultaneous, pid_t pid
         } 
     }
     
-    // perror("Scheduler.h: Error: failed to find pid of process chosen to be scheduled from scheduling queue in the process table.");
-    // cleanup("perror encountered.");
-    // exit(1);   
+    perror("Scheduler.h: Error: failed to find pid of process chosen to be scheduled from scheduling queue in the process table.");
+    cleanup("perror encountered.");
+    exit(1);   
 
     // now we repeat scheduling process until i != -1, so no perror necessary
 
-    return -1;  // pid not found on process table
+    // return -1;  // pid not found on process table
 }
 
 // DURING OSS MAIN LOOP, I LEAVE PID BEING WORKED ON AT THE FRONT OF LINE IT WAS IN
