@@ -77,14 +77,14 @@ int main(int argc, char** argv) {
         // srand(getpid() + time(NULL)); // Should be different for every run of every proc.
         // int random_number = rand() % 100;  
         // srand(getpid() + time(NULL));  // reseeding rand()
-        int random_number = generate_random_number(1, 100);
+        int random_number = generate_random_number(1, 100, getpid());
 
                     // IF WE RANDOMLY TERM EARLY
         if (random_number < TERMINATION_CHANCE){   
             printf("USER PID: %d  PPID: %d  SysClockS: %d  SysClockNano: %d  TermTimeS: %d  TermTimeNano: %d\n--Terminating after sending message back to oss after %d iterations.\n", getpid(), getppid(), shm_clock->secs, shm_clock->nanos, end_secs, end_nanos, iter);
             done = true;
             buf.msgCode = MSG_TYPE_SUCCESS;                
-            buf.time_slice = generate_random_number(1, 100000000) % rcvbuf.time_slice;  // use random amount of timeslice before terminating            
+            buf.time_slice = generate_random_number(1, 100000000, getpid()) % rcvbuf.time_slice;  // use random amount of timeslice before terminating            
             strcpy(buf.message,"Completed Successfully (RANDOM TERMINATION), now terminating...\n");
                     // IF WE RANDOMLY IO BLOCK
         } else if (random_number < ACUTAL_IO_BLOCK_CHANCE){                        
@@ -94,7 +94,7 @@ int main(int argc, char** argv) {
             buf.blocked_until_secs = temp_unblock_secs;
             buf.blocked_until_nanos = temp_unblock_nanos;
             buf.msgCode = MSG_TYPE_BLOCKED;   
-            buf.time_slice = generate_random_number(1, 100000000) % rcvbuf.time_slice;  // use random amount of timeslice before IO Block
+            buf.time_slice = generate_random_number(1, 100000000, getpid()) % rcvbuf.time_slice;  // use random amount of timeslice before IO Block
             strcpy(buf.message,"IO BLOCKED!!!...\n");
                     // IF WE NEITHER TERM EARLY OR IO BLOCK
         } else { // THEN CHECK IF TERMINATION TIME HAS PASSED

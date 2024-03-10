@@ -25,7 +25,6 @@
 using namespace std;
 
 void launch_child(PCB[], int, int);
-int generate_random_number(int, int);
 bool launch_interval_satisfied(int);
 void help();
 void timeout_handler(int);
@@ -170,8 +169,8 @@ int main(int argc, char** argv){
 }
 
 void launch_child(PCB processTable[], int time_limit, int simultaneous){
-    string rand_secs = std::to_string(generate_random_number(1, (time_limit - 1)));
-    string rand_nanos = std::to_string(generate_random_number(0, 999999999));
+    string rand_secs = std::to_string(generate_random_number(1, (time_limit - 1), getpid()));
+    string rand_nanos = std::to_string(generate_random_number(0, 999999999, getpid()));
     // string user_parameters = std::to_string(rand_secs) + " " + std::to_string(rand_nanos); 
 
     pid_t childPid = fork(); // This is where the child process splits from the parent        
