@@ -17,6 +17,7 @@ std::queue<pid_t> Q2;  // Q2 40 ms or 40000000 ns
 // oss passes process_table to us, we handle queue movements
 
 int check_blocked_processes(PCB[], int, int, int);
+void cleanup(string);
 
         // scheduler() determines i (next process location) and associated time slice
 void scheduler(PCB processTable[], int simultaneous, int *i, int *time_slice, int *unblocks, int secs, int nanos){  
@@ -64,13 +65,17 @@ void descend_queues(pid_t pid){  // If full time quantum is used, move down ONE 
     }
 }   
 
-void remove_process_from_scheduling_queues(pid_t pid){ // when proc is terminated or blocked
+void remove_process_from_scheduling_queues(pid_t pid, PCB processTable[], int simultaneous){ // when proc is terminated or blocked
     if (Q2.front() == pid){
         Q2.pop();
     } else if (Q1.front() == pid){
         Q1.pop();
     } else if (Q0.front() == pid){
         Q0.pop();
+    } else {
+        perror("Scheduler.h: Error: failed to find process to be removed in scheduling queues");
+        cleanup("perror encountered.");
+        exit(1);
     }
 }
     

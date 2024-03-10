@@ -116,6 +116,7 @@ int main(int argc, char** argv){
             strcpy(buf.message, "Message to child\n");
             if (msgsnd(msgqid, &buf, sizeof(msgbuffer), 0) == -1) {
                 perror(("msgsnd to child " + to_string(i + 1) + " failed\n").c_str());
+                cleanup("perror encountered.");
                 exit(1);
             }       // LOG MSG SEND
             cout << "OSS: Sending message to worker " << i + 1 << " PID: " << processTable[i].pid << " at time " << shm_clock->secs << ":" << shm_clock->nanos << std::endl;
@@ -126,6 +127,7 @@ int main(int argc, char** argv){
             msgbuffer rcvbuf;     // BLOCKING WAIT TO RECEIVE MESSAGE FROM CHILD
             if (msgrcv(msgqid, &rcvbuf, sizeof(msgbuffer), processTable[i].pid, 0) == -1) {
                 perror("failed to receive message in parent\n");
+                cleanup("perror encountered.");
                 exit(1);
             }       // LOG MSG RECEIVE
             cout << "OSS: Receiving message code " << rcvbuf.msgCode << " from worker " << i + 1 << " PID: " << processTable[i].pid << " at time " << shm_clock->secs << ":" << shm_clock->nanos << std::endl;
@@ -137,13 +139,13 @@ int main(int argc, char** argv){
                 descend_queues(processTable[i].pid); 
             } else if (rcvbuf.msgCode == MSG_TYPE_BLOCKED) {  // Process blocked
                 update_process_table_of_blocked_child(processTable, processTable[i].pid, simultaneous, rcvbuf.blocked_until_secs, rcvbuf.blocked_until_nanos);
-                remove_process_from_scheduling_queues(processTable[i].pid);
+                remove_process_from_scheduling_queues(processTable[i].pid, processTable, simultaneous);
             }else if(rcvbuf.msgCode == MSG_TYPE_SUCCESS){     // if child is terminating   
                 cout << "OSS: Worker " << i + 1 << " PID: " << processTable[i].pid << " is planning to terminate" << std::endl;             
                 outputFile << "OSS: Worker " << i + 1 << " PID: " << processTable[i].pid << " is planning to terminate" << std::endl;
                 wait(NULL);  // give terminating process time to clear out of system
                 update_process_table_of_terminated_child(processTable, processTable[i].pid, simultaneous);
-                remove_process_from_scheduling_queues(processTable[i].pid);
+                remove_process_from_scheduling_queues(processTable[i].pid, processTable, simultaneous);
             }
         }
                 // CHECK IF CONDITIONS ARE RIGHT TO LAUNCH ANOTHER CHILD
@@ -162,15 +164,7 @@ int main(int argc, char** argv){
     outputFile << "OSS: Parent is now ending.\n";
     outputFile.close();  // file object close
 
-    shmdt(shm_clock);      // clock cleanup, detatch & delete shm
-    if (shmctl(shmtid, IPC_RMID, NULL) == -1) 
-        perror("Error: shmctl failed!!");
-    kill_all_processes(processTable, simultaneous);
-
-    if (msgctl(msgqid, IPC_RMID, NULL) == -1) {  // get rid of message queue
-		perror("msgctl to get rid of queue in parent failed");
-		exit(1);
-	}
+    cleanup("OSS Success.");  // function to cleanup shm, msgq, and processes
 
     return 0;
 }
@@ -238,27 +232,17 @@ void help(){   // Help message here
 }
 
 void timeout_handler(int signum) {
-    std::cout << "Timeout occurred. Cleaning up before exiting..." << std::endl;
-    outputFile << "Timeout occurred. Cleaning up before exiting..." << std::endl;
-    term = 1;
-    kill_all_processes(processTable, simultaneous);
-    outputFile.close();  // file object close
-    shmdt(shm_clock);  // clock cleanup, detatch & delete shm
-    if (shmctl(shmtid, IPC_RMID, NULL) == -1) {
-        perror("Error: shmctl failed!!");
-        exit(1);
-    }      
-    if (msgctl(msgqid, IPC_RMID, NULL) == -1) {  // get rid of message queue
-		perror("msgctl to get rid of queue in parent failed");
-		exit(1);
-	}
-    std::exit(EXIT_SUCCESS);
+    cleanup("Timeout Occurred.");
 }
 
 // Signal handler for Ctrl+C (SIGINT)
-void ctrl_c_handler(int signum) {
-    std::cout << "Ctrl+C detected. Cleaning up before exiting..." << std::endl;
-    outputFile << "Ctrl+C detected. Cleaning up before exiting..." << std::endl;
+void ctrl_c_handler(int signum) {    
+    cleanup("Ctrl+C detected.");
+}
+
+void cleanup(string cause) {
+    std::cout << cause << " Cleaning up before exiting..." << std::endl;
+    outputFile << cause << " Cleaning up before exiting..." << std::endl;
     kill_all_processes(processTable, simultaneous);
     outputFile.close();  // file object close
     shmdt(shm_clock);       // clock cleanup, detatch & delete shm
