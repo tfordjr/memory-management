@@ -5,14 +5,14 @@ This 4th version of the OSS project now implements the 'naieve' multilevel feedb
 which is the simplest implementation. There is no preemption or aging, but we are
 simulating io blocking, and we have three queues which will determine the scheduling. 
 
-Compile and run instructions:
+---Compile and run instructions:
 simply run make command and oss command in the following format:
 ./oss -n 40 -s 8 -t 3 -i 250 -f my_logfile.txt
 -n processes, -s simultaneous processes, -t max runtime, -i launch interval(ms), -f logfile
 use the -h arg to learn more about how to use these commands.
 Args default to appropriate figures if not provided, can be in any order.
 
-Features: 
+---Features: 
 oss.cpp: processes args and managles child forking, msgq, pcb, logical clock, etc.
 user.cpp: user executable takes one arg for number of iterations. prints and sleeps. 
 pcb.h: contains pcb struct and many related functions for process table utility.
@@ -23,11 +23,17 @@ memclean.sh: cleans up lingering memory on make clean command
 makefile: creates oss and user executables, oss executes user executable to perform work.
 readme: explains project
 
-Lack of adhearance to specifications:
+
+---Lack of adhearance to specifications:
 Instead of sending a "-" on the time slice used to convey blocked or unblocked,
     In my project the time slice never has "-" symbol and that info is in the msgCode var.
 
-Known Problems or Bugs: 
+Early Termination chance is 10% (specs say ~1%), doesn't seem to happen very often. 
+    I'm a bit confused, because rng.h:generate_random_number() should be well seeded
+    to produce a sufficiently random outcome each time. It seems like it happens less often than 10%, but maybe I'm underestimating how seldom a 10% chance happens 
+    
+
+---Known Problems or Bugs: 
 when user.cpp determines random amount of time slice to use before terminating or IO block,
     it's possible that we choose an amount of time that is over the TermTime of the process
     The only time we check term time is if we do not IO block or randomly terminate
