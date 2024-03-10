@@ -5,6 +5,7 @@
 #define SCHEDULER_H
 
 #include <queue>
+#include <string>
 #include "pcb.h"
 
 std::queue<pid_t> Q0;  // Q0 10 ms or 10000000 ns
