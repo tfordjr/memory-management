@@ -67,7 +67,7 @@ int main(int argc, char** argv) {
 
     while(!done){      // ----------- MAIN LOOP -----------     
         iter++;       // MSGRCV BLOCKING WAIT, WAITS HERE WHILE IO BLOCKED ALSO              
-        if ( msgrcv(msgqid, &rcvbuf, sizeof(msgbuffer) - sizeof(long), getpid(), 0) == -1) {
+        if ( msgrcv(msgqid, &rcvbuf, sizeof(msgbuffer), getpid(), 0) == -1) {
             perror("failed to receive message from parent\n");
             exit(1);
         }       // MSGRCV PRINT MSG	
