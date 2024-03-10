@@ -107,8 +107,7 @@ int main(int argc, char** argv){
         print_process_table(processTable, simultaneous, shm_clock->secs, shm_clock->nanos, outputFile);        
                   
                 // MSG SEND
-        if (!process_table_empty(processTable, simultaneous) && i != -1){  // comm with next child            
-            clean_msgbuffer(buf);             
+        if (!process_table_empty(processTable, simultaneous) && i != -1){  // comm with next child                         
             buf.mtype = processTable[i].pid;     // SEND MESSAGE TO CHILD NONBLOCKING
             buf.time_slice = time_slice;    // set local variable to msg struct parameter!
             buf.msgCode = MSG_TYPE_RUNNING;   // we will give it the pid we are sending to, so we know it received it
@@ -125,7 +124,6 @@ int main(int argc, char** argv){
 
                     // MSG RECEIVE
             msgbuffer rcvbuf;     // BLOCKING WAIT TO RECEIVE MESSAGE FROM CHILD
-            clean_msgbuffer(rcvbuf); 
             if (msgrcv(msgqid, &rcvbuf, sizeof(msgbuffer), processTable[i].pid, 0) == -1) {
                 perror("oss.cpp: Error: failed to receive message in parent\n");
                 cleanup("perror encountered.");
