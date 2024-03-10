@@ -145,8 +145,17 @@ int main(int argc, char** argv){
                 wait(NULL);  // give terminating process time to clear out of system
                 remove_process_from_scheduling_queues(processTable[i].pid, processTable, simultaneous);
                 update_process_table_of_terminated_child(processTable, processTable[i].pid, simultaneous);
+
+                // WHEN PROCESS ENDS WE CAN LOG START AND END TIME OF THE PROCESS(TOTAL TIME IN SYSTEM)
+                // THEN WE CAN (SUM OF TIME SPENT BLOCKED)/(TOTAL TIME IN SYSTEM) FOR AVG BLOCKED TIME
+                // AND (SUM AVG BLOCKED TIME)/(NUMBER OF PROCESSES) = TOTAL AVERAGE BLOCKED TIME
             }
-        }
+
+            // LOG rcvbuf.time_slice USED HERE FOR IDLE CPU TIME, BLOCKED TIME METRICS, ETC
+            // ADDING ALL rcvbuf.time_slice = (TOTAL CPU TIME USED BY PROCESSES)
+            // (TOTAL CPU TIME USED BY PROCESSES)/(TOTAL SYSTEM TIME ELAPSED) = CPU UTILIZATION
+            // (TOTAL SYSTEM TIME ELAPSED) - (TOTAL CPU TIME USED BY PROCESSES) = IDLE CPU TIME
+        }         
                 // CHECK IF CONDITIONS ARE RIGHT TO LAUNCH ANOTHER CHILD
         if(numChildren > 0 && launch_interval_satisfied(launch_interval)  // check conditions to launch child
         && process_table_vacancy(processTable, simultaneous)){ // child process launch check
