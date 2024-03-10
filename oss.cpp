@@ -116,7 +116,7 @@ int main(int argc, char** argv){
             buf.blocked_until_nanos = 0;
             strcpy(buf.message, "Message to child\n");
             if (msgsnd(msgqid, &buf, sizeof(msgbuffer), 0) == -1) {
-                perror(("msgsnd to child " + to_string(i + 1) + " failed\n").c_str());
+                perror(("oss.cpp: Error: msgsnd to child " + to_string(i + 1) + " failed\n").c_str());
                 cleanup("perror encountered.");
                 exit(1);
             }       // LOG MSG SEND
@@ -127,7 +127,7 @@ int main(int argc, char** argv){
                     // MSG RECEIVE
             msgbuffer rcvbuf;     // BLOCKING WAIT TO RECEIVE MESSAGE FROM CHILD
             if (msgrcv(msgqid, &rcvbuf, sizeof(msgbuffer), processTable[i].pid, 0) == -1) {
-                perror("failed to receive message in parent\n");
+                perror("oss.cpp: Error: failed to receive message in parent\n");
                 cleanup("perror encountered.");
                 exit(1);
             }       // LOG MSG RECEIVE
@@ -180,10 +180,10 @@ void launch_child(PCB processTable[], int time_limit, int simultaneous){
         // execl("./user", "user", user_parameters.c_str(), NULL);    
         char* args[] = {const_cast<char*>("./user"), const_cast<char*>(rand_secs.c_str()), const_cast<char*>(rand_nanos.c_str()), nullptr};
         execvp(args[0], args);
-        perror("Error: Failed to execute user program");
+        perror("oss.cpp: Error: Failed to execute user program");
         exit(EXIT_FAILURE);
     } else if (childPid == -1) {  // Fork failed
-        perror("Error: Fork has failed");
+        perror("oss.cpp: Error: Fork has failed");
         exit(EXIT_FAILURE);
     } else {            // Parent updates Process Table with child info after fork()
         int i = (process_table_vacancy(processTable, simultaneous) - 1);
@@ -248,11 +248,11 @@ void cleanup(string cause) {
     outputFile.close();  // file object close
     shmdt(shm_clock);       // clock cleanup, detatch & delete shm
     if (shmctl(shmtid, IPC_RMID, NULL) == -1) {
-        perror("Error: shmctl failed!!");
+        perror("oss.cpp: Error: shmctl failed!!");
         exit(1);
     }            
     if (msgctl(msgqid, IPC_RMID, NULL) == -1) {  // get rid of message queue
-		perror("msgctl to get rid of queue in parent failed");
+		perror("oss.cpp: Error: msgctl to get rid of queue in parent failed");
 		exit(1);
 	}
     std::exit(EXIT_SUCCESS);
