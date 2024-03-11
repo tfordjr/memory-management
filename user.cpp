@@ -117,7 +117,7 @@ int main(int argc, char** argv) {
         }
         
             // msgsnd(to parent saying if we are done or not);        
-        if (msgsnd(msgqid, &buf, sizeof(msgbuffer), 0) == -1) {
+        if (msgsnd(msgqid, &buf, sizeof(msgbuffer), 1) == -1) {
             perror("msgsnd to parent failed\n");
             exit(1);
         }
