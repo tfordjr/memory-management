@@ -271,8 +271,12 @@ void cleanup(string cause) {
 }
 
 void output_statistics(int totalChildren, double totalSystemTime, double totalBlockedTime, double totalCPUTime, double totalWaitTime){
-    // std::cout << "Average Wait time: " << totalWaitTime/totalChildren << std::endl;
-    std::cout << "Average CPU Utilization: " << totalCPUTime/totalSystemTime << endl;
-    std::cout << "Average time a process waited in a blocked queue: " << totalCPUTime/totalSystemTime << endl;
+    // std::cout << "Average Wait time: " << totalWaitTime/totalChildren << std::endl;      // sum of each process' total time in system - sum CPU time given - sum Blocked time
+    std::cout << "Average CPU Utilization: " << totalCPUTime/totalChildren << endl;           // sum each process' CPU utilization each process got / totalChildren
+    std::cout << "Average time a process waited in a blocked queue: " << totalBlockedTime/totalChildren << endl; // sum each Process' blocked time / totalChildren
     std::cout << "Total Idle CPU time: " << totalSystemTime - totalCPUTime << endl;
 }
+
+// Is wait time same as time spent 'ready' state meaning not total time in system minus blocked time minus given quantums?
+
+// ASK ABOUT TEST FINAL GRADE

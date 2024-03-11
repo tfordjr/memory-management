@@ -114,9 +114,9 @@ int main(int argc, char** argv) {
                 buf.time_slice = rcvbuf.time_slice;  // used full time slice
                 strcpy(buf.message,"Still Running...\n");
             }
-        }
-        
+        }        
             // msgsnd(to parent saying if we are done or not);        
+            // blocking wait to prevent rare race condition bug (occurs at -n > 1000) in which oss schedules program from scheduling queue not in the process table
         if (msgsnd(msgqid, &buf, sizeof(msgbuffer), 1) == -1) {
             perror("msgsnd to parent failed\n");
             exit(1);
