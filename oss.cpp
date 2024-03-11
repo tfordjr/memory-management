@@ -30,6 +30,7 @@ void help();
 void timeout_handler(int);
 void ctrl_c_handler(int);
 void cleanup(std::string);
+void output_statistics(int, double, double, double, double);
 
 volatile sig_atomic_t term = 0;  // signal handling global
 struct PCB processTable[20]; // Init Process Table Array of PCB structs (not shm)
@@ -44,6 +45,8 @@ int simultaneous = 1;  // simultaneous global so that sighandlers know PCB table
  
 int main(int argc, char** argv){
     int option, numChildren = 1, time_limit = 2, launch_interval = 100;      
+    int totalChildren; // used for statistics metrics report
+    double totalSystemTime, totalBlockedTime = 0, totalCPUTime = 0, totalWaitTime = 0; // used for statistics report
     string logfile = "logfile.txt";
     while ( (option = getopt(argc, argv, "hn:s:t:i:f:")) != -1) {   // getopt implementation
         switch(option) {
@@ -52,6 +55,7 @@ int main(int argc, char** argv){
                 return 0;     // terminates if -h is present
             case 'n':                                
                 numChildren = atoi(optarg);
+                totalChildren = numChildren;
                 break;
             case 's':          
                 simultaneous = atoi(optarg);
@@ -151,11 +155,9 @@ int main(int argc, char** argv){
                 // THEN WE CAN (SUM OF TIME SPENT BLOCKED)/(TOTAL TIME IN SYSTEM) FOR AVG BLOCKED TIME
                 // AND (SUM AVG BLOCKED TIME)/(NUMBER OF PROCESSES) = TOTAL AVERAGE BLOCKED TIME
             }
-
+            // NEED TO LOG: totalSystemTime, totalBlockedTime, totalCPUTime, totalWaitTime
             // LOG rcvbuf.time_slice USED HERE FOR IDLE CPU TIME, BLOCKED TIME METRICS, ETC
-            // ADDING ALL rcvbuf.time_slice = (TOTAL CPU TIME USED BY PROCESSES)
-            // (TOTAL CPU TIME USED BY PROCESSES)/(TOTAL SYSTEM TIME ELAPSED) = CPU UTILIZATION
-            // (TOTAL SYSTEM TIME ELAPSED) - (TOTAL CPU TIME USED BY PROCESSES) = IDLE CPU TIME
+            // ADDING ALL rcvbuf.time_slice = (TOTAL CPU TIME USED BY PROCESSES)            
         }         
                 // CHECK IF CONDITIONS ARE RIGHT TO LAUNCH ANOTHER CHILD
         if(numChildren > 0 && launch_interval_satisfied(launch_interval)  // check conditions to launch child
@@ -166,6 +168,8 @@ int main(int argc, char** argv){
             launch_child(processTable, time_limit, simultaneous);
         }        
     }                   // --------- END OF MAIN LOOP ---------  
+
+    // output_statistics(totalChildren, totalSystemTime, totalBlockedTime, totalCPUTime, totalWaitTime);
 
 	cout << "OSS: Child processes have completed. (" << numChildren << " remaining)\n";
     cout << "OSS: Parent is now ending.\n";
@@ -264,4 +268,11 @@ void cleanup(string cause) {
 		exit(1);
 	}
     std::exit(EXIT_SUCCESS);
+}
+
+void output_statistics(int totalChildren, double totalSystemTime, double totalBlockedTime, double totalCPUTime, double totalWaitTime){
+    // std::cout << "Average Wait time: " << totalWaitTime/totalChildren << std::endl;
+    std::cout << "Average CPU Utilization: " << totalCPUTime/totalSystemTime << endl;
+    std::cout << "Average time a process waited in a blocked queue: " << totalCPUTime/totalSystemTime << endl;
+    std::cout << "Total Idle CPU time: " << totalSystemTime - totalCPUTime << endl;
 }
