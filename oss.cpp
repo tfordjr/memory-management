@@ -129,7 +129,7 @@ int main(int argc, char** argv){
 
                     // MSG RECEIVE
             msgbuffer rcvbuf;     // BLOCKING WAIT TO RECEIVE MESSAGE FROM CHILD
-            if (msgrcv(msgqid, &rcvbuf, sizeof(msgbuffer), processTable[i].pid, 0) == -1) {
+            if (msgrcv(msgqid, &rcvbuf, sizeof(msgbuffer), getpid(), 0) == -1) {
                 perror("oss.cpp: Error: failed to receive message in parent\n");
                 cleanup("perror encountered.");
                 exit(1);

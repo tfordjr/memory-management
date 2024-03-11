@@ -48,7 +48,7 @@ int main(int argc, char** argv) {
     } 
 
     msgbuffer buf, rcvbuf;   // buf for msgsnd buffer, rcvbuf for msgrcv buffer	
-    buf.mtype = getpid();
+    buf.mtype = getppid();
 	int msgqid = 0;
 	key_t msgq_key;	
 	if ((msgq_key = ftok(MSGQ_FILE_PATH, MSGQ_PROJ_ID)) == -1) {   // get a key for our message queue
