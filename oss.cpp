@@ -270,8 +270,12 @@ void cleanup(string cause) {
     std::exit(EXIT_SUCCESS);
 }
 
-void output_statistics(int totalChildren, double totalSystemTime, double totalBlockedTime, double totalCPUTime, double totalWaitTime){
-    // std::cout << "Average Wait time: " << totalWaitTime/totalChildren << std::endl;      // sum of each process' total time in system - sum CPU time given - sum Blocked time
+void output_statistics(int totalChildren, double totalBlockedTime, double totalCPUTime, double totalWaitTime){
+    // int bufferSecs = 0;
+    // int bufferNanos = 0;
+    double totalSystemTime = shm_clock->secs + (shm_clock->nanos)/1000000000;
+
+    std::cout << "Average Wait time: " << totalWaitTime/totalChildren << std::endl;      // sum of each process' total time in system - sum CPU time given - sum Blocked time
     std::cout << "Average CPU Utilization: " << totalCPUTime/totalChildren << endl;           // sum each process' CPU utilization each process got / totalChildren
     std::cout << "Average time a process waited in a blocked queue: " << totalBlockedTime/totalChildren << endl; // sum each Process' blocked time / totalChildren
     std::cout << "Total Idle CPU time: " << totalSystemTime - totalCPUTime << endl;
