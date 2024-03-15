@@ -22,7 +22,7 @@
 using namespace std;
 
 #define TERMINATION_CHANCE 5
-#define IO_BLOCK_CHANCE 0
+#define IO_BLOCK_CHANCE 10
 #define ACUTAL_IO_BLOCK_CHANCE (TERMINATION_CHANCE + IO_BLOCK_CHANCE)
 
 void calculate_time_until_unblocked(int, int, int, int *, int *);
