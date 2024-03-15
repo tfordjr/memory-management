@@ -138,7 +138,7 @@ int main(int argc, char** argv){
             outputFile << "OSS: Receiving message code " << rcvbuf.msgCode << " from worker " << i + 1 << " PID: " << processTable[i].pid << " at time " << shm_clock->secs << ":" << shm_clock->nanos << std::endl;
             increment(shm_clock, abs(rcvbuf.time_slice)); // increment absolute value of time used, sign only indicates process state, not time used
 
-                    // UNPACK RECEIVED MESSAGE
+                    // UNPACK RECEIVED MESSAGE, LOG RESULTS
             if (time_slice == rcvbuf.time_slice) { // IF TOTAL TIME SLICE USED
                 totalCPUTime += (rcvbuf.time_slice)/1e9;   // LOGGING QUANTUM USED
                 descend_queues(processTable[i].pid);           
