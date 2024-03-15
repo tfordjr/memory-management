@@ -4,9 +4,9 @@
 #ifndef CLOCK_H
 #define CLOCK_H
 
-#define DISPATCH_AMOUNT 1000000      // 1 ms dispatch time
-#define CHILD_LAUNCH_AMOUNT 1000000  // 1 ms child launch time
-#define UNBLOCK_AMOUNT 1000000       // 1 ms process unblock/reschedule time
+#define DISPATCH_AMOUNT 1e5      // .1 ms dispatch time
+#define CHILD_LAUNCH_AMOUNT 1e5  // .1 ms child launch time
+#define UNBLOCK_AMOUNT 1e5       // .1 ms process unblock/reschedule time
 
 typedef struct Clock {
     int secs;
@@ -15,16 +15,16 @@ typedef struct Clock {
 
 void increment(Clock* c, int increment_amount){
     c->nanos = c->nanos + increment_amount; 
-    if (c->nanos >= 1000000000){   // if over 1 billion nanos, add 1 second, sub 1 bil nanos
-        c->nanos -= 1000000000;
+    if (c->nanos >= 1e9){   // if over 1 billion nanos, add 1 second, sub 1 bil nanos
+        c->nanos -= 1e9;
         c->secs++;
     }    
 }
 
 double add_time(int addend1Secs, int addend1Nanos, int addend2Secs, int addend2Nanos){
     addend1Nanos += addend2Nanos;
-    if (addend1Nanos >= 1000000000){   // if over 1 billion nanos, add 1 second, sub 1 bil nanos
-        addend1Nanos -= 1000000000;
+    if (addend1Nanos >= 1e9){   // if over 1 billion nanos, add 1 second, sub 1 bil nanos
+        addend1Nanos -= 1e9;
         addend1Secs++;
     } 
     addend1Secs += addend2Secs;
@@ -35,7 +35,7 @@ double add_time(int addend1Secs, int addend1Nanos, int addend2Secs, int addend2N
 double subtract_time(int minuendSecs, int minuendNanos, int subtrahendSecs, int subtrahendNanos){
     minuendNanos -= subtrahendNanos;
     if (minuendNanos < 0){   // if negative nanos, add a second to nanos, take that second from
-        minuendNanos += 1000000000;      // number to be subtracted
+        minuendNanos += 1e9;      // number to be subtracted
         minuendSecs--;
     } 
     minuendSecs -= subtrahendSecs;
