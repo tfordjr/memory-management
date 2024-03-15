@@ -46,7 +46,7 @@ int simultaneous = 1;  // simultaneous global so that sighandlers know PCB table
 int main(int argc, char** argv){
     int option, numChildren = 1, time_limit = 2, launch_interval = 100;      
     int totalChildren; // used for statistics metrics report
-    double totalSystemTime, totalBlockedTime = 0, totalCPUTime = 0, totalWaitTime = 0; // used for statistics report
+    double totalBlockedTime = 0, totalCPUTime = 0, totalTimeInSystem = 0; // used for statistics report
     string logfile = "logfile.txt";
     while ( (option = getopt(argc, argv, "hn:s:t:i:f:")) != -1) {   // getopt implementation
         switch(option) {
@@ -140,23 +140,22 @@ int main(int argc, char** argv){
 
                     // UNPACK RECEIVED MESSAGE
             if (time_slice == rcvbuf.time_slice) { // IF TOTAL TIME SLICE USED
-                descend_queues(processTable[i].pid); 
+                totalCPUTime += (rcvbuf.time_slice)/1e9;   // LOGGING QUANTUM USED
+                descend_queues(processTable[i].pid);           
             } else if (rcvbuf.msgCode == MSG_TYPE_BLOCKED) {  // IF PROCESS BLOCKED
+                totalCPUTime += (rcvbuf.time_slice)/1e9;   // LOGGING QUANTUM USED
+                totalBlockedTime += subtract_time(rcvbuf.blocked_until_secs, rcvbuf.blocked_until_nanos, shm_clock->secs, shm_clock->nanos);   // LOG BLOCKED TIME HERE, subtract blocked until time by current time
                 remove_process_from_scheduling_queues(processTable[i].pid, processTable, simultaneous);
-                update_process_table_of_blocked_child(processTable, processTable[i].pid, simultaneous, rcvbuf.blocked_until_secs, rcvbuf.blocked_until_nanos);                
-            }else if(rcvbuf.msgCode == MSG_TYPE_SUCCESS){     // IF CHILD IS TERMINATING
+                update_process_table_of_blocked_child(processTable, processTable[i].pid, simultaneous, rcvbuf.blocked_until_secs, rcvbuf.blocked_until_nanos);
+            } else if(rcvbuf.msgCode == MSG_TYPE_SUCCESS){     // IF CHILD IS TERMINATING
+                totalCPUTime += (rcvbuf.time_slice)/1e9;   // LOGGING QUANTUM USED
+                totalTimeInSystem += subtract_time(shm_clock->secs, shm_clock->nanos, processTable[i].startSecs, processTable[i].startNanos);// LOG TOTAL TIME IN SYSTEM (current time - start time)
                 cout << "OSS: Worker " << i + 1 << " PID: " << processTable[i].pid << " is planning to terminate" << std::endl;             
                 outputFile << "OSS: Worker " << i + 1 << " PID: " << processTable[i].pid << " is planning to terminate" << std::endl;
                 wait(0);  // give terminating process time to clear out of system
                 remove_process_from_scheduling_queues(processTable[i].pid, processTable, simultaneous);
-                update_process_table_of_terminated_child(processTable, processTable[i].pid, simultaneous);
-
-                // WHEN PROCESS ENDS WE CAN LOG START AND END TIME OF THE PROCESS(TOTAL TIME IN SYSTEM)
-                
-            }
-            // NEED TO LOG: totalSystemTime, totalBlockedTime, totalCPUTime, totalWaitTime
-            // LOG rcvbuf.time_slice USED HERE FOR IDLE CPU TIME, BLOCKED TIME METRICS, ETC
-            // ADDING ALL rcvbuf.time_slice = (TOTAL CPU TIME USED BY PROCESSES)            
+                update_process_table_of_terminated_child(processTable, processTable[i].pid, simultaneous);                
+            }                      
         }         
                 // CHECK IF CONDITIONS ARE RIGHT TO LAUNCH ANOTHER CHILD
         if(numChildren > 0 && launch_interval_satisfied(launch_interval)  // check conditions to launch child
@@ -166,9 +165,8 @@ int main(int argc, char** argv){
             numChildren--;
             launch_child(processTable, time_limit, simultaneous);
         }        
-    }                   // --------- END OF MAIN LOOP ---------  
-
-    // output_statistics(totalChildren, totalSystemTime, totalBlockedTime, totalCPUTime, totalWaitTime);
+    }                   // --------- END OF MAIN LOOP ---------      
+    output_statistics(totalChildren, totalTimeInSystem, totalBlockedTime, totalCPUTime);
 
 	cout << "OSS: Child processes have completed. (" << numChildren << " remaining)\n";
     cout << "OSS: Parent is now ending.\n";
@@ -270,13 +268,16 @@ void cleanup(string cause) {
 }
 
 void output_statistics(int totalChildren, double totalTimeInSystem, double totalBlockedTime, double totalCPUTime){
-    // int bufferSecs = 0;
-    // int bufferNanos = 0;
-    double totalSystemTime = shm_clock->secs + (shm_clock->nanos)/1000000000;
+    double totalClockTime = shm_clock->secs + (shm_clock->nanos)/1e9;
     double totalWaitTime = totalTimeInSystem - (totalBlockedTime + totalCPUTime);
 
-    std::cout << "Average Wait Time: " << totalWaitTime/totalChildren << std::endl;      // sum of each process' total time in system - sum CPU time given - sum Blocked time
-    std::cout << "Average CPU Utilization: " << totalCPUTime/totalChildren << endl;           // sum each process' CPU utilization each process got / totalChildren
-    std::cout << "Average Blocked Time: " << totalBlockedTime/totalChildren << endl; // sum each Process' blocked time / totalChildren
-    std::cout << "Total Idle CPU Time: " << totalSystemTime - totalCPUTime << endl;
+    std::cout << "Average Wait Time: " << totalWaitTime/totalChildren << " seconds" << std::endl;   
+    std::cout << "Average CPU Utilization: " << totalCPUTime/totalChildren << " seconds" << std::endl;           
+    std::cout << "Average Blocked Time: " << totalBlockedTime/totalChildren << " seconds" << std::endl; 
+    std::cout << "Total Idle CPU Time: " << totalClockTime - totalCPUTime << " seconds" << std::endl;
+
+    outputFile << "Average Wait Time: " << totalWaitTime/totalChildren << " seconds" << std::endl;      
+    outputFile << "Average CPU Utilization: " << totalCPUTime/totalChildren << " seconds" << std::endl;          
+    outputFile << "Average Blocked Time: " << totalBlockedTime/totalChildren << " seconds" << std::endl; 
+    outputFile << "Total Idle CPU Time: " << totalClockTime - totalCPUTime << " seconds" << std::endl;
 }
