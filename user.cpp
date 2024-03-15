@@ -21,8 +21,8 @@
 #include "rng.h"
 using namespace std;
 
-#define TERMINATION_CHANCE 5
-#define IO_BLOCK_CHANCE 10
+#define TERMINATION_CHANCE 5     // 5% chance
+#define IO_BLOCK_CHANCE 30
 #define ACUTAL_IO_BLOCK_CHANCE (TERMINATION_CHANCE + IO_BLOCK_CHANCE)
 
 void calculate_time_until_unblocked(int, int, int, int *, int *);
