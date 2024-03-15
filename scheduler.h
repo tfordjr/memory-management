@@ -60,8 +60,6 @@ int return_position_of_given_pid(PCB processTable[], int simultaneous, pid_t pid
     perror("Scheduler.h: Error: failed to find pid of process chosen to be scheduled from scheduling queue in the process table.");
     cleanup("perror encountered.");
     exit(1);       
-
-    // return -1;  // pid not found on process table
 }
 
 // DURING OSS MAIN LOOP, I LEAVE PID BEING WORKED ON AT THE FRONT OF LINE IT WAS IN

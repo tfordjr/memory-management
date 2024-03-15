@@ -16,7 +16,7 @@ Args default to appropriate figures if not provided, can be in any order.
 oss.cpp: processes args and managles child forking, msgq, pcb, logical clock, etc.
 user.cpp: user executable takes one arg for number of iterations. prints and sleeps. 
 pcb.h: contains pcb struct and many related functions for process table utility.
-clock.h: logical clock struct.
+clock.h: logical clock struct, include add_time() and subtract_time()
 msgq.h: houses msgbuffer struct, running states
 rng.h: holds generate_random_number() to be used in user.cpp and oss.cpp
 memclean.sh: cleans up lingering memory on make clean command
@@ -28,17 +28,5 @@ readme: explains project
 Instead of sending a "-" on the time slice used to convey blocked or unblocked,
     In my project the time slice never has "-" symbol and that info is in the msgCode var.
 
-Early Termination chance is 10% (specs say ~1%), doesn't seem to happen very often. 
-    I'm a bit confused, because rng.h:generate_random_number() should be well seeded
-    to produce a sufficiently random outcome each time. It seems like it happens less often than 10%, but maybe I'm underestimating how seldom a 10% chance happens 
-    
-
 ---Known Problems or Bugs: 
-when user.cpp determines random amount of time slice to use before terminating or IO block,
-    it's possible that we choose an amount of time that is over the TermTime of the process
-    The only time we check term time is if we do not IO block or randomly terminate
-
-
-
-IMPLEMENT REPORT ON AVERAGE WAIT TIME, CPU UTILIZATION, AND AVG BLOCKED TIME
-ALSO HOW LONG THE CPU WAS IDLE WITH NO READY PROCESSES
+None that I know of.
