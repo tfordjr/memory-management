@@ -274,11 +274,11 @@ void output_statistics(int totalChildren, double totalTimeInSystem, double total
     std::cout << "Average Wait Time: " << totalWaitTime/totalChildren << " seconds" << std::endl;   
     std::cout << "Average CPU Utilization: " << totalCPUTime/totalChildren << " seconds" << std::endl;           
     std::cout << "Average Blocked Time: " << totalBlockedTime/totalChildren << " seconds" << std::endl; 
-    std::cout << "Total Idle CPU Time: " << totalClockTime - totalCPUTime << " seconds" << std::endl;
+    std::cout << "Total Idle CPU Time: " << totalClockTime - totalCPUTime << " seconds\n" << std::endl;
 
     outputFile << "\nRUN RESULT REPORT" << std::endl;
     outputFile << "Average Wait Time: " << totalWaitTime/totalChildren << " seconds" << std::endl;      
     outputFile << "Average CPU Utilization: " << totalCPUTime/totalChildren << " seconds" << std::endl;          
     outputFile << "Average Blocked Time: " << totalBlockedTime/totalChildren << " seconds" << std::endl; 
-    outputFile << "Total Idle CPU Time: " << totalClockTime - totalCPUTime << " seconds" << std::endl;
+    outputFile << "Total Idle CPU Time: " << totalClockTime - totalCPUTime << " seconds\n" << std::endl;
 }
