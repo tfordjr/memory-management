@@ -30,7 +30,7 @@ void help();
 void timeout_handler(int);
 void ctrl_c_handler(int);
 void cleanup(std::string);
-void output_statistics(int, double, double, double, double);
+void output_statistics(int, double, double, double);
 
 volatile sig_atomic_t term = 0;  // signal handling global
 struct PCB processTable[20]; // Init Process Table Array of PCB structs (not shm)
@@ -139,12 +139,12 @@ int main(int argc, char** argv){
             increment(shm_clock, abs(rcvbuf.time_slice)); // increment absolute value of time used, sign only indicates process state, not time used
 
                     // UNPACK RECEIVED MESSAGE
-            if (time_slice == rcvbuf.time_slice) { // If total time slice used
+            if (time_slice == rcvbuf.time_slice) { // IF TOTAL TIME SLICE USED
                 descend_queues(processTable[i].pid); 
-            } else if (rcvbuf.msgCode == MSG_TYPE_BLOCKED) {  // Process blocked
+            } else if (rcvbuf.msgCode == MSG_TYPE_BLOCKED) {  // IF PROCESS BLOCKED
                 remove_process_from_scheduling_queues(processTable[i].pid, processTable, simultaneous);
                 update_process_table_of_blocked_child(processTable, processTable[i].pid, simultaneous, rcvbuf.blocked_until_secs, rcvbuf.blocked_until_nanos);                
-            }else if(rcvbuf.msgCode == MSG_TYPE_SUCCESS){     // if child is terminating   
+            }else if(rcvbuf.msgCode == MSG_TYPE_SUCCESS){     // IF CHILD IS TERMINATING
                 cout << "OSS: Worker " << i + 1 << " PID: " << processTable[i].pid << " is planning to terminate" << std::endl;             
                 outputFile << "OSS: Worker " << i + 1 << " PID: " << processTable[i].pid << " is planning to terminate" << std::endl;
                 wait(0);  // give terminating process time to clear out of system
@@ -152,8 +152,7 @@ int main(int argc, char** argv){
                 update_process_table_of_terminated_child(processTable, processTable[i].pid, simultaneous);
 
                 // WHEN PROCESS ENDS WE CAN LOG START AND END TIME OF THE PROCESS(TOTAL TIME IN SYSTEM)
-                // THEN WE CAN (SUM OF TIME SPENT BLOCKED)/(TOTAL TIME IN SYSTEM) FOR AVG BLOCKED TIME
-                // AND (SUM AVG BLOCKED TIME)/(NUMBER OF PROCESSES) = TOTAL AVERAGE BLOCKED TIME
+                
             }
             // NEED TO LOG: totalSystemTime, totalBlockedTime, totalCPUTime, totalWaitTime
             // LOG rcvbuf.time_slice USED HERE FOR IDLE CPU TIME, BLOCKED TIME METRICS, ETC
@@ -270,17 +269,14 @@ void cleanup(string cause) {
     std::exit(EXIT_SUCCESS);
 }
 
-void output_statistics(int totalChildren, double totalBlockedTime, double totalCPUTime, double totalWaitTime){
+void output_statistics(int totalChildren, double totalTimeInSystem, double totalBlockedTime, double totalCPUTime){
     // int bufferSecs = 0;
     // int bufferNanos = 0;
     double totalSystemTime = shm_clock->secs + (shm_clock->nanos)/1000000000;
+    double totalWaitTime = totalTimeInSystem - (totalBlockedTime + totalCPUTime);
 
-    std::cout << "Average Wait time: " << totalWaitTime/totalChildren << std::endl;      // sum of each process' total time in system - sum CPU time given - sum Blocked time
+    std::cout << "Average Wait Time: " << totalWaitTime/totalChildren << std::endl;      // sum of each process' total time in system - sum CPU time given - sum Blocked time
     std::cout << "Average CPU Utilization: " << totalCPUTime/totalChildren << endl;           // sum each process' CPU utilization each process got / totalChildren
-    std::cout << "Average time a process waited in a blocked queue: " << totalBlockedTime/totalChildren << endl; // sum each Process' blocked time / totalChildren
-    std::cout << "Total Idle CPU time: " << totalSystemTime - totalCPUTime << endl;
+    std::cout << "Average Blocked Time: " << totalBlockedTime/totalChildren << endl; // sum each Process' blocked time / totalChildren
+    std::cout << "Total Idle CPU Time: " << totalSystemTime - totalCPUTime << endl;
 }
-
-// Is wait time same as time spent 'ready' state meaning not total time in system minus blocked time minus given quantums?
-
-// ASK ABOUT TEST FINAL GRADE
