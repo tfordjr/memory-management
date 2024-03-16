@@ -29,4 +29,3 @@ Instead of sending a "-" on the time slice used to convey blocked or unblocked,
     In my project the time slice never has "-" symbol and that info is in the msgCode var.
 
 ---Known Problems or Bugs: 
-None that I know of.
