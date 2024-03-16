@@ -108,7 +108,7 @@ int main(int argc, char** argv){
                         //  ---------  MAIN LOOP  ---------   
     while(numChildren > 0 || !process_table_empty(processTable, simultaneous)){         
         scheduler(processTable, simultaneous, &i, &time_slice, &unblocks, shm_clock->secs, shm_clock->nanos); // assigns i to next child
-        increment(shm_clock, ((unblocks * UNBLOCK_AMOUNT)));  // dispatcher overhead and unblocked reschedule overhead
+        increment(shm_clock, (DISPATCH_AMOUNT + (unblocks * UNBLOCK_AMOUNT)));  // dispatcher overhead and unblocked reschedule overhead
         print_process_table(processTable, simultaneous, shm_clock->secs, shm_clock->nanos, outputFile);        
                   
                 // MSG SEND
