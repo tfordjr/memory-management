@@ -71,7 +71,7 @@ int main(int argc, char** argv) {
             perror("failed to receive message from parent\n");
             exit(1);
         }       // MSGRCV PRINT MSG	
-        printf("%d: Child received message code: %d from parent (%d) and given quantum %d\n",getpid(), rcvbuf.msgCode, getppid(), rcvbuf.time_slice);
+        printf("%d: Child dispatched by parent and given quantum %d\n",getpid(), rcvbuf.time_slice);
           
         int random_number = generate_random_number(1, 100, getpid());
 

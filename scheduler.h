@@ -22,32 +22,36 @@ int check_blocked_processes(PCB[], int, int, int);
 void cleanup(std::string);
 
         // scheduler() determines i (next process location) and associated time slice
-void scheduler(PCB processTable[], int simultaneous, int *i, int *time_slice, int *unblocks, int secs, int nanos){  
+int scheduler(PCB processTable[], int simultaneous, int *i, int *time_slice, int *unblocks, int secs, int nanos){  
         // CHECK EACH BLOCKED PROCESS, IF NO LONGER BLOCKED, SEND TO Q0
     *unblocks = check_blocked_processes(processTable, simultaneous, secs, nanos);
+    int queue = 0;
     
     if (process_table_empty(processTable, simultaneous) || all_processes_blocked(processTable, simultaneous)){ 
         *i = -1;
         *time_slice = 0;
-        return;
+        return queue;
     }
 
     pid_t pid;  
        
     if(!Q0.empty()){   // THIS IS SCHEDULING BLOCKED PROCS, right????
         pid = Q0.front();
-        *time_slice = 10000000;  // 10ms 
+        *time_slice = 10000000;  // 10ms
+        queue = 0; 
     } else if(!Q1.empty()){
         pid = Q1.front();
         *time_slice = 20000000;  // 20ms 
+        queue = 1;
     } else if(!Q2.empty()){
         pid = Q2.front();
         *time_slice = 40000000;  // 40ms 
+        queue = 2;
     }     
 
     *i = return_position_of_given_pid(processTable, simultaneous, pid);    
 
-    return; 
+    return queue; 
 }    
 
 int return_position_of_given_pid(PCB processTable[], int simultaneous, pid_t pid){

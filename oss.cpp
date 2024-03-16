@@ -107,7 +107,7 @@ int main(int argc, char** argv){
     int unblocks;   // holds number of unblocks performed to simulate scheduling overhead
                         //  ---------  MAIN LOOP  ---------   
     while(numChildren > 0 || !process_table_empty(processTable, simultaneous)){         
-        scheduler(processTable, simultaneous, &i, &time_slice, &unblocks, shm_clock->secs, shm_clock->nanos); // assigns i to next child
+        int queue = scheduler(processTable, simultaneous, &i, &time_slice, &unblocks, shm_clock->secs, shm_clock->nanos); // assigns i to next child
         increment(shm_clock, (DISPATCH_AMOUNT + (unblocks * UNBLOCK_AMOUNT)));  // dispatcher overhead and unblocked reschedule overhead
         print_process_table(processTable, simultaneous, shm_clock->secs, shm_clock->nanos, outputFile);        
                   
@@ -124,8 +124,8 @@ int main(int argc, char** argv){
                 cleanup("perror encountered.");
                 exit(1);
             }       // LOG MSG SEND
-            cout << "OSS: Dispatching worker " <<  i + 1 << " PID " << processTable[i].pid << " giving quantum " << buf.time_slice << " at time " << shm_clock->secs << ":" << shm_clock->nanos << std::endl;
-            outputFile << "OSS: Dispatching worker " <<  i + 1 << " PID " << processTable[i].pid << " giving quantum " << buf.time_slice << " at time " << shm_clock->secs << ":" << shm_clock->nanos << std::endl;
+            cout << "OSS: Dispatching worker " <<  i + 1 << " PID " << processTable[i].pid << " from queue " << queue << " giving quantum " << buf.time_slice << " at time " << shm_clock->secs << ":" << shm_clock->nanos << std::endl;
+            outputFile << "OSS: Dispatching worker " <<  i + 1 << " PID " << processTable[i].pid << " from queue " << queue << " giving quantum " << buf.time_slice << " at time " << shm_clock->secs << ":" << shm_clock->nanos << std::endl;
             increment(shm_clock, DISPATCH_AMOUNT);
                     // MSG RECEIVE
             msgbuffer rcvbuf;     // BLOCKING WAIT TO RECEIVE MESSAGE FROM CHILD
