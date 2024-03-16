@@ -108,7 +108,7 @@ int main(int argc, char** argv){
                         //  ---------  MAIN LOOP  ---------   
     while(numChildren > 0 || !process_table_empty(processTable, simultaneous)){         
         scheduler(processTable, simultaneous, &i, &time_slice, &unblocks, shm_clock->secs, shm_clock->nanos); // assigns i to next child
-        increment(shm_clock, (DISPATCH_AMOUNT + (unblocks * UNBLOCK_AMOUNT)));  // dispatcher overhead and unblocked reschedule overhead
+        increment(shm_clock, ((unblocks * UNBLOCK_AMOUNT)));  // dispatcher overhead and unblocked reschedule overhead
         print_process_table(processTable, simultaneous, shm_clock->secs, shm_clock->nanos, outputFile);        
                   
                 // MSG SEND
@@ -119,40 +119,41 @@ int main(int argc, char** argv){
             buf.blocked_until_secs = 0;
             buf.blocked_until_nanos = 0;
             strcpy(buf.message, "Message to child\n");
-            printf("%d: PARENT SENDING message code: %d and given quantum %d\n",getpid(), buf.msgCode, buf.time_slice);
             if (msgsnd(msgqid, &buf, sizeof(msgbuffer), 0) == -1) {
                 perror(("oss.cpp: Error: msgsnd to child " + to_string(i + 1) + " failed\n").c_str());
                 cleanup("perror encountered.");
                 exit(1);
             }       // LOG MSG SEND
-            cout << "OSS: Sending message code "<< buf.msgCode << " to worker " << i + 1 << " PID: " << processTable[i].pid << " at time " << shm_clock->secs << ":" << shm_clock->nanos << std::endl;
-            outputFile << "OSS: Sending message code "<< buf.msgCode << " to worker " << i + 1 << " PID: " << processTable[i].pid << " at time " << shm_clock->secs << ":" << shm_clock->nanos << std::endl;
-
+            cout << "OSS: Dispatching worker " <<  i + 1 << " PID " << processTable[i].pid << " giving quantum " << buf.time_slice << " at time " << shm_clock->secs << ":" << shm_clock->nanos << std::endl;
+            outputFile << "OSS: Dispatching worker " <<  i + 1 << " PID " << processTable[i].pid << " giving quantum " << buf.time_slice << " at time " << shm_clock->secs << ":" << shm_clock->nanos << std::endl;
+            increment(shm_clock, DISPATCH_AMOUNT);
                     // MSG RECEIVE
             msgbuffer rcvbuf;     // BLOCKING WAIT TO RECEIVE MESSAGE FROM CHILD
             if (msgrcv(msgqid, &rcvbuf, sizeof(msgbuffer), getpid(), 0) == -1) {
                 perror("oss.cpp: Error: failed to receive message in parent\n");
                 cleanup("perror encountered.");
                 exit(1);
-            }       // LOG MSG RECEIVE
-            cout << "OSS: Receiving message code " << rcvbuf.msgCode << " from worker " << i + 1 << " PID: " << processTable[i].pid << " at time " << shm_clock->secs << ":" << shm_clock->nanos << std::endl;
-            outputFile << "OSS: Receiving message code " << rcvbuf.msgCode << " from worker " << i + 1 << " PID: " << processTable[i].pid << " at time " << shm_clock->secs << ":" << shm_clock->nanos << std::endl;
-            increment(shm_clock, abs(rcvbuf.time_slice)); // increment absolute value of time used, sign only indicates process state, not time used
+            }       // LOG MSG RECEIVE            
+            increment(shm_clock, rcvbuf.time_slice); // increment clock by time used by child
 
                     // UNPACK RECEIVED MESSAGE, LOG RESULTS
             if (time_slice == rcvbuf.time_slice) { // IF TOTAL TIME SLICE USED
                 totalCPUTime += (rcvbuf.time_slice)/1e9;   // LOGGING QUANTUM USED
-                descend_queues(processTable[i].pid);           
+                cout << "OSS: Receiving that worker " << i + 1 << " PID " << processTable[i].pid << " ran for full quantum " << rcvbuf.time_slice << " ns" << std::endl;
+                outputFile << "OSS: Receiving that worker " << i + 1 << " PID " << processTable[i].pid << " ran for full quantum " << rcvbuf.time_slice << " ns" << std::endl;
+                descend_queues(processTable[i].pid);                           
             } else if (rcvbuf.msgCode == MSG_TYPE_BLOCKED) {  // IF PROCESS BLOCKED
                 totalCPUTime += (rcvbuf.time_slice)/1e9;   // LOGGING QUANTUM USED
                 totalBlockedTime += subtract_time(rcvbuf.blocked_until_secs, rcvbuf.blocked_until_nanos, shm_clock->secs, shm_clock->nanos);   // LOG BLOCKED TIME HERE, subtract blocked until time by current time
+                cout << "OSS: Receiving that worker " << i + 1 << " PID " << processTable[i].pid << " ran for " << rcvbuf.time_slice << " ns of full quantum " << time_slice << " ns before becoming blocked" << std::endl;
+                outputFile << "OSS: Receiving that worker " << i + 1 << " PID " << processTable[i].pid << " ran for " << rcvbuf.time_slice << " ns of full quantum " << time_slice << " ns before becoming blocked" << std::endl;
                 remove_process_from_scheduling_queues(processTable[i].pid, processTable, simultaneous);
                 update_process_table_of_blocked_child(processTable, processTable[i].pid, simultaneous, rcvbuf.blocked_until_secs, rcvbuf.blocked_until_nanos);
             } else if(rcvbuf.msgCode == MSG_TYPE_SUCCESS){     // IF CHILD IS TERMINATING
                 totalCPUTime += (rcvbuf.time_slice)/1e9;   // LOGGING QUANTUM USED
                 totalTimeInSystem += subtract_time(shm_clock->secs, shm_clock->nanos, processTable[i].startSecs, processTable[i].startNanos);// LOG TOTAL TIME IN SYSTEM (current time - start time)
-                cout << "OSS: Worker " << i + 1 << " PID: " << processTable[i].pid << " is planning to terminate" << std::endl;             
-                outputFile << "OSS: Worker " << i + 1 << " PID: " << processTable[i].pid << " is planning to terminate" << std::endl;
+                cout << "OSS: Receiving that worker " << i + 1 << " PID " << processTable[i].pid << " is planning to terminate" << std::endl;             
+                outputFile << "OSS: Receiving that worker " << i + 1 << " PID " << processTable[i].pid << " is planning to terminate" << std::endl;
                 wait(0);  // give terminating process time to clear out of system
                 remove_process_from_scheduling_queues(processTable[i].pid, processTable, simultaneous);
                 update_process_table_of_terminated_child(processTable, processTable[i].pid, simultaneous);                
