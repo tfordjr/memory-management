@@ -1,9 +1,9 @@
-CS4760-001SS - Terry Ford Jr. - Project 4 OSS Scheduler - 03/08/2024
-https://github.com/tfordjr/oss-scheduler.git
+// CS4760-001SS - Terry Ford Jr. - Project 5 Resource Management - 03/29/2024
+// https://github.com/tfordjr/resource-management.git
 
-This 4th version of the OSS project now implements the 'naieve' multilevel feedback queue,
-which is the simplest implementation. There is no preemption or aging, but we are
-simulating io blocking, and we have three queues which will determine the scheduling. 
+This 5th version of the OSS project now implements simulated system resources that
+child processes must share. These children must share resources and will avoid deadlocks
+dynamically as they occur. 
 
 ---Compile and run instructions:
 simply run make command and oss command in the following format:
@@ -25,7 +25,5 @@ readme: explains project
 
 
 ---Lack of adhearance to specifications:
-Instead of sending a "-" on the time slice used to convey blocked or unblocked,
-    In my project the time slice never has "-" symbol and that info is in the msgCode var.
 
 ---Known Problems or Bugs: 

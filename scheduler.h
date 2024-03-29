@@ -1,10 +1,5 @@
-// CS4760-001SS - Terry Ford Jr. - Project 4 OSS Scheduler - 03/08/2024
-// https://github.com/tfordjr/oss-scheduler.git
-
-// WHO MOVES PROCESSES FROM QUEUE TO QUEUE????
-// child proc determines run result, messages this to oss
-// oss checks child msg, updates process_table
-// oss passes process_table to us, we handle queue movements here
+// CS4760-001SS - Terry Ford Jr. - Project 5 Resource Management - 03/29/2024
+// https://github.com/tfordjr/resource-management.git
 
 #ifndef SCHEDULER_H
 #define SCHEDULER_H

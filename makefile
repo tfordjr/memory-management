@@ -1,5 +1,5 @@
-# CS4760-001SS - Terry Ford Jr. - Project 4 OSS Scheduler - 03/08/2024
-# https://github.com/tfordjr/oss-scheduler.git
+# CS4760-001SS - Terry Ford Jr. - Project 5 Resource Management - 03/29/2024
+# https://github.com/tfordjr/resource-management.git
 
 CC	= g++ 
 CFLAGS  = -g3 -std=c++11
