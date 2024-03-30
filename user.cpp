@@ -19,6 +19,7 @@
 #include "clock.h"
 #include "msgq.h"
 #include "rng.h"
+#include "resources.h"
 using namespace std;
 
 #define TERMINATION_CHANCE 5     // 5% chance

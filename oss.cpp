@@ -23,6 +23,7 @@
 #include "msgq.h"
 #include "scheduler.h"
 #include "rng.h"
+#include "resources.h"
 using namespace std;
 
 void launch_child(PCB[], int, int);
