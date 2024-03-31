@@ -55,9 +55,13 @@ int main(int argc, char** argv){
             case 'h':
                 help();
                 return 0;     // terminates if -h is present
-            case 'n':                                
+            case 'n':                
                 numChildren = atoi(optarg);
                 totalChildren = numChildren;
+                if (numChildren > 18){
+                    cout << "-n must be 18 or fewer" << endl;
+                    return 0;
+                }
                 break;
             case 's':          
                 simultaneous = atoi(optarg);
