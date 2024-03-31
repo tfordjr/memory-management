@@ -36,6 +36,7 @@ void output_statistics(int, double, double, double);
 
 volatile sig_atomic_t term = 0;  // signal handling global
 struct PCB processTable[20]; // Init Process Table Array of PCB structs (not shm)
+  // RESOURCE TABLE DECLARED IN RESOURCES_H
 
 // Declaring globals needed for signal handlers to clean up at anytime
 Clock* shm_clock;  // Declare global shm clock
@@ -80,6 +81,7 @@ int main(int argc, char** argv){
     alarm(60);   // timeout timer
           
     init_process_table(processTable);      // init local process table
+    init_resource_table(resourceTable);    // init resource table
     shm_clock = (Clock*)shmat(shmtid, NULL, 0);    // attatch to global clock
     shm_clock->secs = 0;                        // init clock to 00:00
     shm_clock->nanos = 0;         
@@ -111,7 +113,8 @@ int main(int argc, char** argv){
     while(numChildren > 0 || !process_table_empty(processTable, simultaneous)){         
         int queue = scheduler(processTable, simultaneous, &i, &time_slice, &unblocks, shm_clock->secs, shm_clock->nanos); // assigns i to next child
         increment(shm_clock, (DISPATCH_AMOUNT + (unblocks * UNBLOCK_AMOUNT)));  // dispatcher overhead and unblocked reschedule overhead
-        print_process_table(processTable, simultaneous, shm_clock->secs, shm_clock->nanos, outputFile);        
+        print_process_table(processTable, simultaneous, shm_clock->secs, shm_clock->nanos, outputFile);
+        print_resource_table(resourceTable, shm_clock->secs, shm_clock->nanos, outputFile);        
                   
                 // MSG SEND
         if (!process_table_empty(processTable, simultaneous) && i != -1){  // comm with next child                         
