@@ -27,22 +27,16 @@ void init_resource_table(resource resourceTable[]){
     }
 }
 
-//    RESOURCE  ALLOCATED   AVAILABLE
-//    A            10           10
-//    B            5            15
-//    C            20           0 
-//    D            etc... 
-
 void print_resource_table(resource resourceTable[], int secs, int nanos, std::ostream& outputFile){
     static int next_print_secs = 0;  // static ints used to keep track of each 
     static int next_print_nanos = 0;   // process table print to be done
 
     if(secs > next_print_secs || secs == next_print_secs && nanos > next_print_nanos){
         std::cout << "OSS PID: " << getpid() << "  SysClockS: " << secs << "  SysClockNano " << nanos << "\nResource Table:\nResource  Allocated  Available\n";
-        outputFile << "OSS PID: " << getpid() << "  SysClockS: " << secs << "  SysClockNano " << nanos << "\nResource Table:\nResource\tAllocated\tAvailable\n";
+        outputFile << "OSS PID: " << getpid() << "  SysClockS: " << secs << "  SysClockNano " << nanos << "\nResource Table:\nResource  Allocated  Available\n";
         for(int i = 0; i < NUM_RESOURCES; i++){
             std::cout << static_cast<char>(65 + i) << "\t  " << std::to_string(resourceTable[i].allocated) << "\t     " << std::to_string(resourceTable[i].available) << std::endl;
-            outputFile << static_cast<char>(65 + i) << "\t" << std::to_string(resourceTable[i].allocated) << "\t" << std::to_string(resourceTable[i].available) << std::endl;
+            outputFile << static_cast<char>(65 + i) << "\t  " << std::to_string(resourceTable[i].allocated) << "\t     " << std::to_string(resourceTable[i].available) << std::endl;
         }
         next_print_nanos = next_print_nanos + 500000000;
         if (next_print_nanos >= 1000000000){   // if over 1 billion nanos, add 1 second, sub 1 bil nanos
