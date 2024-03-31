@@ -26,7 +26,7 @@
 #include "resources.h"
 using namespace std;
 
-void launch_child(PCB[], int, int);
+void launch_child(PCB[], int);
 bool launch_interval_satisfied(int);
 void help();
 void timeout_handler(int);
@@ -46,11 +46,11 @@ int msgqid;           // MSGQID GLOBAL FOR MSGQ CLEANUP
 int simultaneous = 1;  // simultaneous global so that sighandlers know PCB table size to avoid segfaults when killing all procs on PCB
  
 int main(int argc, char** argv){
-    int option, numChildren = 1, time_limit = 2, launch_interval = 100;      
+    int option, numChildren = 1, launch_interval = 100;      
     int totalChildren; // used for statistics metrics report
     double totalBlockedTime = 0, totalCPUTime = 0, totalTimeInSystem = 0; // used for statistics report
     string logfile = "logfile.txt";
-    while ( (option = getopt(argc, argv, "hn:s:t:i:f:")) != -1) {   // getopt implementation
+    while ( (option = getopt(argc, argv, "hn:s:i:f:")) != -1) {   // getopt implementation
         switch(option) {
             case 'h':
                 help();
@@ -62,9 +62,6 @@ int main(int argc, char** argv){
             case 's':          
                 simultaneous = atoi(optarg);
                 break;
-            case 't':
-                time_limit = atoi(optarg);
-                break; 
             case 'i':
                 launch_interval = (1000000 * atoi(optarg));  // converting ms to nanos
                 break;            
@@ -166,7 +163,7 @@ int main(int argc, char** argv){
             cout << "OSS: Launching Child Process..." << endl;
             outputFile << "OSS: Launching Child Process..." << endl;
             numChildren--;
-            launch_child(processTable, time_limit, simultaneous);
+            launch_child(processTable, simultaneous);
         }        
     }                   // --------- END OF MAIN LOOP ---------      
     output_statistics(totalChildren, totalTimeInSystem, totalBlockedTime, totalCPUTime);
@@ -182,10 +179,9 @@ int main(int argc, char** argv){
     return 0;
 }
 
-void launch_child(PCB processTable[], int time_limit, int simultaneous){
-    string rand_secs = std::to_string(generate_random_number(1, (time_limit - 1), getpid()));
-    string rand_nanos = std::to_string(generate_random_number(0, 999999999, getpid()));
-    // string user_parameters = std::to_string(rand_secs) + " " + std::to_string(rand_nanos); 
+void launch_child(PCB processTable[], int simultaneous){
+    string rand_secs = std::to_string(generate_random_number(1, 9, getpid()));
+    string rand_nanos = std::to_string(generate_random_number(0, 999999999, getpid()));     
 
     pid_t childPid = fork(); // This is where the child process splits from the parent        
     if (childPid == 0) {            // Each child uses exec to run ./user	
