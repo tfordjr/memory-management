@@ -21,11 +21,8 @@
 typedef struct msgbuffer {
 	long mtype;			 	 // pid
     char message[100];   	 // string message
-	int time_slice; 	 // OSS SENDS TO CHILD: TIME SLICE ALLOTTED TO CHILD!
-						// CHILD SENDS TO OSS: TIME SLICE ACTUALLY USED!
-	int blocked_until_secs;	 // time when process becomes unblocked, MSGSEND CHILD TO PARENT ONLY,
-	int blocked_until_nanos; // PARENT ONLY SENDS 0s FOR THESE ARGS TO CHILD
 	int msgCode;			  // process state code
+	// PLACE TO HOLD RESOURCE REQUEST FROM CHILD TO PARENT
 } msgbuffer;
 
 #define MSG_TYPE_BLOCKED 2   // BLOCKED

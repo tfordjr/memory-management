@@ -41,18 +41,8 @@ int main(int argc, char** argv) {
 
     int start_secs = shm_clock->secs;  // start time is current time at the start
     int start_nanos = shm_clock->nanos; // Is this our issue leaving child in sys too long?
-  
-    int secs = atoi(argv[1]);     // Arg 1 will be secs, secs given from start to terminate
-    int nanos = atoi(argv[2]);   // Arg 2 will be nanos  
-    
-    int end_secs = start_secs + secs;   // end time is starting time plus time told to wait
-    int end_nanos = start_nanos + nanos;  
-    if (end_nanos >= 1000000000){   // if over 1 billion nanos, add 1 second, sub 1 bil nanos
-        end_nanos = end_nanos - 1000000000;
-        end_secs++;
-    } 
-
-    msgbuffer buf, rcvbuf;   // buf for msgsnd buffer, rcvbuf for msgrcv buffer	
+            
+    msgbuffer buf;   // buf for msgsnd buffer, rcvbuf for msgrcv buffer	
     buf.mtype = getppid();
 	int msgqid = 0;
 	key_t msgq_key;	
@@ -65,21 +55,14 @@ int main(int argc, char** argv) {
 		exit(1);
 	}
 	printf("%d: Child has access to the msg queue\n",getpid());   // starting messages    
-    printf("USER PID: %d  PPID: %d  SysClockS: %d  SysClockNano: %d  TermTimeS: %d  TermTimeNano: %d\n--Just Starting\n", getpid(), getppid(), shm_clock->secs, shm_clock->nanos, end_secs, end_nanos); 
+    printf("USER PID: %d  PPID: %d  SysClockS: %d  SysClockNano: %d \n--Just Starting\n", getpid(), getppid(), shm_clock->secs, shm_clock->nanos); 
 
     int iter = 0;
     bool done = false;
 
     while(!done){      // ----------- MAIN LOOP -----------     
-        iter++;       // MSGRCV BLOCKING WAIT, WAITS HERE WHILE IO BLOCKED ALSO              
-        if ( msgrcv(msgqid, &rcvbuf, sizeof(msgbuffer), getpid(), 0) == -1) {
-            perror("failed to receive message from parent\n");
-            exit(1);
-        }       // MSGRCV PRINT MSG	
-        printf("%d: Child dispatched by parent and given quantum %d\n",getpid(), rcvbuf.time_slice);
-          
+        iter++;       
         int random_number = generate_random_number(1, 100, getpid());
-
                     // IF WE RANDOMLY TERM EARLY
         if (random_number < TERMINATION_CHANCE){   
             printf("USER PID: %d  PPID: %d  SysClockS: %d  SysClockNano: %d  TermTimeS: %d  TermTimeNano: %d\n--Terminating after sending message back to oss after %d iterations.\n", getpid(), getppid(), shm_clock->secs, shm_clock->nanos, end_secs, end_nanos, iter);
@@ -167,13 +150,6 @@ bool will_process_terminate_during_quantum(int secs, int nanos, int end_secs, in
         *time_slice_used = abs(elapsed_secs * 1000000000 + elapsed_nanos);
         return true;
     }
-         // Try using this if the above if is too dangerous, with how short our quantums are,
-         // this will suffice for all of the cases we will see.
-    // if(elapsed_secs == -1){   
-    //     *time_slice_used = abs(1000000000 + elapsed_nanos);
-    //     return true;
-    // }
-
-        // else program will not end during next quantum
+    
     return false;
 }
