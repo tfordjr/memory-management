@@ -12,13 +12,15 @@
 #include <signal.h>
 #include <fstream>
 #include <string>
+#include <queue>
 
 struct Resource{
     int allocated;
     int available;
 };
 
-struct Resource resourceTable[NUM_RESOURCES];
+struct Resource resourceTable[NUM_RESOURCES]; // resourceTable declaration
+std::queue<pid_t> resourceQueues[NUM_RESOURCES];  // Queues for each resource
 
 void init_resource_table(Resource resourceTable[]){
     for(int i = 0; i < NUM_RESOURCES; i++){
@@ -46,23 +48,35 @@ void print_resource_table(Resource resourceTable[], int secs, int nanos, std::os
     }
 }
 
-void allocate_resources(int index, int instances){
+void allocate_resources(int index, int instances, pid_t pid){
     resourceTable[index].available -= instances;
     resourceTable[index].allocated += instances;
 }
 
-bool request_resources(int index, int instances){
+bool request_resources(int index, int instances, pid_t pid){
     if (resourceTable[index].available >= instances){
-        allocate_resources(index, instances);
+        allocate_resources(index, instances, pid);
         return true;        
     } 
     std::cout << "Insufficient resources available for request." << std::endl;
+    resourceQueues[index].push(pid);
     return false;
 }
 
 void release_resources(int index, int instances){
     resourceTable[index].available += instances;
     resourceTable[index].allocated -= instances;
+
+    // If there are processes waiting in the queue for this resource, allocate resources to them
+    while (!resourceQueues[index].empty() && resourceTable[index].available > 0) {
+        // This assumes pid in queue wants just ONE of this resource and nothing else! Make SURE!
+        pid_t waitingPID = resourceQueues[index].front();
+        resourceQueues[index].pop();
+
+        // allocate_resources(index, x); // Allocate one instance to the waiting process
+        
+        // Notify the process that it has been allocated resources        
+    }
 }
 
 #endif
