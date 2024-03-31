@@ -13,14 +13,16 @@
 #include <fstream>
 #include <string>
 #include <queue>
+#include <set>
 
 struct Resource{
     int allocated;
     int available;
 };
 
-struct Resource resourceTable[NUM_RESOURCES]; // resourceTable declaration
+struct Resource resourceTable[NUM_RESOURCES];     // resource table
 std::queue<pid_t> resourceQueues[NUM_RESOURCES];  // Queues for each resource
+std::set<pid_t> allocatedPIDs;                   // List of PIDs with some allocated Rs
 
 void init_resource_table(Resource resourceTable[]){
     for(int i = 0; i < NUM_RESOURCES; i++){
@@ -51,6 +53,7 @@ void print_resource_table(Resource resourceTable[], int secs, int nanos, std::os
 void allocate_resources(int index, int instances, pid_t pid){
     resourceTable[index].available -= instances;
     resourceTable[index].allocated += instances;
+    allocatedPIDs.insert(pid);   // Put PID in set of PIDs with some Resources
 }
 
 bool request_resources(int index, int instances, pid_t pid){
@@ -79,22 +82,19 @@ void release_resources(int index, int instances){
     }
 }
 
+bool dd_algorithm(){   // if deadlock, return true. Else, return false    
+    return false;
+}    
+
 void deadlock_detection(Resource resourceTable[], int secs, int nanos){
-    // Runs every simulated second, utilize static print variables to ensure this
-
-    static int next_dd_secs = 0;  // used to keep track of next deadlock detection
-
+    static int next_dd_secs = 0;  // used to keep track of next deadlock detection    
     if(secs >= next_dd_secs){
-        
-        // RUN DEADLOCK DETECTION ALGORITHM HERE
-        // IF DEADLOCK IS DETECTED, KILL A PID, DON'T INCREMENT next_dd_secs
-        // THEN deadlock_detection will be ran next loop
-        // deadlock not detected, increment next_dd_secs
-
+        while(dd_algorithm()){  // While deadlock, kill a pid, test for deadlock again
+            kill(allocatedPIDs.begin(), SIGKILL);
+            allocatedPIDs.erase(allocatedPIDs.begin());
+        }
         next_dd_secs++;
     }
-
-    return;
 }
 
 #endif
