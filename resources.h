@@ -41,7 +41,7 @@ void print_resource_table(resource resourceTable[], int secs, int nanos, std::os
         std::cout << "OSS PID: " << getpid() << "  SysClockS: " << secs << "  SysClockNano " << nanos << "\nResource Table:\nResource  Allocated  Available\n";
         outputFile << "OSS PID: " << getpid() << "  SysClockS: " << secs << "  SysClockNano " << nanos << "\nResource Table:\nResource\tAllocated\tAvailable\n";
         for(int i = 0; i < NUM_RESOURCES; i++){
-            std::cout << static_cast<char>(65 + i) << "\t    " << std::to_string(resourceTable[i].allocated) << "\t" << std::to_string(resourceTable[i].available) << std::endl;
+            std::cout << static_cast<char>(65 + i) << "\t  " << std::to_string(resourceTable[i].allocated) << "\t\t" << std::to_string(resourceTable[i].available) << std::endl;
             outputFile << static_cast<char>(65 + i) << "\t" << std::to_string(resourceTable[i].allocated) << "\t" << std::to_string(resourceTable[i].available) << std::endl;
         }
         next_print_nanos = next_print_nanos + 500000000;
