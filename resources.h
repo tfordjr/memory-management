@@ -79,4 +79,22 @@ void release_resources(int index, int instances){
     }
 }
 
+void deadlock_detection(Resource resourceTable[], int secs, int nanos){
+    // Runs every simulated second, utilize static print variables to ensure this
+
+    static int next_dd_secs = 0;  // used to keep track of next deadlock detection
+
+    if(secs >= next_dd_secs){
+        
+        // RUN DEADLOCK DETECTION ALGORITHM HERE
+        // IF DEADLOCK IS DETECTED, KILL A PID, DON'T INCREMENT next_dd_secs
+        // THEN deadlock_detection will be ran next loop
+        // deadlock not detected, increment next_dd_secs
+
+        next_dd_secs++;
+    }
+
+    return;
+}
+
 #endif

@@ -114,7 +114,8 @@ int main(int argc, char** argv){
         int queue = scheduler(processTable, simultaneous, &i, &time_slice, &unblocks, shm_clock->secs, shm_clock->nanos); // assigns i to next child
         increment(shm_clock, (DISPATCH_AMOUNT + (unblocks * UNBLOCK_AMOUNT)));  // dispatcher overhead and unblocked reschedule overhead
         print_process_table(processTable, simultaneous, shm_clock->secs, shm_clock->nanos, outputFile);
-        print_resource_table(resourceTable, shm_clock->secs, shm_clock->nanos, outputFile);        
+        print_resource_table(resourceTable, shm_clock->secs, shm_clock->nanos, outputFile);     
+        deadlock_detection(resourceTable, shm_clock->secs, shm_clock->nanos);
                   
                 // MSG SEND
         if (!process_table_empty(processTable, simultaneous) && i != -1){  // comm with next child                         
