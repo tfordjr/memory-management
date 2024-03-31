@@ -91,10 +91,14 @@ void deadlock_detection(Resource resourceTable[], int secs, int nanos){
     if(secs >= next_dd_secs){
         while(dd_algorithm()){  // While deadlock, kill a pid, test for deadlock again
             kill(allocatedPIDs.begin(), SIGKILL);
+            // release resources held by PID!            
             allocatedPIDs.erase(allocatedPIDs.begin());
         }
         next_dd_secs++;
     }
 }
+
+    // KEEP STATS OF HOW MANY PROCs KILLED THIS WAY
+    // KEEP STATS OF HOW MANY TIMES dd_algorithm is run!
 
 #endif

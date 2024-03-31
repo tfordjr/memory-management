@@ -26,6 +26,10 @@ using namespace std;
 #define IO_BLOCK_CHANCE 15
 #define ACUTAL_IO_BLOCK_CHANCE (TERMINATION_CHANCE + IO_BLOCK_CHANCE)
 
+// #define TERMINATION_CHANCE 5
+#define R_REQUEST_CHANCE 75
+#define R_RELEASE_CHANCE 20
+
 void calculate_time_until_unblocked(int, int, int, int *, int *);
 bool will_process_terminate_during_quantum(int, int, int, int, int, int, int, int*);
 
