@@ -13,21 +13,21 @@
 #include <fstream>
 #include <string>
 
-struct resource{
+struct Resource{
     int allocated;
     int available;
 };
 
-struct resource resourceTable[NUM_RESOURCES];
+struct Resource resourceTable[NUM_RESOURCES];
 
-void init_resource_table(resource resourceTable[]){
+void init_resource_table(Resource resourceTable[]){
     for(int i = 0; i < NUM_RESOURCES; i++){
         resourceTable[i].available = NUM_INSTANCES;
         resourceTable[i].allocated = 0;      
     }
 }
 
-void print_resource_table(resource resourceTable[], int secs, int nanos, std::ostream& outputFile){
+void print_resource_table(Resource resourceTable[], int secs, int nanos, std::ostream& outputFile){
     static int next_print_secs = 0;  // static ints used to keep track of each 
     static int next_print_nanos = 0;   // process table print to be done
 
