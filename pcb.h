@@ -9,6 +9,7 @@
 #include <signal.h>
 #include <fstream>
 #include <string>
+#include "resources.h"
 
 struct PCB {
     int occupied;                 // bool occupied or not
@@ -16,8 +17,7 @@ struct PCB {
     int startSecs;                // time when it was forked
     int startNanos;               
     int blocked;                  // bool blocked or not
-    int eventBlockedUntilSec;     // Time when blocked process unblocks
-    int eventBlockedUntilNano;
+    int resources_held[NUM_RESOURCES];  
 };
 
 void init_process_table(PCB processTable[]){
@@ -27,8 +27,9 @@ void init_process_table(PCB processTable[]){
         processTable[i].startSecs = 0;
         processTable[i].startNanos = 0;
         processTable[i].blocked = 0;
-        processTable[i].eventBlockedUntilSec = 0;
-        processTable[i].eventBlockedUntilNano = 0;
+        for(int j = 0; j < NUM_RESOURCES; j++){
+            processTable[i].resources_held[j] = 0;
+        }        
     }
 }
 
@@ -78,9 +79,17 @@ void print_process_table(PCB processTable[], int simultaneous, int secs, int nan
         outputFile << "OSS PID: " << getpid() << "  SysClockS: " << secs << "  SysClockNano " << nanos << "  \nProcess Table:\nEntry\tOccupied  PID\tStartS\tStartN\t\tBlocked\tUnblockedS  UnblockedN\n";
         for(int i = 0; i < simultaneous; i++){
             std::string tab = (processTable[i].startNanos == 0) ? "\t\t" : "\t";
+            std::string r_list = "";
 
-            std::cout << std::to_string(i + 1) << "\t" << std::to_string(processTable[i].occupied) << "\t" << std::to_string(processTable[i].pid) << "\t" << std::to_string(processTable[i].startSecs) << "\t" << std::to_string(processTable[i].startNanos) << tab << std::to_string(processTable[i].blocked) << "\t" << std::to_string(processTable[i].eventBlockedUntilSec) << "\t\t" << std::to_string(processTable[i].eventBlockedUntilNano) << std::endl;
-            outputFile << std::to_string(i + 1) << "\t" << std::to_string(processTable[i].occupied) << "\t" << std::to_string(processTable[i].pid) << "\t" << std::to_string(processTable[i].startSecs) << "\t" << std::to_string(processTable[i].startNanos) << tab << std::to_string(processTable[i].blocked) << "\t" << std::to_string(processTable[i].eventBlockedUntilSec) << "\t\t" << std::to_string(processTable[i].eventBlockedUntilNano) << std::endl;
+            for(int j = 0; j < NUM_RESOURCES; j++){
+                r_list += std::to_string(static_cast<char>(65 + j));
+                r_list += ":";
+                r_list += std::to_string(processTable[i].resources_held[j]);
+                r_list += " ";
+            }
+
+            std::cout << std::to_string(i + 1) << "\t" << std::to_string(processTable[i].occupied) << "\t" << std::to_string(processTable[i].pid) << "\t" << std::to_string(processTable[i].startSecs) << "\t" << std::to_string(processTable[i].startNanos) << tab << std::to_string(processTable[i].blocked) << "\t" << r_list << std::endl;
+            outputFile << std::to_string(i + 1) << "\t" << std::to_string(processTable[i].occupied) << "\t" << std::to_string(processTable[i].pid) << "\t" << std::to_string(processTable[i].startSecs) << "\t" << std::to_string(processTable[i].startNanos) << tab << std::to_string(processTable[i].blocked) << "\t" << r_list << std::endl;
         }
         next_print_nanos = next_print_nanos + 500000000;
         if (next_print_nanos >= 1000000000){   // if over 1 billion nanos, add 1 second, sub 1 bil nanos
@@ -98,8 +107,9 @@ void update_process_table_of_terminated_child(PCB processTable[], pid_t pid, int
             processTable[i].startSecs = 0;
             processTable[i].startNanos = 0;
             processTable[i].blocked = 0;
-            processTable[i].eventBlockedUntilSec = 0;
-            processTable[i].eventBlockedUntilNano = 0;
+            for(int j = 0; j < NUM_RESOURCES; j++){
+                processTable[i].resources_held[j] = 0;
+            }  
             return;
         } 
     }
@@ -109,8 +119,6 @@ void update_process_table_of_blocked_child(PCB processTable[], pid_t pid, int si
     for(int i = 0; i < simultaneous; i++){
         if(processTable[i].pid == pid){  // if PCB pid equal to blocked pid            
             processTable[i].blocked = 1;
-            processTable[i].eventBlockedUntilSec = blockedUntilSec;
-            processTable[i].eventBlockedUntilNano = blockedUntilNano;
             return;
         } 
     }
