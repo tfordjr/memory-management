@@ -57,14 +57,14 @@ int main(int argc, char** argv){
                 return 0;     // terminates if -h is present
             case 'n':                
                 numChildren = atoi(optarg);
-                totalChildren = numChildren;
-                if (numChildren > 18){
-                    cout << "-n must be 18 or fewer" << endl;
-                    return 0;
-                }
+                totalChildren = numChildren;                
                 break;
             case 's':          
                 simultaneous = atoi(optarg);
+                if (simultaneous > 18){
+                    cout << "-s must be 18 or fewer" << endl;
+                    return 0;
+                }
                 break;
             case 'i':
                 launch_interval = (1000000 * atoi(optarg));  // converting ms to nanos
