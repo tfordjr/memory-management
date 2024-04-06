@@ -118,6 +118,7 @@ int main(int argc, char** argv){
         pid_t pid = waitpid(-1, nullptr, WNOHANG);  // non-blocking wait call for terminated child process
         if(pid != 0){     // if child has been terminated
             // update_process_table_of_terminated_child(processTable, pid);  // clear spot in pcb
+            // release resources
             pid = 0;
         }
 
@@ -143,12 +144,8 @@ int main(int argc, char** argv){
             //     exit(1);
             // }       // LOG MSG RECEIVE            
             // increment(shm_clock, rcvbuf.time_slice); // increment clock by time used by child
-        
-            // }       // LOG MSG SEND
-            // cout << "OSS: Dispatching worker " <<  i + 1 << " PID " << processTable[i].pid << " at time " << shm_clock->secs << ":" << shm_clock->nanos << std::endl;
-            // outputFile << "OSS: Dispatching worker " <<  i + 1 << " PID " << processTable[i].pid << " at time " << shm_clock->secs << ":" << shm_clock->nanos << std::endl;
-            // increment(shm_clock, DISPATCH_AMOUNT);      
-                  
+                       
+
     }                   // --------- END OF MAIN LOOP ---------      
     // output_statistics(totalChildren, totalTimeInSystem, totalBlockedTime, totalCPUTime);
 
