@@ -13,7 +13,6 @@
 #include <fstream>
 #include <string>
 #include <queue>
-#include <set>
 
 struct Resource{
     int allocated;
@@ -49,7 +48,7 @@ void print_resource_table(Resource resourceTable[], int secs, int nanos, std::os
     }
 }
 
-pid_t return_PCB_index_of_pid(PCB processTable[], int simultaneous, pid_t pid){
+int return_PCB_index_of_pid(PCB processTable[], int simultaneous, pid_t pid){
     for (int i = 0; i < simultaneous; i++){  
         if (processTable[i].pid == pid){
             return i;
@@ -60,21 +59,22 @@ pid_t return_PCB_index_of_pid(PCB processTable[], int simultaneous, pid_t pid){
     return -1;
 }
 
-void allocate_resources(PCB processTable[], int index, pid_t pid){
-    resourceTable[index].available -= 1;
-    resourceTable[index].allocated += 1;
+void allocate_resources(PCB processTable[], int resource_index, pid_t pid){
+    resourceTable[resource_index].available -= 1;
+    resourceTable[resource_index].allocated += 1;
     // LOG ALLOCATION OF RESOURCES SOMEWHERE
-    processTable[]
+    int i = return_PCB_index_of_pid(processTable, simultaneous, pid);
+    processTable[i].resourcesHeld[resource_index]++;
     // Notify the process that it has been allocated resources
 }
 
-bool request_resources(int index, int instances, pid_t pid){
-    if (resourceTable[index].available >= instances){
-        // allocate_resources(index, instances, pid);
+bool request_resources(PCB processTable[], int resource_index, pid_t pid){
+    if (resourceTable[resource_index].available > 0){
+        allocate_resources(processTable, resource_index, pid);
         return true;        
     } 
     std::cout << "Insufficient resources available for request." << std::endl;
-    resourceQueues[index].push(pid);
+    resourceQueues[resource_index].push(pid);
     return false;
 }
 
@@ -83,9 +83,9 @@ void release_resources(PCB processTable[], int simultaneous, Resource resourceTa
     int i = return_PCB_index_of_pid(processTable, simultaneous, killed_pid);
 
     for (int j = 0; j < NUM_RESOURCES; j++){
-        resourceTable[j].available += processTable[i].resources_held[j];
-        resourceTable[j].allocated -= processTable[i].resources_held[j];
-        processTable[i].resources_held[j] = 0;
+        resourceTable[j].available += processTable[i].resourcesHeld[j];
+        resourceTable[j].allocated -= processTable[i].resourcesHeld[j];
+        processTable[i].resourcesHeld[j] = 0;
     }
 
     // RESOURCES DONE RELEASING HERE
@@ -100,12 +100,17 @@ void release_resources(PCB processTable[], int simultaneous, Resource resourceTa
     }
 }
 
-int dd_algorithm(){   // if deadlock, return resource number, else return 0 
-    for(int i = 0; i < NUM_RESOURCES; i++){
-        if (resourceTable[i].available == 0){ // if all allocated
-            if (){ // allocated only to blocked processes, 
-                return i;
-            }
+int dd_algorithm(){   // if deadlock, return resource number, else return 0
+
+    for(int i = 0; i < NUM_RESOURCES; i++){ // for each resource
+        int sum = 0;  // sum of instances of a particular resource held by blocked procs
+        for(int j = 0; j < simultaneous; j++){  // go through each process 
+            if(processTable[j].blocked){  // if process is blocked
+                sum += processTable[j].resourcesHeld[i]; 
+            }            
+        }
+        if(sum == NUM_INSTANCES){ // if sum of resource instances held by blocked processes is equal to max number
+            return i;  // return resource index number 
         }
     }
     return 0;

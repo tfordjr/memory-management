@@ -17,7 +17,7 @@ struct PCB {
     int startSecs;                // time when it was forked
     int startNanos;               
     int blocked;                  // bool blocked or not
-    int resources_held[NUM_RESOURCES];  
+    int resourcesHeld[NUM_RESOURCES];  
 };
 
 void init_process_table(PCB processTable[]){
@@ -28,7 +28,7 @@ void init_process_table(PCB processTable[]){
         processTable[i].startNanos = 0;
         processTable[i].blocked = 0;
         for(int j = 0; j < NUM_RESOURCES; j++){
-            processTable[i].resources_held[j] = 0;
+            processTable[i].resourcesHeld[j] = 0;
         }        
     }
 }
@@ -84,7 +84,7 @@ void print_process_table(PCB processTable[], int simultaneous, int secs, int nan
             for(int j = 0; j < NUM_RESOURCES; j++){
                 r_list += std::to_string(static_cast<char>(65 + j));
                 r_list += ":";
-                r_list += std::to_string(processTable[i].resources_held[j]);
+                r_list += std::to_string(processTable[i].resourcesHeld[j]);
                 r_list += " ";
             }
 
@@ -108,7 +108,7 @@ void update_process_table_of_terminated_child(PCB processTable[], pid_t pid, int
             processTable[i].startNanos = 0;
             processTable[i].blocked = 0;
             for(int j = 0; j < NUM_RESOURCES; j++){
-                processTable[i].resources_held[j] = 0;
+                processTable[i].resourcesHeld[j] = 0;
             }  
             return;
         } 

@@ -21,9 +21,7 @@
 #include "pcb.h"
 #include "clock.h"
 #include "msgq.h"
-#include "scheduler.h"
 #include "rng.h"
-#include "resources.h"
 using namespace std;
 
 void launch_child(PCB[], int);
@@ -188,7 +186,7 @@ void launch_child(PCB processTable[], int simultaneous){
         processTable[i].startNanos = shm_clock->nanos;
         processTable[i].blocked = 0;
         for(int j = 0; j < NUM_RESOURCES; j++){
-            processTable[i].resources_held[j] = 0;
+            processTable[i].resourcesHeld[j] = 0;
         }
         increment(shm_clock, CHILD_LAUNCH_AMOUNT);  // child launch overhead simulated
     }
