@@ -21,26 +21,12 @@ void increment(Clock* c, int increment_amount){
     }    
 }
 
-double add_time(int addend1Secs, int addend1Nanos, int addend2Secs, int addend2Nanos){
-    addend1Nanos += addend2Nanos;
-    if (addend1Nanos >= 1e9){   // if over 1 billion nanos, add 1 second, sub 1 bil nanos
-        addend1Nanos -= 1e9;
-        addend1Secs++;
-    } 
-    addend1Secs += addend2Secs;
-
-    return (addend1Secs + (addend1Nanos/1e9));
-}
-
-double subtract_time(int minuendSecs, int minuendNanos, int subtrahendSecs, int subtrahendNanos){
-    minuendNanos -= subtrahendNanos;
-    if (minuendNanos < 0){   // if negative nanos, add a second to nanos, take that second from
-        minuendNanos += 1e9;      // number to be subtracted
-        minuendSecs--;
-    } 
-    minuendSecs -= subtrahendSecs;
-
-    return (minuendSecs + (minuendNanos/1e9));  
+void add_time(int *addend1Secs, int *addend1Nanos, int addend2Nanos){
+    *addend1Nanos += addend2Nanos;
+    if (*addend1Nanos >= 1e9){   // if over 1 billion nanos, add 1 second, sub 1 bil nanos
+        *addend1Nanos -= 1e9;
+        *addend1Secs++;
+    }
 }
 
 #endif
