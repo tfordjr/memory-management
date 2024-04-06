@@ -19,14 +19,13 @@
 #define PERMS 0644
 
 typedef struct msgbuffer {
-	long mtype;			 	 // pid
-    char message[100];   	 // string message
-	int msgCode;			  // process state code
-	// PLACE TO HOLD RESOURCE REQUEST FROM CHILD TO PARENT
+	long mtype;			 	  // pid
+	int msgCode;			  // msgCode indicates if we're releasing, requesting, or term
+	int resource;             // resource requested or releasing
 } msgbuffer;
 
-#define MSG_TYPE_BLOCKED 2   // BLOCKED
-#define MSG_TYPE_RUNNING 1   // STILL RUNNING
+#define MSG_TYPE_RELEASE 2   // RELEASE
+#define MSG_TYPE_REQUEST 1   // REQUEST
 #define MSG_TYPE_SUCCESS 0   // TERMINATING
  
 #endif

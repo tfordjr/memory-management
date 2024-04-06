@@ -22,11 +22,7 @@
 #include "pcb.h"
 using namespace std;
 
-#define TERMINATION_CHANCE 5     // 5% chance
-#define IO_BLOCK_CHANCE 15
-#define ACUTAL_IO_BLOCK_CHANCE (TERMINATION_CHANCE + IO_BLOCK_CHANCE)
-
-// #define TERMINATION_CHANCE 5
+#define TERMINATION_CHANCE 5
 #define R_REQUEST_CHANCE 75
 #define R_RELEASE_CHANCE 20
 

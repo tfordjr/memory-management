@@ -130,8 +130,7 @@ int main(int argc, char** argv){
             numChildren--;
             launch_child(processTable, simultaneous);
         }  
-
-            // CUT MSG SEND, ONLY KEEP MESSAGE RECEIVE
+            
             // IF REQUEST, GRANT IF POSSIBLE OR ADD TO BLOCKED QUEUE
             // IF RELEASE, RELEASE RESOURCES
 
