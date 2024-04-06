@@ -90,7 +90,7 @@ int main(int argc, char** argv){
         return 1; // Exit with error
     }
     
-    msgbuffer buf;     //  INITIALIZE MESSAGE QUEUE	  (MSGQID MOVED TO GLOBAL)
+         //  INITIALIZE MESSAGE QUEUE	  (MSGQID MOVED TO GLOBAL)
 	key_t msgq_key;
 	system("touch msgq.txt");
 	if ((msgq_key = ftok(MSGQ_FILE_PATH, MSGQ_PROJ_ID)) == -1) {   // get a key for our message queue
@@ -114,39 +114,13 @@ int main(int argc, char** argv){
         print_resource_table(resourceTable, shm_clock->secs, shm_clock->nanos, outputFile);     
         deadlock_detection(processTable, simultaneous, resourceTable, shm_clock->secs, shm_clock->nanos);
                   
-                // MSG SEND
-        if (!process_table_empty(processTable, simultaneous) && i != -1){  // comm with next child                         
-            buf.mtype = processTable[i].pid;     // SEND MESSAGE TO CHILD NONBLOCKING
-            buf.time_slice = time_slice;    // set local variable to msg struct parameter!
-            buf.msgCode = MSG_TYPE_RUNNING;   // we will give it the pid we are sending to, so we know it received it
-            buf.blocked_until_secs = 0;
-            buf.blocked_until_nanos = 0;
-            strcpy(buf.message, "Message to child\n");
-            if (msgsnd(msgqid, &buf, sizeof(msgbuffer), 0) == -1) {
-                perror(("oss.cpp: Error: msgsnd to child " + to_string(i + 1) + " failed\n").c_str());
-                cleanup("perror encountered.");
-                exit(1);
-            }       // LOG MSG SEND
-            cout << "OSS: Dispatching worker " <<  i + 1 << " PID " << processTable[i].pid << " at time " << shm_clock->secs << ":" << shm_clock->nanos << std::endl;
-            outputFile << "OSS: Dispatching worker " <<  i + 1 << " PID " << processTable[i].pid << " at time " << shm_clock->secs << ":" << shm_clock->nanos << std::endl;
-            increment(shm_clock, DISPATCH_AMOUNT);
-                    // MSG RECEIVE
-            msgbuffer rcvbuf;     // BLOCKING WAIT TO RECEIVE MESSAGE FROM CHILD
-            if (msgrcv(msgqid, &rcvbuf, sizeof(msgbuffer), getpid(), 0) == -1) {
-                perror("oss.cpp: Error: failed to receive message in parent\n");
-                cleanup("perror encountered.");
-                exit(1);
-            }       // LOG MSG RECEIVE            
-            increment(shm_clock, rcvbuf.time_slice); // increment clock by time used by child
 
-                    // UNPACK RECEIVED MESSAGE, LOG RESULTS
-            // IF (MSG FROM CHILD){
-                // IF (REQUEST)
-                // allocate resources if possible
-                // if (release)
-                // release resources
-            // }
-        }         
+        pid_t pid = waitpid(-1, nullptr, WNOHANG);  // non-blocking wait call for terminated child process
+        if(pid != 0){     // if child has been terminated
+            // update_process_table_of_terminated_child(processTable, pid);  // clear spot in pcb
+            pid = 0;
+        }
+
                 // CHECK IF CONDITIONS ARE RIGHT TO LAUNCH ANOTHER CHILD
         if(numChildren > 0 && launch_interval_satisfied(launch_interval)  // check conditions to launch child
         && process_table_vacancy(processTable, simultaneous)){ // child process launch check
@@ -154,7 +128,27 @@ int main(int argc, char** argv){
             outputFile << "OSS: Launching Child Process..." << endl;
             numChildren--;
             launch_child(processTable, simultaneous);
-        }        
+        }  
+
+            // CUT MSG SEND, ONLY KEEP MESSAGE RECEIVE
+            // IF REQUEST, GRANT IF POSSIBLE OR ADD TO BLOCKED QUEUE
+            // IF RELEASE, RELEASE RESOURCES
+
+
+                    // MSG RECEIVE
+            // msgbuffer rcvbuf;     // BLOCKING WAIT TO RECEIVE MESSAGE FROM CHILD
+            // if (msgrcv(msgqid, &rcvbuf, sizeof(msgbuffer), getpid(), 0) == -1) {
+            //     perror("oss.cpp: Error: failed to receive message in parent\n");
+            //     cleanup("perror encountered.");
+            //     exit(1);
+            // }       // LOG MSG RECEIVE            
+            // increment(shm_clock, rcvbuf.time_slice); // increment clock by time used by child
+        
+            // }       // LOG MSG SEND
+            // cout << "OSS: Dispatching worker " <<  i + 1 << " PID " << processTable[i].pid << " at time " << shm_clock->secs << ":" << shm_clock->nanos << std::endl;
+            // outputFile << "OSS: Dispatching worker " <<  i + 1 << " PID " << processTable[i].pid << " at time " << shm_clock->secs << ":" << shm_clock->nanos << std::endl;
+            // increment(shm_clock, DISPATCH_AMOUNT);      
+                  
     }                   // --------- END OF MAIN LOOP ---------      
     // output_statistics(totalChildren, totalTimeInSystem, totalBlockedTime, totalCPUTime);
 

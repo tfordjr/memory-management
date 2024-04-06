@@ -125,6 +125,7 @@ void deadlock_detection(PCB processTable[], int simultaneous, Resource resourceT
             kill(resourceQueues[deadlocked_resource_index].front(), SIGKILL);            
             release_resources(processTable, resourceTable, resourceQueues[deadlocked_resource_index].front()); // release resources held by PID!            
             resourceQueues[deadlocked_resource_index].pop();
+            deadlocked_resource_index = dd_algorithm();
         }
         next_dd_secs++;
     }
