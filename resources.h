@@ -98,6 +98,13 @@ void deadlock_detection(Resource resourceTable[], int secs, int nanos){
     }
 }
 
+    // dd_algo   for each process in blocked queue, if all other instances of a given Resource
+    // are held by blocked processes, then a deadlock exists
+
+    // We will solve it by killing a random blocked process that holds at least one instance 
+    // of a resource that whose instances are all allocated
+    // then run dd_algo again
+
     // KEEP STATS OF HOW MANY PROCs KILLED THIS WAY
     // KEEP STATS OF HOW MANY TIMES dd_algorithm is run!
 
