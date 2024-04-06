@@ -114,7 +114,7 @@ int main(int argc, char** argv){
         increment(shm_clock, DISPATCH_AMOUNT);  // dispatcher overhead and unblocked reschedule overhead
         print_process_table(processTable, simultaneous, shm_clock->secs, shm_clock->nanos, outputFile);
         print_resource_table(resourceTable, shm_clock->secs, shm_clock->nanos, outputFile);     
-        deadlock_detection(resourceTable, shm_clock->secs, shm_clock->nanos);
+        deadlock_detection(processTable, simultaneous, resourceTable, shm_clock->secs, shm_clock->nanos);
                   
                 // MSG SEND
         if (!process_table_empty(processTable, simultaneous) && i != -1){  // comm with next child                         

@@ -19,6 +19,7 @@
 #include "clock.h"
 #include "msgq.h"
 #include "rng.h"
+#include "pcb.h"
 #include "resources.h"
 using namespace std;
 

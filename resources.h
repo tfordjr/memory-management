@@ -22,7 +22,6 @@ struct Resource{
 
 struct Resource resourceTable[NUM_RESOURCES];     // resource table
 std::queue<pid_t> resourceQueues[NUM_RESOURCES];  // Queues for each resource
-std::set<pid_t> allocatedPIDs;                   // List of PIDs with some allocated Rs
 
 void init_resource_table(Resource resourceTable[]){
     for(int i = 0; i < NUM_RESOURCES; i++){
@@ -50,15 +49,28 @@ void print_resource_table(Resource resourceTable[], int secs, int nanos, std::os
     }
 }
 
-void allocate_resources(int index, int instances, pid_t pid){
-    resourceTable[index].available -= instances;
-    resourceTable[index].allocated += instances;
-    allocatedPIDs.insert(pid);   // Put PID in set of PIDs with some Resources
+pid_t return_PCB_index_of_pid(PCB processTable[], int simultaneous, pid_t pid){
+    for (int i = 0; i < simultaneous; i++){  
+        if (processTable[i].pid == pid){
+            return i;
+        }
+    }
+    perror("resources.h: Error: given pid not found on process table");
+    exit(1);
+    return -1;
+}
+
+void allocate_resources(PCB processTable[], int index, pid_t pid){
+    resourceTable[index].available -= 1;
+    resourceTable[index].allocated += 1;
+    // LOG ALLOCATION OF RESOURCES SOMEWHERE
+    processTable[]
+    // Notify the process that it has been allocated resources
 }
 
 bool request_resources(int index, int instances, pid_t pid){
     if (resourceTable[index].available >= instances){
-        allocate_resources(index, instances, pid);
+        // allocate_resources(index, instances, pid);
         return true;        
     } 
     std::cout << "Insufficient resources available for request." << std::endl;
@@ -66,33 +78,48 @@ bool request_resources(int index, int instances, pid_t pid){
     return false;
 }
 
-void release_resources(int index, int instances){
-    resourceTable[index].available += instances;
-    resourceTable[index].allocated -= instances;
+void release_resources(PCB processTable[], int simultaneous, Resource resourceTable[], pid_t killed_pid){ // needs process table to find out
+    // find held resources by killed_pid
+    int i = return_PCB_index_of_pid(processTable, simultaneous, killed_pid);
+
+    for (int j = 0; j < NUM_RESOURCES; j++){
+        resourceTable[j].available += processTable[i].resources_held[j];
+        resourceTable[j].allocated -= processTable[i].resources_held[j];
+        processTable[i].resources_held[j] = 0;
+    }
+
+    // RESOURCES DONE RELEASING HERE
+
 
     // If there are processes waiting in the queue for this resource, allocate resources to them
-    while (!resourceQueues[index].empty() && resourceTable[index].available > 0) {
-        // This assumes pid in queue wants just ONE of this resource and nothing else! Make SURE!
-        pid_t waitingPID = resourceQueues[index].front();
-        resourceQueues[index].pop();
-
-        // allocate_resources(index, x); // Allocate one instance to the waiting process
-        
-        // Notify the process that it has been allocated resources        
+    for (int j = 0; j < NUM_RESOURCES; j++){
+        while (!resourceQueues[j].empty() && resourceTable[j].available > 0){                      
+            allocate_resources(processTable, j, resourceQueues[j].front()); // Allocate one instance to the waiting process
+            resourceQueues[j].pop();
+        }
     }
 }
 
-bool dd_algorithm(){   // if deadlock, return true. Else, return false    
-    return false;
+int dd_algorithm(){   // if deadlock, return resource number, else return 0 
+    for(int i = 0; i < NUM_RESOURCES; i++){
+        if (resourceTable[i].available == 0){ // if all allocated
+            if (){ // allocated only to blocked processes, 
+                return i;
+            }
+        }
+    }
+    return 0;
 }    
 
-void deadlock_detection(Resource resourceTable[], int secs, int nanos){
+void deadlock_detection(PCB processTable[], int simultaneous, Resource resourceTable[], int secs, int nanos){
     static int next_dd_secs = 0;  // used to keep track of next deadlock detection    
     if(secs >= next_dd_secs){
-        while(dd_algorithm()){  // While deadlock, kill a pid, test for deadlock again
-            kill(allocatedPIDs.begin(), SIGKILL);
-            // release resources held by PID!            
-            allocatedPIDs.erase(allocatedPIDs.begin());
+        int deadlocked_resource_index = dd_algorithm(); // returns 0 if no deadlock
+        while(deadlocked_resource_index){  // While deadlock
+            // kills random pid that is allocated a resource that is fully allocated
+            kill(resourceQueues[deadlocked_resource_index].front(), SIGKILL);            
+            release_resources(processTable, resourceTable, resourceQueues[deadlocked_resource_index].front()); // release resources held by PID!            
+            resourceQueues[deadlocked_resource_index].pop();
         }
         next_dd_secs++;
     }
