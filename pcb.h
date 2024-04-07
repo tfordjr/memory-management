@@ -133,5 +133,22 @@ void kill_all_processes(PCB processTable[], int simultaneous){
         } 
     }
 }
+    
+void cleanup(std::string cause) {
+    std::cout << cause << " Cleaning up before exiting..." << std::endl;
+    outputFile << cause << " Cleaning up before exiting..." << std::endl;
+    kill_all_processes(processTable, simultaneous);
+    outputFile.close();  // file object close
+    shmdt(shm_clock);       // clock cleanup, detatch & delete shm
+    if (shmctl(shmtid, IPC_RMID, NULL) == -1) {
+        perror("oss.cpp: Error: shmctl failed!!");
+        exit(1);
+    }            
+    if (msgctl(msgqid, IPC_RMID, NULL) == -1) {  // get rid of message queue
+		perror("oss.cpp: Error: msgctl to get rid of queue in parent failed");
+		exit(1);
+	}
+    std::exit(EXIT_SUCCESS);
+}
 
 # endif

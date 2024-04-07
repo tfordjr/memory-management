@@ -231,23 +231,6 @@ void timeout_handler(int signum) {
 void ctrl_c_handler(int signum) {    
     cleanup("Ctrl+C detected.");
 }
-    
-void cleanup(std::string cause) {
-    std::cout << cause << " Cleaning up before exiting..." << std::endl;
-    outputFile << cause << " Cleaning up before exiting..." << std::endl;
-    kill_all_processes(processTable, simultaneous);
-    outputFile.close();  // file object close
-    shmdt(shm_clock);       // clock cleanup, detatch & delete shm
-    if (shmctl(shmtid, IPC_RMID, NULL) == -1) {
-        perror("oss.cpp: Error: shmctl failed!!");
-        exit(1);
-    }            
-    if (msgctl(msgqid, IPC_RMID, NULL) == -1) {  // get rid of message queue
-		perror("oss.cpp: Error: msgctl to get rid of queue in parent failed");
-		exit(1);
-	}
-    std::exit(EXIT_SUCCESS);
-}
 
 void output_statistics(int totalChildren, double totalTimeInSystem, double totalBlockedTime, double totalCPUTime){
     double totalClockTime = shm_clock->secs + (shm_clock->nanos)/1e9;
