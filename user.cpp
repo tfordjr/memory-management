@@ -71,8 +71,7 @@ int main(int argc, char** argv) {
                     buf.msgCode = MSG_TYPE_REQUEST; 
                 } else {  // RELEASE
                     buf.msgCode = MSG_TYPE_RELEASE;
-                }
-                    // MSGSND REQUEST/RELEASE TO OSS
+                }   // MSGSND REQUEST/RELEASE TO OSS                    
                 if(msgsnd(msgqid, &buf, sizeof(msgbuffer), 1) == -1) { 
                     perror("msgsnd to parent failed\n");
                     exit(1);
@@ -82,8 +81,8 @@ int main(int argc, char** argv) {
                     if(msgrcv(msgqid, &rcvbuf, sizeof(msgbuffer), getpid(), 0) == -1) {
                         perror("failed to receive message from parent\n");
                         exit(1);
-                    }                
-                    if(rcvbuf.msgCode == MSG_TYPE_BLOCKED){    // YOU ARE IN BLOCKED QUEUE WAITING FOR RESOURCE                        
+                    }   // IF BLOCKED MSG RECEIVED, WAIT FOR UNBLOCK MSG FROM OSS
+                    if(rcvbuf.msgCode == MSG_TYPE_BLOCKED){                            
                         if(msgrcv(msgqid, &rcvbuf, sizeof(msgbuffer), getpid(), 0) == -1) {
                             perror("failed to receive message from parent\n");
                             exit(1);
@@ -102,7 +101,6 @@ int main(int argc, char** argv) {
             add_time(&nextSecs, &nextNanos, randomInterval); // next user request/release event
         }
     }   // ---------------------- MAIN LOOP ----------------------
-
     shmdt(shm_clock);  // deallocate shm and terminate
     printf("%d: Child is terminating...\n",getpid());
     return EXIT_SUCCESS; 
