@@ -23,7 +23,6 @@
 #include "clock.h"
 #include "msgq.h"
 #include "rng.h"
-#include "globals.h"
 using namespace std;
 
 void launch_child(PCB[], int);
