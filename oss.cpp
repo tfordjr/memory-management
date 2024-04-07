@@ -109,6 +109,16 @@ int main(int argc, char** argv){
     
                         //  ---------  MAIN LOOP  ---------   
     while(numChildren > 0 || !process_table_empty(processTable, simultaneous)){   
+        
+                // CHECK IF CONDITIONS ARE RIGHT TO LAUNCH ANOTHER CHILD
+        if(numChildren > 0 && launch_interval_satisfied(launch_interval)  // check conditions to launch child
+        && process_table_vacancy(processTable, simultaneous)){ // child process launch check
+            std::cout << "OSS: Launching Child Process..." << endl;
+            outputFile << "OSS: Launching Child Process..." << endl;
+            numChildren--;
+            launch_child(processTable, simultaneous);
+        }        
+
         pid_t pid = waitpid((pid_t)-1, nullptr, WNOHANG);  // non-blocking wait call for terminated child process
         if (pid == -1){
             perror("waitpid returned -1");
@@ -119,14 +129,6 @@ int main(int argc, char** argv){
             update_process_table_of_terminated_child(processTable, pid, simultaneous);
             pid = 0;
         }
-                // CHECK IF CONDITIONS ARE RIGHT TO LAUNCH ANOTHER CHILD
-        if(numChildren > 0 && launch_interval_satisfied(launch_interval)  // check conditions to launch child
-        && process_table_vacancy(processTable, simultaneous)){ // child process launch check
-            std::cout << "OSS: Launching Child Process..." << endl;
-            outputFile << "OSS: Launching Child Process..." << endl;
-            numChildren--;
-            launch_child(processTable, simultaneous);
-        }        
 
         std::cout << "OSS: attempting process unblock..." << std::endl;
         attempt_process_unblock(processTable, simultaneous, resourceTable);
