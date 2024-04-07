@@ -106,7 +106,7 @@ int main(int argc, char** argv){
     outputFile << "OSS: Message queue set up\n";
   
     int i = 0;          // holds PCB location of next process
-    
+                        // For some reason my project is happier when child launches before waitpid()
                         //  ---------  MAIN LOOP  ---------   
     while(numChildren > 0 || !process_table_empty(processTable, simultaneous)){   
         
