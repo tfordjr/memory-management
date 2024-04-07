@@ -59,7 +59,7 @@ int return_PCB_index_of_pid(PCB processTable[], int simultaneous, pid_t pid){
     return -1;
 }
 
-void allocate_resources(PCB processTable[], int resource_index, pid_t pid){
+void allocate_resources(PCB processTable[], int simultaneous, int resource_index, pid_t pid){
     resourceTable[resource_index].available -= 1;
     resourceTable[resource_index].allocated += 1;
     // LOG ALLOCATION OF RESOURCES SOMEWHERE
@@ -68,9 +68,9 @@ void allocate_resources(PCB processTable[], int resource_index, pid_t pid){
     // Notify the process that it has been allocated resources
 }
 
-bool request_resources(PCB processTable[], int resource_index, pid_t pid){
+bool request_resources(PCB processTable[], int simultaneous, int resource_index, pid_t pid){
     if (resourceTable[resource_index].available > 0){
-        allocate_resources(processTable, resource_index, pid);
+        allocate_resources(processTable, simultaneous, resource_index, pid);
         return true;        
     } 
     std::cout << "Insufficient resources available for request." << std::endl;
@@ -101,7 +101,6 @@ void release_resources(PCB processTable[], int simultaneous, Resource resourceTa
 }
 
 int dd_algorithm(){   // if deadlock, return resource number, else return 0
-
     for(int i = 0; i < NUM_RESOURCES; i++){ // for each resource
         int sum = 0;  // sum of instances of a particular resource held by blocked procs
         for(int j = 0; j < simultaneous; j++){  // go through each process 

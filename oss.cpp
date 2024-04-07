@@ -90,7 +90,7 @@ int main(int argc, char** argv){
         return 1; // Exit with error
     }
     
-         //  INITIALIZE MESSAGE QUEUE	  (MSGQID MOVED TO GLOBAL)
+         //  INITIALIZE MESSAGE QUEUE	  (MSGQID MOVED TO GLOBAL)    
 	key_t msgq_key;
 	system("touch msgq.txt");
 	if ((msgq_key = ftok(MSGQ_FILE_PATH, MSGQ_PROJ_ID)) == -1) {   // get a key for our message queue
@@ -103,7 +103,7 @@ int main(int argc, char** argv){
 	}
 	cout << "OSS: Message queue set up\n";
     outputFile << "OSS: Message queue set up\n";
-
+  
     int i = 0;          // holds PCB location of next process
     
                         //  ---------  MAIN LOOP  ---------   
@@ -134,17 +134,19 @@ int main(int argc, char** argv){
             // IF REQUEST, GRANT IF POSSIBLE OR ADD TO BLOCKED QUEUE
             // IF RELEASE, RELEASE RESOURCES
 
-
                     // MSG RECEIVE
-            // msgbuffer rcvbuf;     // BLOCKING WAIT TO RECEIVE MESSAGE FROM CHILD
-            // if (msgrcv(msgqid, &rcvbuf, sizeof(msgbuffer), getpid(), 0) == -1) {
-            //     perror("oss.cpp: Error: failed to receive message in parent\n");
-            //     cleanup("perror encountered.");
-            //     exit(1);
-            // }       // LOG MSG RECEIVE            
-            // increment(shm_clock, rcvbuf.time_slice); // increment clock by time used by child
-                       
-
+        msgbuffer buf, rcvbuf;     // NONBLOCKING WAIT TO RECEIVE MESSAGE FROM CHILD
+        if (msgrcv(msgqid, &rcvbuf, sizeof(msgbuffer), getpid(), 1) == -1) {  // IPC_NOWAIT IF 1 DOES NOT WORK
+            perror("oss.cpp: Error: failed to receive message in parent\n");
+            cleanup("perror encountered.");
+            exit(1);
+        }       // LOG MSG RECEIVE
+        if(rcvbuf.msgCode == MSG_TYPE_REQUEST){
+            request_resources(processTable, simultaneous, rcvbuf.resource, rcvbuf.mtype);
+            // MSGSND back to waiting user process to let them know they've been allocated or not
+        } else if (rcvbuf.msgCode == MSG_TYPE_RELEASE){
+            release_resources(processTable, simultaneous, rcvbuf.resource, rcvbuf.mtype);            
+        }
     }                   // --------- END OF MAIN LOOP ---------      
     // output_statistics(totalChildren, totalTimeInSystem, totalBlockedTime, totalCPUTime);
 

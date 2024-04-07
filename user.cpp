@@ -39,7 +39,7 @@ int main(int argc, char** argv) {
     int start_secs = shm_clock->secs;  // start time is current time at the start
     int start_nanos = shm_clock->nanos; // Is this our issue leaving child in sys too long?
             
-    msgbuffer buf;   // buf for msgsnd buffer, rcvbuf for msgrcv buffer	
+    msgbuffer buf, rcvbuf;   // buf for msgsnd buffer, rcvbuf for msgrcv buffer	
     buf.mtype = getppid();
 	int msgqid = 0;
 	key_t msgq_key;	
@@ -60,40 +60,53 @@ int main(int argc, char** argv) {
     while(!done){      // ----------- MAIN LOOP -----------     
         iter++;       
         int randomInterval = generate_random_number(1, R_INTERVAL_BOUND, getpid());
-        int randomNumber = generate_random_number(1, 100, getpid());        
+        int randomAction = generate_random_number(1, 100, getpid());        
         int nextSecs = shm_clock->secs;
         int nextNanos = shm_clock->nanos;
         add_time(&nextSecs, &nextNanos, randomInterval); // next user request/release event
 
         if(shm_clock->secs > nextSecs || shm_clock->secs == nextSecs && shm_clock->nanos > nextNanos){
-            if (randomNumber < TERMINATION_CHANCE){
+            if (randomAction < TERMINATION_CHANCE){
                 done = true;
-                buf.msgCode = MSG_TYPE_SUCCESS;
+                // buf.msgCode = MSG_TYPE_SUCCESS;  // NO MSG WHEN PROC TERMINATES
             } else {  // THIS CASE COULD BE RELEASE OR REQUEST, EITHER WAY WE SEND A MSG TO OSS
+                
                 buf.resource = generate_random_number(0, (NUM_RESOURCES - 1), getpid()); // which resource will be requested/released
-                if(randomNumber < R_REQUEST_CHANCE){  // REQUEST
-
+                if(randomAction < R_REQUEST_CHANCE){  // REQUEST
+                    buf.msgCode = MSG_TYPE_REQUEST; 
                 } else {  // RELEASE
-
+                    buf.msgCode = MSG_TYPE_RELEASE;
                 }
                     // msgsnd(to parent saying if we are done or not); 
                 if (msgsnd(msgqid, &buf, sizeof(msgbuffer), 1) == -1) {
                     perror("msgsnd to parent failed\n");
                     exit(1);
                 }
+                if (buf.msgCode == MSG_TYPE_REQUEST){
+                        // MSGRCV BLOCKING WAIT FOR RESPONSE TO RESOURCE REQUEST
+                    if ( msgrcv(msgqid, &rcvbuf, sizeof(msgbuffer), getpid(), 0) == -1) {
+                        perror("failed to receive message from parent\n");
+                        exit(1);
+                    }                    
+                    // RESPOND ACCORDINGLY IF RESOURCES ARE ALLOCATED OR NOT
+                    
+                    // if(rcvbuf.msgCode){}
+                }
+
+            
                     // msgrcv to see if resource request is granted or not
             }
         }
 
         //             // IF WE RANDOMLY TERM EARLY
-        // if (randomNumber < TERMINATION_CHANCE){   
+        // if (randomAction < TERMINATION_CHANCE){   
         //     printf("USER PID: %d  PPID: %d  SysClockS: %d  SysClockNano: %d  TermTimeS: %d  TermTimeNano: %d\n--Terminating after sending message back to oss after %d iterations.\n", getpid(), getppid(), shm_clock->secs, shm_clock->nanos, end_secs, end_nanos, iter);
         //     done = true;
         //     buf.msgCode = MSG_TYPE_SUCCESS;                
         //     buf.time_slice = generate_random_number(1, 100000000, getpid()) % rcvbuf.time_slice;  // use random amount of timeslice before terminating            
         //     strcpy(buf.message,"Completed Successfully (RANDOM TERMINATION), now terminating...\n");
         //             // IF WE RANDOMLY IO BLOCK
-        // } else if (randomNumber < ACUTAL_IO_BLOCK_CHANCE){                        
+        // } else if (randomAction < ACUTAL_IO_BLOCK_CHANCE){                        
         //     int nanos_blocked = 1000000000; // IO BLOCK ALWAYS LASTS 1 SEC
         //     int temp_unblock_secs, temp_unblock_nanos;
         //     calculate_time_until_unblocked(shm_clock->secs, shm_clock->nanos, nanos_blocked, &temp_unblock_secs, &temp_unblock_nanos);
