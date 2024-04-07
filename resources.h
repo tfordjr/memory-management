@@ -145,17 +145,17 @@ void deadlock_detection(PCB processTable[], int simultaneous, Resource resourceT
     // SHOULD BE ALMOST THE SAME AS 2nd half of release_resources() but more comprehensive
     // need to check all 
 void attempt_process_unblock(msgbuffer buf, PCB processTable[], int simultaneous, Resource resourceTable[]){
-    int msgqid;
-    key_t msgq_key;
-	system("touch msgq.txt");
-	if ((msgq_key = ftok(MSGQ_FILE_PATH, MSGQ_PROJ_ID)) == -1) {   // get a key for our message queue
-		perror("ftok");
-		exit(1);
-	}	
-	if ((msgqid = msgget(msgq_key, PERMS | IPC_CREAT)) == -1) {  // create our message queue
-		perror("msgget in parent");
-		exit(1);
-	}  
+    // int msgqid;
+    // key_t msgq_key;
+	// system("touch msgq.txt");
+	// if ((msgq_key = ftok(MSGQ_FILE_PATH, MSGQ_PROJ_ID)) == -1) {   // get a key for our message queue
+	// 	perror("ftok");
+	// 	exit(1);
+	// }	
+	// if ((msgqid = msgget(msgq_key, PERMS | IPC_CREAT)) == -1) {  // create our message queue
+	// 	perror("msgget in parent");
+	// 	exit(1);
+	// }  
     
     for (int j = 0; j < NUM_RESOURCES; j++){
         while (!resourceQueues[j].empty() && resourceTable[j].available > 0){                      
@@ -164,13 +164,11 @@ void attempt_process_unblock(msgbuffer buf, PCB processTable[], int simultaneous
             buf.mtype = resourceQueues[j].front();
             buf.msgCode = MSG_TYPE_GRANTED;
             buf.resource = j;
-            if (msgsnd(msgqid, &buf, sizeof(msgbuffer), 0) == -1) { 
-                perror("msgsnd to parent failed\n");
-                exit(1);
-            }
 
+            send_unblock_msg(buf);
+            
             resourceQueues[j].pop();
-        } 
+        }
     }  // This implementation only checks each resource queue once, so if there is 
 }      // a large buildup of blocked procs in a given queue, that could potentially be 
        // challenging to unblock even if there are large amounts of available resources

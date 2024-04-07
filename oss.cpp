@@ -121,9 +121,9 @@ int main(int argc, char** argv){
         attempt_process_unblock(processTable, simultaneous, resourceTable);
 
         pid_t pid = waitpid(-1, nullptr, WNOHANG);  // non-blocking wait call for terminated child process
-        if(pid != 0){     // if child has been terminated
-            // update_process_table_of_terminated_child(processTable, pid);  // clear spot in pcb
-            // release resources
+        if(pid != 0){     // if child has been terminated            
+            release_resources(processTable, simultaneous, resourceTable, pid);
+            update_process_table_of_terminated_child(processTable, pid, simultaneous);
             pid = 0;
         }
 
@@ -165,6 +165,15 @@ int main(int argc, char** argv){
 
     return 0;
 }
+
+void send_unblock_msg(msgbuffer buf){
+    if (msgsnd(msgqid, &buf, sizeof(msgbuffer), 0) == -1) { 
+        perror("msgsnd to parent failed\n");
+        exit(1);
+    }
+}
+
+            
 
 void launch_child(PCB processTable[], int simultaneous){
     pid_t childPid = fork(); // This is where the child process splits from the parent        
