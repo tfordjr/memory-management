@@ -111,7 +111,7 @@ int main(int argc, char** argv){
     while(numChildren > 0 || !process_table_empty(processTable, simultaneous)){   
         pid_t pid = waitpid((pid_t)-1, nullptr, WNOHANG);  // non-blocking wait call for terminated child process
         if(pid != 0){     // if child has been terminated
-            std::cout << "OSS: Receiving child has terminated..." << std::endl;
+            std::cout << "OSS: Receiving child has terminated...Return code " << pid << std::endl;
             release_resources(processTable, simultaneous, resourceTable, pid);
             update_process_table_of_terminated_child(processTable, pid, simultaneous);
             pid = 0;
