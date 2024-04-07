@@ -134,28 +134,4 @@ void kill_all_processes(PCB processTable[], int simultaneous){
     }
 }
 
-// this function determines to next occupied process in the system. 
-int next_occupied_process(PCB processTable[], int simultaneous, int i){
-    if (process_table_empty(processTable, simultaneous)){
-        return -1;
-    }
-
-    int initial_i_value = i;
-    i++; 
-    if (i == simultaneous){
-        i = 0;
-    }  
-
-    while(i != initial_i_value){
-        if(processTable[i].occupied)
-            return i;  // this case we switch to a different occupied process on PCB
-        i++;
-        if (i == simultaneous){  // ensures we don't go out of processTable[] array bounds
-            i = 0;
-        }
-    }  
-    return i; // this case we're returning to comm with same process as last time, 
-}             // because that process is the only process on the process table
-
-
 # endif

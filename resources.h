@@ -144,7 +144,7 @@ void deadlock_detection(PCB processTable[], int simultaneous, Resource resourceT
 
     // SHOULD BE ALMOST THE SAME AS 2nd half of release_resources() but more comprehensive
     // need to check all 
-void attempt_process_unblock(msgbuffer buf, PCB processTable[], int simultaneous, Resource resourceTable[]){
+void attempt_process_unblock(PCB processTable[], int simultaneous, Resource resourceTable[]){
     // int msgqid;
     // key_t msgq_key;
 	// system("touch msgq.txt");
@@ -156,11 +156,12 @@ void attempt_process_unblock(msgbuffer buf, PCB processTable[], int simultaneous
 	// 	perror("msgget in parent");
 	// 	exit(1);
 	// }  
-    
+        
     for (int j = 0; j < NUM_RESOURCES; j++){
         while (!resourceQueues[j].empty() && resourceTable[j].available > 0){                      
             allocate_resources(processTable, simultaneous, j, resourceQueues[j].front()); // Allocate one instance to the waiting process
                 // NOTIFY THIS PROCESS THAT IT HAS BEEN UNBLOCKED!
+            msgbuffer buf;
             buf.mtype = resourceQueues[j].front();
             buf.msgCode = MSG_TYPE_GRANTED;
             buf.resource = j;

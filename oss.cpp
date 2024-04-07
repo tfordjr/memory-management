@@ -108,25 +108,13 @@ int main(int argc, char** argv){
     int i = 0;          // holds PCB location of next process
     
                         //  ---------  MAIN LOOP  ---------   
-    while(numChildren > 0 || !process_table_empty(processTable, simultaneous)){         
-        i = next_occupied_process(processTable, simultaneous, i); // assigns i to next child
-        increment(shm_clock, DISPATCH_AMOUNT);  // dispatcher overhead and unblocked reschedule overhead
-        print_process_table(processTable, simultaneous, shm_clock->secs, shm_clock->nanos, outputFile);
-        print_resource_table(resourceTable, shm_clock->secs, shm_clock->nanos, outputFile);     
-        deadlock_detection(processTable, simultaneous, resourceTable, shm_clock->secs, shm_clock->nanos);
-        // CURRENTLY, WE AUTOMATICALLY GRANT RESOURCES WITHIN DD() ALGO
-        // I THINK WE WANT TO REMOVE THAT AND MANUALLY DETERMINE IF RESOURCES SHOULD BE GRANTED
-        // RIGHT HERE SO THAT WE CAN SEND A MESSAGE TO THE WAITING PROC AND RESUME PROC RUNTIME
-
-        attempt_process_unblock(processTable, simultaneous, resourceTable);
-
+    while(numChildren > 0 || !process_table_empty(processTable, simultaneous)){   
         pid_t pid = waitpid(-1, nullptr, WNOHANG);  // non-blocking wait call for terminated child process
         if(pid != 0){     // if child has been terminated            
             release_resources(processTable, simultaneous, resourceTable, pid);
             update_process_table_of_terminated_child(processTable, pid, simultaneous);
             pid = 0;
-        }
-
+        }       
                 // CHECK IF CONDITIONS ARE RIGHT TO LAUNCH ANOTHER CHILD
         if(numChildren > 0 && launch_interval_satisfied(launch_interval)  // check conditions to launch child
         && process_table_vacancy(processTable, simultaneous)){ // child process launch check
@@ -134,12 +122,10 @@ int main(int argc, char** argv){
             outputFile << "OSS: Launching Child Process..." << endl;
             numChildren--;
             launch_child(processTable, simultaneous);
-        }  
-            
-            // IF REQUEST, GRANT IF POSSIBLE OR ADD TO BLOCKED QUEUE
-            // IF RELEASE, RELEASE RESOURCES
+        }        
 
-                    // MSG RECEIVE
+        attempt_process_unblock(processTable, simultaneous, resourceTable);
+
         msgbuffer buf, rcvbuf;     // NONBLOCKING WAIT TO RECEIVE MESSAGE FROM CHILD
         if (msgrcv(msgqid, &rcvbuf, sizeof(msgbuffer), getpid(), 1) == -1) {  // IPC_NOWAIT IF 1 DOES NOT WORK
             perror("oss.cpp: Error: failed to receive message in parent\n");
@@ -152,6 +138,14 @@ int main(int argc, char** argv){
         } else if (rcvbuf.msgCode == MSG_TYPE_RELEASE){
             release_resources(processTable, simultaneous, resourceTable, rcvbuf.mtype);        
         }
+        
+        increment(shm_clock, DISPATCH_AMOUNT);  // dispatcher overhead and unblocked reschedule overhead
+        print_process_table(processTable, simultaneous, shm_clock->secs, shm_clock->nanos, outputFile);
+        print_resource_table(resourceTable, shm_clock->secs, shm_clock->nanos, outputFile);     
+        deadlock_detection(processTable, simultaneous, resourceTable, shm_clock->secs, shm_clock->nanos);
+        // CURRENTLY, WE AUTOMATICALLY GRANT RESOURCES WITHIN DD() ALGO
+        // I THINK WE WANT TO REMOVE THAT AND MANUALLY DETERMINE IF RESOURCES SHOULD BE GRANTED
+        // RIGHT HERE SO THAT WE CAN SEND A MESSAGE TO THE WAITING PROC AND RESUME PROC RUNTIME
     }                   // --------- END OF MAIN LOOP ---------      
     // output_statistics(totalChildren, totalTimeInSystem, totalBlockedTime, totalCPUTime);
 
