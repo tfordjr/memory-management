@@ -113,7 +113,11 @@ int main(int argc, char** argv){
         print_process_table(processTable, simultaneous, shm_clock->secs, shm_clock->nanos, outputFile);
         print_resource_table(resourceTable, shm_clock->secs, shm_clock->nanos, outputFile);     
         deadlock_detection(processTable, simultaneous, resourceTable, shm_clock->secs, shm_clock->nanos);
-                  
+        // CURRENTLY, WE AUTOMATICALLY GRANT RESOURCES WITHIN DD() ALGO
+        // I THINK WE WANT TO REMOVE THAT AND MANUALLY DETERMINE IF RESOURCES SHOULD BE GRANTED
+        // RIGHT HERE SO THAT WE CAN SEND A MESSAGE TO THE WAITING PROC AND RESUME PROC RUNTIME
+
+        attempt_process_unblock(processTable, simultaneous, resourceTable);
 
         pid_t pid = waitpid(-1, nullptr, WNOHANG);  // non-blocking wait call for terminated child process
         if(pid != 0){     // if child has been terminated

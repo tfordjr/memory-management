@@ -4,15 +4,13 @@
 #ifndef RESOURCES_H
 #define RESOURCES_H
 
-#define NUM_RESOURCES 10
-#define NUM_INSTANCES 20
-
 #include <iostream>
 #include <unistd.h>
 #include <signal.h>
 #include <fstream>
 #include <string>
 #include <queue>
+#include "pcb.h"
 
 struct Resource{
     int allocated;
@@ -100,7 +98,7 @@ void release_resources(PCB processTable[], int simultaneous, Resource resourceTa
     }
 }
 
-int dd_algorithm(){   // if deadlock, return resource number, else return 0
+int dd_algorithm(PCB processTable[], int simultaneous){   // if deadlock, return resource number, else return 0
     for(int i = 0; i < NUM_RESOURCES; i++){ // for each resource
         int sum = 0;  // sum of instances of a particular resource held by blocked procs
         for(int j = 0; j < simultaneous; j++){  // go through each process 
@@ -118,11 +116,11 @@ int dd_algorithm(){   // if deadlock, return resource number, else return 0
 void deadlock_detection(PCB processTable[], int simultaneous, Resource resourceTable[], int secs, int nanos){
     static int next_dd_secs = 0;  // used to keep track of next deadlock detection    
     if(secs >= next_dd_secs){
-        int deadlocked_resource_index = dd_algorithm(); // returns 0 if no deadlock
+        int deadlocked_resource_index = dd_algorithm(processTable, simultaneous); // returns 0 if no deadlock
         while(deadlocked_resource_index){  // While deadlock
             // kills random pid that is allocated a resource that is fully allocated
             kill(resourceQueues[deadlocked_resource_index].front(), SIGKILL);            
-            release_resources(processTable, resourceTable, resourceQueues[deadlocked_resource_index].front()); // release resources held by PID!            
+            release_resources(processTable, simultaneous, resourceTable, resourceQueues[deadlocked_resource_index].front()); // release resources held by PID!            
             resourceQueues[deadlocked_resource_index].pop();
             deadlocked_resource_index = dd_algorithm();
         }
@@ -139,5 +137,11 @@ void deadlock_detection(PCB processTable[], int simultaneous, Resource resourceT
 
     // KEEP STATS OF HOW MANY PROCs KILLED THIS WAY
     // KEEP STATS OF HOW MANY TIMES dd_algorithm is run!
+
+    // SHOULD BE ALMOST THE SAME AS 2nd half of release_resources() but more comprehensive
+    // need to check all 
+void attempt_process_unblock(PCB processTable[], int simultaneous, Resource resourceTable[]){
+    
+}
 
 #endif

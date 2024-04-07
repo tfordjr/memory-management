@@ -4,12 +4,14 @@
 #ifndef PCB_H
 #define PCB_H
 
+#define NUM_RESOURCES 10
+#define NUM_INSTANCES 20
+
 #include <iostream>
 #include <unistd.h>
 #include <signal.h>
 #include <fstream>
 #include <string>
-#include "resources.h"
 
 struct PCB {
     int occupied;                 // bool occupied or not

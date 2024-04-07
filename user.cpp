@@ -38,9 +38,7 @@ int main(int argc, char** argv) {
 
     int start_secs = shm_clock->secs;  // start time is current time at the start
     int start_nanos = shm_clock->nanos; // Is this our issue leaving child in sys too long?
-            
-    msgbuffer buf, rcvbuf;   // buf for msgsnd buffer, rcvbuf for msgrcv buffer	
-    buf.mtype = getppid();
+        
 	int msgqid = 0;
 	key_t msgq_key;	
 	if ((msgq_key = ftok(MSGQ_FILE_PATH, MSGQ_PROJ_ID)) == -1) {   // get a key for our message queue
@@ -57,8 +55,9 @@ int main(int argc, char** argv) {
     int iter = 0;
     bool done = false;
 
-    while(!done){      // ----------- MAIN LOOP -----------     
-        iter++;       
+    while(!done){      // ----------- MAIN LOOP -----------    
+        msgbuffer buf, rcvbuf;   // buf for msgsnd buffer, rcvbuf for msgrcv buffer	
+        buf.mtype = getppid();              
         int randomInterval = generate_random_number(1, R_INTERVAL_BOUND, getpid());
         int randomAction = generate_random_number(1, 100, getpid());        
         int nextSecs = shm_clock->secs;
@@ -77,24 +76,23 @@ int main(int argc, char** argv) {
                 } else {  // RELEASE
                     buf.msgCode = MSG_TYPE_RELEASE;
                 }
-                    // msgsnd(to parent saying if we are done or not); 
-                if (msgsnd(msgqid, &buf, sizeof(msgbuffer), 1) == -1) {
+                    // MSGSND REQUEST/RELEASE TO OSS
+                if (msgsnd(msgqid, &buf, sizeof(msgbuffer), 1) == -1) { 
                     perror("msgsnd to parent failed\n");
                     exit(1);
                 }
-                if (buf.msgCode == MSG_TYPE_REQUEST){
+                if (buf.msgCode == MSG_TYPE_REQUEST){  // IF REQUEST WAS SENT TO OSS
                         // MSGRCV BLOCKING WAIT FOR RESPONSE TO RESOURCE REQUEST
-                    if ( msgrcv(msgqid, &rcvbuf, sizeof(msgbuffer), getpid(), 0) == -1) {
+                    if (msgrcv(msgqid, &rcvbuf, sizeof(msgbuffer), getpid(), 0) == -1) {
                         perror("failed to receive message from parent\n");
                         exit(1);
-                    }                    
-                    // RESPOND ACCORDINGLY IF RESOURCES ARE ALLOCATED OR NOT
-                    
-                    // if(rcvbuf.msgCode){}
-                }
-
-            
-                    // msgrcv to see if resource request is granted or not
+                    }                
+                    if(rcvbuf.msgCode == MSG_TYPE_BLOCKED){
+                        // YOU ARE IN BLOCKED QUEUE
+                        // MAYBE MSGRCV AND WAIT TO BE TOLD I'M ALLOCATED, NOT SURE
+                    }
+                    // IF THE RESOURCES WERE ALLOCATED, I BELIEVE NO ACTIONS ARE DUE
+                }                    
             }
         }
 
