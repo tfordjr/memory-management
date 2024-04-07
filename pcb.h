@@ -23,6 +23,8 @@ struct PCB {
     int resourcesHeld[NUM_RESOURCES];  
 };
 
+struct PCB processTable[20]; // Init Process Table Array of PCB structs (not shm)
+
 void init_process_table(PCB processTable[]){
     for(int i = 0; i < 20; i++){
         processTable[i].occupied = 0;

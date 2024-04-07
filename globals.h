@@ -2,8 +2,6 @@
 // https://github.com/tfordjr/resource-management.git
 
 volatile sig_atomic_t term = 0;  // signal handling global
-struct PCB processTable[20]; // Init Process Table Array of PCB structs (not shm)
-  // RESOURCE TABLE DECLARED IN RESOURCES_H
 
 // Declaring globals needed for signal handlers to clean up at anytime
 Clock* shm_clock;  // Declare global shm clock
