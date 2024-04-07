@@ -33,6 +33,18 @@ void ctrl_c_handler(int);
 void cleanup(std::string);
 void output_statistics(int, double, double, double);
 
+volatile sig_atomic_t term = 0;  // signal handling global
+struct PCB processTable[20]; // Init Process Table Array of PCB structs (not shm)
+  // RESOURCE TABLE DECLARED IN RESOURCES_H
+
+// Declaring globals needed for signal handlers to clean up at anytime
+Clock* shm_clock;  // Declare global shm clock
+key_t clock_key = ftok("/tmp", 35);             
+int shmtid = shmget(clock_key, sizeof(Clock), IPC_CREAT | 0666);    // init shm clock
+std::ofstream outputFile;   // init file object
+int msgqid;           // MSGQID GLOBAL FOR MSGQ CLEANUP
+int simultaneous = 1;  // simultaneous global so that sighandlers know PCB table size to avoid segfaults when killing all procs on PCB
+
 int main(int argc, char** argv){
     int option, numChildren = 1, launch_interval = 100;      
     int totalChildren; // used for statistics metrics report
