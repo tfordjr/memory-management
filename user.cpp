@@ -28,8 +28,6 @@ using namespace std;
       // Remaining (100 - (TERM_CHANCE + R_REQUEST_CHANCE)) = R_RELEASE_CHANCE
 #define R_INTERVAL_BOUND 1e7  // max bound is 10 ms (in ns)
 
-void cleanup(string);
-
 int main(int argc, char** argv) {
     Clock* shm_clock;           // init shm clock
 	key_t clock_key = ftok("/tmp", 35);
@@ -71,25 +69,21 @@ int main(int argc, char** argv) {
                 }   // MSGSND REQUEST/RELEASE TO OSS                    
                 if(msgsnd(msgqid, &buf, sizeof(msgbuffer), 1) == -1) { 
                     perror("msgsnd to parent failed\n");
-                    cleanup("msgsnd to parent failed\n");
                     exit(1);
                 }
                 if(buf.msgCode == MSG_TYPE_REQUEST){  // IF REQUEST WAS SENT TO OSS
                         // MSGRCV BLOCKING WAIT FOR RESPONSE TO RESOURCE REQUEST
                     if(msgrcv(msgqid, &rcvbuf, sizeof(msgbuffer), getpid(), 0) == -1) {
                         perror("failed to receive message from parent\n");
-                        cleanup("failed to receive message from parent\n");
                         exit(1);
                     }   // IF BLOCKED MSG RECEIVED, WAIT FOR UNBLOCK MSG FROM OSS
                     if(rcvbuf.msgCode == MSG_TYPE_BLOCKED){                            
                         if(msgrcv(msgqid, &rcvbuf, sizeof(msgbuffer), getpid(), 0) == -1) {
                             perror("failed to receive message from parent\n");
-                            cleanup("failed to receive message from parent\n");
                             exit(1);
                         }
                         if(rcvbuf.msgCode != MSG_TYPE_GRANTED){
                             perror("user.cpp: child process unblocked but msgCode was not MSG_TYPE_GRANTED");
-                            cleanup("user.cpp: child process unblocked but msgCode was not MSG_TYPE_GRANTED");
                             exit(1);
                         } // If resource is granted, resume execution. OSS handles Allocation
                     }

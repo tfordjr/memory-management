@@ -57,7 +57,6 @@ int return_PCB_index_of_pid(PCB processTable[], int simultaneous, pid_t pid){
         }
     }
     perror("resources.h: Error: given pid not found on process table");
-    cleanup("resources.h: Error: given pid not found on process table");
     exit(1);
     return -1;
 }

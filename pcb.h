@@ -13,8 +13,6 @@
 #include <fstream>
 #include <string>
 
-void cleanup(std::string);
-
 struct PCB {
     int occupied;                 // bool occupied or not
     pid_t pid;                    // pid 
