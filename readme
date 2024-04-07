@@ -27,3 +27,5 @@ readme: explains project
 ---Lack of adhearance to specifications:
 
 ---Known Problems or Bugs: 
+attempting to send messages within attempt_process_unblock(), trying to get that working.
+right now, the msgsnd is broken
