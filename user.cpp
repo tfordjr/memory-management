@@ -35,9 +35,6 @@ int main(int argc, char** argv) {
 	key_t clock_key = ftok("/tmp", 35);
 	int shmtid = shmget(clock_key, sizeof(Clock), 0666);
 	shm_clock = (Clock*)shmat(shmtid, NULL, 0);
-
-    int start_secs = shm_clock->secs;  // start time is current time at the start
-    int start_nanos = shm_clock->nanos; // Is this our issue leaving child in sys too long?
         
 	int msgqid = 0;
 	key_t msgq_key;	
@@ -52,7 +49,6 @@ int main(int argc, char** argv) {
 	printf("%d: Child has access to the msg queue\n",getpid());   // starting messages    
     printf("USER PID: %d  PPID: %d  SysClockS: %d  SysClockNano: %d \n--Just Starting\n", getpid(), getppid(), shm_clock->secs, shm_clock->nanos); 
 
-    int iter = 0;
     bool done = false;
     msgbuffer buf, rcvbuf;   // buf for msgsnd buffer, rcvbuf for msgrcv buffer	
     buf.mtype = getppid();              
@@ -63,7 +59,7 @@ int main(int argc, char** argv) {
     add_time(&nextSecs, &nextNanos, randomInterval); // next user request/release event
 
     while(!done){ // ---------- MAIN LOOP ---------- BUSY-WAIT LOOP FOR NEXT ACTION ---------    
-        if(shm_clock->secs > nextSecs || shm_clock->secs == nextSecs && shm_clock->nanos > nextNanos){
+        if(shm_clock->secs > nextSecs || (shm_clock->secs == nextSecs && shm_clock->nanos > nextNanos)){
             if (randomAction < TERMINATION_CHANCE){
                 done = true;
             } else {  // THIS CASE COULD BE RELEASE OR REQUEST, EITHER WAY WE SEND A MSG TO OSS                

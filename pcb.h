@@ -76,7 +76,7 @@ void print_process_table(PCB processTable[], int simultaneous, int secs, int nan
     static int next_print_secs = 0;  // static ints used to keep track of each 
     static int next_print_nanos = 0;   // process table print to be done
 
-    if(secs > next_print_secs || secs == next_print_secs && nanos > next_print_nanos){
+    if(secs > next_print_secs || (secs == next_print_secs && nanos > next_print_nanos)){
         printf("OSS PID: %d  SysClockS: %d  SysClockNano: %d  \nProcess Table:\nEntry\tOccupied  PID\tStartS\tStartN\t\tBlocked\tUnblockedS  UnblockedN\n", getpid(), secs, nanos);
         outputFile << "OSS PID: " << getpid() << "  SysClockS: " << secs << "  SysClockNano " << nanos << "  \nProcess Table:\nEntry\tOccupied  PID\tStartS\tStartN\t\tBlocked\tUnblockedS  UnblockedN\n";
         for(int i = 0; i < simultaneous; i++){
