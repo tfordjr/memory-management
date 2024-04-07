@@ -124,6 +124,7 @@ int main(int argc, char** argv){
             launch_child(processTable, simultaneous);
         }        
 
+        std::cout << "attempting process unblock..." << std::endl;
         attempt_process_unblock(processTable, simultaneous, resourceTable);
 
         msgbuffer buf, rcvbuf;     // NONBLOCKING WAIT TO RECEIVE MESSAGE FROM CHILD
@@ -139,6 +140,7 @@ int main(int argc, char** argv){
             release_resources(processTable, simultaneous, resourceTable, rcvbuf.mtype);        
         }
         
+        std::cout << "Incrementing clock, printing tables, and running dd()..." << std::endl;
         increment(shm_clock, DISPATCH_AMOUNT);  // dispatcher overhead and unblocked reschedule overhead
         print_process_table(processTable, simultaneous, shm_clock->secs, shm_clock->nanos, outputFile);
         print_resource_table(resourceTable, shm_clock->secs, shm_clock->nanos, outputFile);     
