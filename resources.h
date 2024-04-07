@@ -21,7 +21,6 @@ struct Resource{
     int available;
 };
 
-void cleanup(string);
 struct Resource resourceTable[NUM_RESOURCES];     // resource table
 std::queue<pid_t> resourceQueues[NUM_RESOURCES];  // Queues for each resource
 
@@ -152,4 +151,5 @@ void attempt_process_unblock(PCB processTable[], int simultaneous, Resource reso
     }  // This implementation only checks each resource queue once, so if there is 
 }      // a large buildup of blocked procs in a given queue, that could potentially be 
        // challenging to unblock even if there are large amounts of available resources
+
 #endif
