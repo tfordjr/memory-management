@@ -114,7 +114,7 @@ int main(int argc, char** argv){
             release_resources(processTable, simultaneous, resourceTable, pid);
             update_process_table_of_terminated_child(processTable, pid, simultaneous);
             pid = 0;
-        }       
+        }
                 // CHECK IF CONDITIONS ARE RIGHT TO LAUNCH ANOTHER CHILD
         if(numChildren > 0 && launch_interval_satisfied(launch_interval)  // check conditions to launch child
         && process_table_vacancy(processTable, simultaneous)){ // child process launch check
