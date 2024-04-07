@@ -24,7 +24,8 @@ using namespace std;
 
 #define TERMINATION_CHANCE 5
 #define R_REQUEST_CHANCE 75
-#define R_RELEASE_CHANCE 20
+#define ACTUAL_REQUEST_CHANCE (TERMINATION_CHANCE + R_REQUEST_CHANCE)
+      // Remaining (100 - (TERM_CHANCE + R_REQUEST_CHANCE)) = R_RELEASE_CHANCE
 #define R_INTERVAL_BOUND 1e7  // max bound is 10 ms (in ns)
 
 void calculate_time_until_unblocked(int, int, int, int *, int *);
@@ -54,90 +55,56 @@ int main(int argc, char** argv) {
 
     int iter = 0;
     bool done = false;
+    msgbuffer buf, rcvbuf;   // buf for msgsnd buffer, rcvbuf for msgrcv buffer	
+    buf.mtype = getppid();              
+    int randomAction = generate_random_number(1, 100, getpid());    
+    int randomInterval = generate_random_number(1, R_INTERVAL_BOUND, getpid());        
+    int nextSecs = shm_clock->secs;
+    int nextNanos = shm_clock->nanos;
+    add_time(&nextSecs, &nextNanos, randomInterval); // next user request/release event
 
-    while(!done){      // ----------- MAIN LOOP -----------    
-        msgbuffer buf, rcvbuf;   // buf for msgsnd buffer, rcvbuf for msgrcv buffer	
-        buf.mtype = getppid();              
-        int randomInterval = generate_random_number(1, R_INTERVAL_BOUND, getpid());
-        int randomAction = generate_random_number(1, 100, getpid());        
-        int nextSecs = shm_clock->secs;
-        int nextNanos = shm_clock->nanos;
-        add_time(&nextSecs, &nextNanos, randomInterval); // next user request/release event
-
+    while(!done){ // ---------- MAIN LOOP ---------- BUSY-WAIT LOOP FOR NEXT ACTION ---------    
         if(shm_clock->secs > nextSecs || shm_clock->secs == nextSecs && shm_clock->nanos > nextNanos){
             if (randomAction < TERMINATION_CHANCE){
                 done = true;
                 // buf.msgCode = MSG_TYPE_SUCCESS;  // NO MSG WHEN PROC TERMINATES
-            } else {  // THIS CASE COULD BE RELEASE OR REQUEST, EITHER WAY WE SEND A MSG TO OSS
-                
+            } else {  // THIS CASE COULD BE RELEASE OR REQUEST, EITHER WAY WE SEND A MSG TO OSS                
                 buf.resource = generate_random_number(0, (NUM_RESOURCES - 1), getpid()); // which resource will be requested/released
-                if(randomAction < R_REQUEST_CHANCE){  // REQUEST
+                if(randomAction < ACTUAL_REQUEST_CHANCE){  // REQUEST
                     buf.msgCode = MSG_TYPE_REQUEST; 
                 } else {  // RELEASE
                     buf.msgCode = MSG_TYPE_RELEASE;
                 }
                     // MSGSND REQUEST/RELEASE TO OSS
-                if (msgsnd(msgqid, &buf, sizeof(msgbuffer), 1) == -1) { 
+                if(msgsnd(msgqid, &buf, sizeof(msgbuffer), 1) == -1) { 
                     perror("msgsnd to parent failed\n");
                     exit(1);
                 }
-                if (buf.msgCode == MSG_TYPE_REQUEST){  // IF REQUEST WAS SENT TO OSS
+                if(buf.msgCode == MSG_TYPE_REQUEST){  // IF REQUEST WAS SENT TO OSS
                         // MSGRCV BLOCKING WAIT FOR RESPONSE TO RESOURCE REQUEST
-                    if (msgrcv(msgqid, &rcvbuf, sizeof(msgbuffer), getpid(), 0) == -1) {
+                    if(msgrcv(msgqid, &rcvbuf, sizeof(msgbuffer), getpid(), 0) == -1) {
                         perror("failed to receive message from parent\n");
                         exit(1);
                     }                
-                    if(rcvbuf.msgCode == MSG_TYPE_BLOCKED){
-                        // YOU ARE IN BLOCKED QUEUE
-                        // MAYBE MSGRCV AND WAIT TO BE TOLD I'M ALLOCATED, NOT SURE
+                    if(rcvbuf.msgCode == MSG_TYPE_BLOCKED){    // YOU ARE IN BLOCKED QUEUE WAITING FOR RESOURCE                        
+                        if(msgrcv(msgqid, &rcvbuf, sizeof(msgbuffer), getpid(), 0) == -1) {
+                            perror("failed to receive message from parent\n");
+                            exit(1);
+                        }
+                        if(rcvbuf.msgCode != MSG_TYPE_GRANTED){
+                            perror("user.cpp: child process unblocked but msgCode was not MSG_TYPE_GRANTED");
+                            exit(1);
+                        } // If resource is granted, resume execution. OSS handles Allocation
                     }
-                    // IF THE RESOURCES WERE ALLOCATED, I BELIEVE NO ACTIONS ARE DUE
-                }                    
-            }
+                }
+            }   // DETERMINE NEXT ACTION AND TIME NEXT ACTION WILL OCCUR
+            randomAction = generate_random_number(1, 100, getpid());   
+            randomInterval = generate_random_number(1, R_INTERVAL_BOUND, getpid());                 
+            nextSecs = shm_clock->secs;
+            nextNanos = shm_clock->nanos;
+            add_time(&nextSecs, &nextNanos, randomInterval); // next user request/release event
         }
-
-        //             // IF WE RANDOMLY TERM EARLY
-        // if (randomAction < TERMINATION_CHANCE){   
-        //     printf("USER PID: %d  PPID: %d  SysClockS: %d  SysClockNano: %d  TermTimeS: %d  TermTimeNano: %d\n--Terminating after sending message back to oss after %d iterations.\n", getpid(), getppid(), shm_clock->secs, shm_clock->nanos, end_secs, end_nanos, iter);
-        //     done = true;
-        //     buf.msgCode = MSG_TYPE_SUCCESS;                
-        //     buf.time_slice = generate_random_number(1, 100000000, getpid()) % rcvbuf.time_slice;  // use random amount of timeslice before terminating            
-        //     strcpy(buf.message,"Completed Successfully (RANDOM TERMINATION), now terminating...\n");
-        //             // IF WE RANDOMLY IO BLOCK
-        // } else if (randomAction < ACUTAL_IO_BLOCK_CHANCE){                        
-        //     int nanos_blocked = 1000000000; // IO BLOCK ALWAYS LASTS 1 SEC
-        //     int temp_unblock_secs, temp_unblock_nanos;
-        //     calculate_time_until_unblocked(shm_clock->secs, shm_clock->nanos, nanos_blocked, &temp_unblock_secs, &temp_unblock_nanos);
-        //     buf.blocked_until_secs = temp_unblock_secs;
-        //     buf.blocked_until_nanos = temp_unblock_nanos;
-        //     buf.msgCode = MSG_TYPE_BLOCKED;   
-        //     buf.time_slice = generate_random_number(1, 100000000, getpid()) % rcvbuf.time_slice;  // use random amount of timeslice before IO Block
-        //     strcpy(buf.message,"IO BLOCKED!!!...\n");
-        //             // IF WE NEITHER TERM EARLY OR IO BLOCK
-        // } else { // THEN CHECK IF TERMINATION TIME HAS PASSED
-        //     int secs_plus_quantum, nanos_plus_quantum, time_slice_used = rcvbuf.time_slice;
-        //     if(shm_clock->secs > end_secs || shm_clock->secs == end_secs && shm_clock->nanos > end_nanos){ 
-        //         printf("USER PID: %d  PPID: %d  SysClockS: %d  SysClockNano: %d  TermTimeS: %d  TermTimeNano: %d\n--Terminating after sending message back to oss after %d iterations.\n", getpid(), getppid(), shm_clock->secs, shm_clock->nanos, end_secs, end_nanos, iter);
-        //         done = true;
-        //         buf.msgCode = MSG_TYPE_SUCCESS;
-        //         buf.time_slice = 0;  // TIME SLICE NOT USED, ENDED BEFORE SEEN BY CPU
-        //         strcpy(buf.message,"Completed Successfully (END TIME ELAPSED BEFORE RUNTIME), now terminating...\n");
-        //             // ELSE WILL IT TERMINATE DURING THIS QUANTUM
-        //     } else if(will_process_terminate_during_quantum(shm_clock->secs, shm_clock->nanos, end_secs, end_nanos, rcvbuf.time_slice, secs_plus_quantum, nanos_plus_quantum, &time_slice_used)){
-        //         printf("USER PID: %d  PPID: %d  SysClockS: %d  SysClockNano: %d  TermTimeS: %d  TermTimeNano: %d\n--Terminating after sending message back to oss after %d iterations.\n", getpid(), getppid(), shm_clock->secs, shm_clock->nanos, end_secs, end_nanos, iter);
-        //         done = true;
-        //         buf.msgCode = MSG_TYPE_SUCCESS;
-        //         buf.time_slice = time_slice_used;
-        //         strcpy(buf.message,"Completed Successfully (END TIME ELAPSED DURING RUNTIME), now terminating...\n");
-        //     } else {    // ELSE TERMINATION WILL NOT OCCUR IN THIS QUANTUM 
-        //         printf("USER PID: %d  PPID: %d  SysClockS: %d  SysClockNano: %d  TermTimeS: %d  TermTimeNano: %d\n--%d iteration(s) have passed since starting\n", getpid(), getppid(), shm_clock->secs, shm_clock->nanos, end_secs, end_nanos, iter);
-        //         buf.msgCode = MSG_TYPE_RUNNING;
-        //         buf.time_slice = rcvbuf.time_slice;  // used full time slice
-        //         strcpy(buf.message,"Still Running...\n");
-        //     }
-        // }        
-      
-    }   // ----------- MAIN LOOP -----------     
+    }   // ---------------------- MAIN LOOP ----------------------
 
     shmdt(shm_clock);  // deallocate shm and terminate
     printf("%d: Child is terminating...\n",getpid());
