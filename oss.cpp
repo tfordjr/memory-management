@@ -231,8 +231,8 @@ void timeout_handler(int signum) {
 void ctrl_c_handler(int signum) {    
     cleanup("Ctrl+C detected.");
 }
-
-void cleanup(string cause) {
+    
+void cleanup(std::string cause) {
     std::cout << cause << " Cleaning up before exiting..." << std::endl;
     outputFile << cause << " Cleaning up before exiting..." << std::endl;
     kill_all_processes(processTable, simultaneous);
