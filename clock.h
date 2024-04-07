@@ -13,6 +13,8 @@ typedef struct Clock {
     int nanos;
 } Clock;
 
+Clock* shm_clock;  // Declare global shm clock
+
 void increment(Clock* c, int increment_amount){
     c->nanos = c->nanos + increment_amount; 
     if (c->nanos >= 1e9){   // if over 1 billion nanos, add 1 second, sub 1 bil nanos

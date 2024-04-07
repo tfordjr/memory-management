@@ -3,8 +3,6 @@
 
 volatile sig_atomic_t term = 0;  // signal handling global
 
-// Declaring globals needed for signal handlers to clean up at anytime
-Clock* shm_clock;  // Declare global shm clock
 key_t clock_key = ftok("/tmp", 35);             
 int shmtid = shmget(clock_key, sizeof(Clock), IPC_CREAT | 0666);    // init shm clock
 std::ofstream outputFile;   // init file object
