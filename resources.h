@@ -21,6 +21,7 @@ struct Resource{
     int available;
 };
 
+void cleanup(string);
 struct Resource resourceTable[NUM_RESOURCES];     // resource table
 std::queue<pid_t> resourceQueues[NUM_RESOURCES];  // Queues for each resource
 
@@ -57,6 +58,7 @@ int return_PCB_index_of_pid(PCB processTable[], int simultaneous, pid_t pid){
         }
     }
     perror("resources.h: Error: given pid not found on process table");
+    cleanup("resources.h: Error: given pid not found on process table");
     exit(1);
     return -1;
 }

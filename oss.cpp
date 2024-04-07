@@ -165,9 +165,7 @@ void send_unblock_msg(msgbuffer buf){
         perror("msgsnd to parent failed\n");
         exit(1);
     }
-}
-
-            
+}           
 
 void launch_child(PCB processTable[], int simultaneous){
     pid_t childPid = fork(); // This is where the child process splits from the parent        
