@@ -60,24 +60,28 @@ int return_PCB_index_of_pid(PCB processTable[], int simultaneous, pid_t pid){
     exit(1);
     return -1;
 }
-
+    //allocate_resources() ALLOCATES UNCONDITIONALLY, MUST BE CAREFUL WHEN WE CALL IT!!!
 void allocate_resources(PCB processTable[], int simultaneous, int resource_index, pid_t pid){
     resourceTable[resource_index].available -= 1;
     resourceTable[resource_index].allocated += 1;
-    // LOG ALLOCATION OF RESOURCES SOMEWHERE
+        // LOG ALLOCATION OF RESOURCES ON PCB
     int i = return_PCB_index_of_pid(processTable, simultaneous, pid);
     processTable[i].resourcesHeld[resource_index]++;
-    // Notify the process that it has been allocated resources
+            // Notify the process that it has been allocated resources
+    msgbuffer buf;
+    buf.mtype = resourceQueues[j].front();
+    buf.msgCode = MSG_TYPE_GRANTED;
+    buf.resource = j;
+    send_unblock_msg(buf);
 }
 
-bool request_resources(PCB processTable[], int simultaneous, int resource_index, pid_t pid){
+void request_resources(PCB processTable[], int simultaneous, int resource_index, pid_t pid){
     if (resourceTable[resource_index].available > 0){
         allocate_resources(processTable, simultaneous, resource_index, pid);
-        return true;        
+        return;        
     } 
     std::cout << "Insufficient resources available for request." << std::endl;
-    resourceQueues[resource_index].push(pid);
-    return false;
+    resourceQueues[resource_index].push(pid);    
 }
 
 void release_resources(PCB processTable[], int simultaneous, Resource resourceTable[], pid_t killed_pid){ // needs process table to find out
@@ -91,15 +95,8 @@ void release_resources(PCB processTable[], int simultaneous, Resource resourceTa
     }
 
     // RESOURCES DONE RELEASING HERE
-
-
-    // If there are processes waiting in the queue for this resource, allocate resources to them
-    // for (int j = 0; j < NUM_RESOURCES; j++){
-    //     while (!resourceQueues[j].empty() && resourceTable[j].available > 0){                      
-    //         allocate_resources(processTable, simultaneous, j, resourceQueues[j].front()); // Allocate one instance to the waiting process
-    //         resourceQueues[j].pop();
-    //     }
-    // }
+    // PREVIOUSLY CHECKED TO SEE IF WE COULD ALLOCATE RESOURCES TO PROCS WAITING IN QUEUE,
+    // BUT IN THIS IMPLEMENTATION, WE DON'T
 }
 
 int dd_algorithm(PCB processTable[], int simultaneous){   // if deadlock, return resource number, else return 0
@@ -144,30 +141,10 @@ void deadlock_detection(PCB processTable[], int simultaneous, Resource resourceT
 
     // SHOULD BE ALMOST THE SAME AS 2nd half of release_resources() but more comprehensive
     // need to check all 
-void attempt_process_unblock(PCB processTable[], int simultaneous, Resource resourceTable[]){
-    // int msgqid;
-    // key_t msgq_key;
-	// system("touch msgq.txt");
-	// if ((msgq_key = ftok(MSGQ_FILE_PATH, MSGQ_PROJ_ID)) == -1) {   // get a key for our message queue
-	// 	perror("ftok");
-	// 	exit(1);
-	// }	
-	// if ((msgqid = msgget(msgq_key, PERMS | IPC_CREAT)) == -1) {  // create our message queue
-	// 	perror("msgget in parent");
-	// 	exit(1);
-	// }  
-        
+void attempt_process_unblock(PCB processTable[], int simultaneous, Resource resourceTable[]){   
     for (int j = 0; j < NUM_RESOURCES; j++){
         while (!resourceQueues[j].empty() && resourceTable[j].available > 0){                      
-            allocate_resources(processTable, simultaneous, j, resourceQueues[j].front()); // Allocate one instance to the waiting process
-                // NOTIFY THIS PROCESS THAT IT HAS BEEN UNBLOCKED!
-            msgbuffer buf;
-            buf.mtype = resourceQueues[j].front();
-            buf.msgCode = MSG_TYPE_GRANTED;
-            buf.resource = j;
-
-            send_unblock_msg(buf);
-            
+            allocate_resources(processTable, simultaneous, j, resourceQueues[j].front()); // Allocate one instance to the waiting process 
             resourceQueues[j].pop();
         }
     }  // This implementation only checks each resource queue once, so if there is 

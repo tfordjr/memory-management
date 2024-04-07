@@ -28,6 +28,5 @@ typedef struct msgbuffer {
 #define MSG_TYPE_BLOCKED 3   // BLOCKED
 #define MSG_TYPE_RELEASE 2   // RELEASE
 #define MSG_TYPE_REQUEST 1   // REQUEST
-#define MSG_TYPE_SUCCESS 0   // TERMINATING
  
 #endif

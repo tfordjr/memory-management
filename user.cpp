@@ -64,7 +64,6 @@ int main(int argc, char** argv) {
         if(shm_clock->secs > nextSecs || shm_clock->secs == nextSecs && shm_clock->nanos > nextNanos){
             if (randomAction < TERMINATION_CHANCE){
                 done = true;
-                // buf.msgCode = MSG_TYPE_SUCCESS;  // NO MSG WHEN PROC TERMINATES
             } else {  // THIS CASE COULD BE RELEASE OR REQUEST, EITHER WAY WE SEND A MSG TO OSS                
                 buf.resource = generate_random_number(0, (NUM_RESOURCES - 1), getpid()); // which resource will be requested/released
                 if(randomAction < ACTUAL_REQUEST_CHANCE){  // REQUEST
