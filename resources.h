@@ -10,7 +10,11 @@
 #include <fstream>
 #include <string>
 #include <queue>
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/msg.h>
 #include "pcb.h"
+#include "msgq.h"
 
 struct Resource{
     int allocated;
@@ -90,12 +94,12 @@ void release_resources(PCB processTable[], int simultaneous, Resource resourceTa
 
 
     // If there are processes waiting in the queue for this resource, allocate resources to them
-    for (int j = 0; j < NUM_RESOURCES; j++){
-        while (!resourceQueues[j].empty() && resourceTable[j].available > 0){                      
-            allocate_resources(processTable, j, resourceQueues[j].front()); // Allocate one instance to the waiting process
-            resourceQueues[j].pop();
-        }
-    }
+    // for (int j = 0; j < NUM_RESOURCES; j++){
+    //     while (!resourceQueues[j].empty() && resourceTable[j].available > 0){                      
+    //         allocate_resources(processTable, simultaneous, j, resourceQueues[j].front()); // Allocate one instance to the waiting process
+    //         resourceQueues[j].pop();
+    //     }
+    // }
 }
 
 int dd_algorithm(PCB processTable[], int simultaneous){   // if deadlock, return resource number, else return 0
@@ -140,8 +144,34 @@ void deadlock_detection(PCB processTable[], int simultaneous, Resource resourceT
 
     // SHOULD BE ALMOST THE SAME AS 2nd half of release_resources() but more comprehensive
     // need to check all 
-void attempt_process_unblock(PCB processTable[], int simultaneous, Resource resourceTable[]){
+void attempt_process_unblock(msgbuffer buf, PCB processTable[], int simultaneous, Resource resourceTable[]){
+    int msgqid;
+    key_t msgq_key;
+	system("touch msgq.txt");
+	if ((msgq_key = ftok(MSGQ_FILE_PATH, MSGQ_PROJ_ID)) == -1) {   // get a key for our message queue
+		perror("ftok");
+		exit(1);
+	}	
+	if ((msgqid = msgget(msgq_key, PERMS | IPC_CREAT)) == -1) {  // create our message queue
+		perror("msgget in parent");
+		exit(1);
+	}  
     
-}
+    for (int j = 0; j < NUM_RESOURCES; j++){
+        while (!resourceQueues[j].empty() && resourceTable[j].available > 0){                      
+            allocate_resources(processTable, simultaneous, j, resourceQueues[j].front()); // Allocate one instance to the waiting process
+                // NOTIFY THIS PROCESS THAT IT HAS BEEN UNBLOCKED!
+            buf.mtype = resourceQueues[j].front();
+            buf.msgCode = MSG_TYPE_GRANTED;
+            buf.resource = j;
+            if (msgsnd(msgqid, &buf, sizeof(msgbuffer), 0) == -1) { 
+                perror("msgsnd to parent failed\n");
+                exit(1);
+            }
 
+            resourceQueues[j].pop();
+        } 
+    }  // This implementation only checks each resource queue once, so if there is 
+}      // a large buildup of blocked procs in a given queue, that could potentially be 
+       // challenging to unblock even if there are large amounts of available resources
 #endif

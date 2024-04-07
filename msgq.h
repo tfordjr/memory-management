@@ -24,6 +24,7 @@ typedef struct msgbuffer {
 	int resource;             // resource requested or releasing
 } msgbuffer;
 
+#define MSG_TYPE_GRANTED 4   // GRANTED
 #define MSG_TYPE_BLOCKED 3   // BLOCKED
 #define MSG_TYPE_RELEASE 2   // RELEASE
 #define MSG_TYPE_REQUEST 1   // REQUEST

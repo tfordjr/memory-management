@@ -19,6 +19,7 @@
 #include <sys/mman.h>
 #include <fstream>
 #include "pcb.h"
+#include "resources.h"
 #include "clock.h"
 #include "msgq.h"
 #include "rng.h"
@@ -149,7 +150,7 @@ int main(int argc, char** argv){
             request_resources(processTable, simultaneous, rcvbuf.resource, rcvbuf.mtype);
             // MSGSND back to waiting user process to let them know they've been allocated or not
         } else if (rcvbuf.msgCode == MSG_TYPE_RELEASE){
-            release_resources(processTable, simultaneous, rcvbuf.resource, rcvbuf.mtype);            
+            release_resources(processTable, simultaneous, resourceTable, rcvbuf.mtype);        
         }
     }                   // --------- END OF MAIN LOOP ---------      
     // output_statistics(totalChildren, totalTimeInSystem, totalBlockedTime, totalCPUTime);
