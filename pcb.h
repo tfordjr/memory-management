@@ -12,6 +12,7 @@
 #include <signal.h>
 #include <fstream>
 #include <string>
+#include "globals.h"
 
 struct PCB {
     int occupied;                 // bool occupied or not
