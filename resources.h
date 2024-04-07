@@ -24,6 +24,18 @@ struct Resource{
 struct Resource resourceTable[NUM_RESOURCES];     // resource table
 std::queue<pid_t> resourceQueues[NUM_RESOURCES];  // Queues for each resource
 
+volatile sig_atomic_t term = 0;  // signal handling global
+struct PCB processTable[20]; // Init Process Table Array of PCB structs (not shm)
+  // RESOURCE TABLE DECLARED IN RESOURCES_H
+
+// Declaring globals needed for signal handlers to clean up at anytime
+Clock* shm_clock;  // Declare global shm clock
+key_t clock_key = ftok("/tmp", 35);             
+int shmtid = shmget(clock_key, sizeof(Clock), IPC_CREAT | 0666);    // init shm clock
+std::ofstream outputFile;   // init file object
+int msgqid;           // MSGQID GLOBAL FOR MSGQ CLEANUP
+int simultaneous = 1;  // simultaneous global so that sighandlers know PCB table size to avoid segfaults when killing all procs on PCB
+
 void init_resource_table(Resource resourceTable[]){
     for(int i = 0; i < NUM_RESOURCES; i++){
         resourceTable[i].available = NUM_INSTANCES;
