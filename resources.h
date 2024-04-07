@@ -21,6 +21,8 @@ struct Resource{
     int available;
 };
 
+void send_unblock_msg(msgbuffer);
+
 struct Resource resourceTable[NUM_RESOURCES];     // resource table
 std::queue<pid_t> resourceQueues[NUM_RESOURCES];  // Queues for each resource
 
@@ -69,9 +71,9 @@ void allocate_resources(PCB processTable[], int simultaneous, int resource_index
     processTable[i].resourcesHeld[resource_index]++;
             // Notify the process that it has been allocated resources
     msgbuffer buf;
-    buf.mtype = resourceQueues[j].front();
+    buf.mtype = pid;
     buf.msgCode = MSG_TYPE_GRANTED;
-    buf.resource = j;
+    buf.resource = resource_index;
     send_unblock_msg(buf);
 }
 
@@ -123,7 +125,7 @@ void deadlock_detection(PCB processTable[], int simultaneous, Resource resourceT
             kill(resourceQueues[deadlocked_resource_index].front(), SIGKILL);            
             release_resources(processTable, simultaneous, resourceTable, resourceQueues[deadlocked_resource_index].front()); // release resources held by PID!            
             resourceQueues[deadlocked_resource_index].pop();
-            deadlocked_resource_index = dd_algorithm();
+            deadlocked_resource_index = dd_algorithm(processTable, simultaneous);
         }
         next_dd_secs++;
     }
