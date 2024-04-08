@@ -19,9 +19,10 @@
 #define PERMS 0644
 
 typedef struct msgbuffer {
-	long mtype;			 	  // pid
+	long mtype;			 	  // recipient's pid
 	int msgCode;			  // msgCode indicates if we're releasing, requesting, or term
 	int resource;             // resource requested or releasing
+	pid_t sender;
 } msgbuffer;
 
 #define MSG_TYPE_GRANTED 4   // GRANTED

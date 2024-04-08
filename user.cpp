@@ -50,6 +50,7 @@ int main(int argc, char** argv) {
     bool done = false;
     msgbuffer buf, rcvbuf;   // buf for msgsnd buffer, rcvbuf for msgrcv buffer	
     buf.mtype = getppid();              
+    buf.sender = getpid();
     int randomAction = generate_random_number(1, 100, getpid());    
     int randomInterval = generate_random_number(1, R_INTERVAL_BOUND, getpid());        
     int nextSecs = shm_clock->secs;

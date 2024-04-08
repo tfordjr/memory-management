@@ -134,15 +134,16 @@ int main(int argc, char** argv){
         attempt_process_unblock(processTable, simultaneous, resourceTable);
 
         msgbuffer buf, rcvbuf;     // NONBLOCKING WAIT TO RECEIVE MESSAGE FROM CHILD
+        rcvbuf.msgCode = -1; // default msgCode used if no messages received
         if (msgrcv(msgqid, &rcvbuf, sizeof(msgbuffer), getpid(), 0) == -1) {  // IPC_NOWAIT IF 1 DOES NOT WORK
             perror("oss.cpp: Error: failed to receive message in parent\n");
             cleanup("perror encountered.");
             exit(1);
         }       // LOG MSG RECEIVE
         if(rcvbuf.msgCode == MSG_TYPE_REQUEST){
-            request_resources(processTable, simultaneous, rcvbuf.resource, rcvbuf.mtype); // allocation msg to child included
+            request_resources(processTable, simultaneous, rcvbuf.resource, rcvbuf.sender); // allocation msg to child included
         } else if (rcvbuf.msgCode == MSG_TYPE_RELEASE){
-            release_single_resource(processTable, simultaneous, resourceTable, rcvbuf.mtype);        
+            release_single_resource(processTable, simultaneous, resourceTable, rcvbuf.sender);        
         }
         
         std::cout << "OSS: Incrementing clock, printing tables, and running dd()..." << std::endl;
