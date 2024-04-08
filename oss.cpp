@@ -131,7 +131,6 @@ int main(int argc, char** argv){
 
         std::cout << "OSS: attempting process unblock..." << std::endl;
         attempt_process_unblock(processTable, simultaneous, resourceTable);
-        std::cout << "OSS: finished process unblock..." << std::endl;
 
         msgbuffer rcvbuf;     // NONBLOCKING WAIT TO RECEIVE MESSAGE FROM CHILD
         rcvbuf.msgCode = -1; // default msgCode used if no messages received
@@ -140,6 +139,7 @@ int main(int argc, char** argv){
             cleanup("perror encountered.");
             exit(1);
         }       // LOG MSG RECEIVE
+        std::cout << "OSS: message received successfully..." << std::endl;
         if(rcvbuf.msgCode == MSG_TYPE_REQUEST){
             request_resources(processTable, simultaneous, rcvbuf.resource, rcvbuf.sender); // allocation msg to child included
         } else if (rcvbuf.msgCode == MSG_TYPE_RELEASE){
