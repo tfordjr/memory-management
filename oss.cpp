@@ -44,6 +44,7 @@ int shmtid = shmget(clock_key, sizeof(Clock), IPC_CREAT | 0666);    // init shm 
 std::ofstream outputFile;   // init file object
 int msgqid;           // MSGQID GLOBAL FOR MSGQ CLEANUP
 int simultaneous = 1;  // simultaneous global so that sighandlers know PCB table size to avoid segfaults when killing all procs on PCB
+int successfulTerminations = 0;
 
 int main(int argc, char** argv){
     int option, numChildren = 1, launch_interval = 100;      
@@ -127,6 +128,7 @@ int main(int argc, char** argv){
             release_all_resources(processTable, simultaneous, resourceTable, pid);
             update_process_table_of_terminated_child(processTable, pid, simultaneous);
             pid = 0;
+            successfulTerminations++;
         }
 
         std::cout << "OSS: attempting process unblock..." << std::endl;
@@ -139,26 +141,26 @@ int main(int argc, char** argv){
                 perror("oss.cpp: Error: failed to receive message in parent\n");
                 cleanup("perror encountered.");
                 exit(1);           
-            }                      
+            }                                 
         }       // LOG MSG RECEIVE
-        std::cout << "OSS: message received successfully..." << std::endl;
-        if(rcvbuf.msgCode == MSG_TYPE_REQUEST){
-            request_resources(processTable, simultaneous, rcvbuf.resource, rcvbuf.sender); // allocation msg to child included
+        if(rcvbuf.msgCode == -1){
+            std::cout << "OSS: Checked and found no messages for OSS in the msgqueue." << std::endl;
+        } else if(rcvbuf.msgCode == MSG_TYPE_REQUEST){
+            std::cout << "OSS: Checked and found Request msg for Resource " << static_cast<char>(65 + rcvbuf.resource) << " from pid " << rcvbuf.sender << std::endl;
+            request_resources(processTable, simultaneous, rcvbuf.resource, rcvbuf.sender); // allocation msg to child included            
         } else if (rcvbuf.msgCode == MSG_TYPE_RELEASE){
+            std::cout << "OSS: Checked and found Release msg from pid " << rcvbuf.sender << std::endl;
             release_single_resource(processTable, simultaneous, resourceTable, rcvbuf.sender);        
         }
-        
-        std::cout << "OSS: Incrementing clock, printing tables, and running dd()..." << std::endl;
+                
         increment(shm_clock, DISPATCH_AMOUNT);  // dispatcher overhead and unblocked reschedule overhead
         print_process_table(processTable, simultaneous, shm_clock->secs, shm_clock->nanos, outputFile);
         print_resource_table(resourceTable, shm_clock->secs, shm_clock->nanos, outputFile);     
-        deadlock_detection(processTable, simultaneous, resourceTable, shm_clock->secs, shm_clock->nanos);
-        // CURRENTLY, WE AUTOMATICALLY GRANT RESOURCES WITHIN DD() ALGO
-        // I THINK WE WANT TO REMOVE THAT AND MANUALLY DETERMINE IF RESOURCES SHOULD BE GRANTED
-        // RIGHT HERE SO THAT WE CAN SEND A MESSAGE TO THE WAITING PROC AND RESUME PROC RUNTIME
-    }                   // --------- END OF MAIN LOOP ---------      
-    // output_statistics(totalChildren, totalTimeInSystem, totalBlockedTime, totalCPUTime);
+        deadlock_detection(processTable, simultaneous, resourceTable, shm_clock->secs, shm_clock->nanos);        
+    }                   // --------- END OF MAIN LOOP ---------    
 
+    output_statistics();
+    
 	std::cout << "OSS: Child processes have completed. (" << numChildren << " remaining)\n";
     std::cout << "OSS: Parent is now ending.\n";
     outputFile << "OSS: Child processes have completed. (" << numChildren << " remaining)\n";
@@ -259,18 +261,20 @@ void cleanup(std::string cause) {
     std::exit(EXIT_SUCCESS);
 }
 
-void output_statistics(int totalChildren, double totalTimeInSystem, double totalBlockedTime, double totalCPUTime){
-    double totalClockTime = shm_clock->secs + (shm_clock->nanos)/1e9;
-    double totalWaitTime = totalTimeInSystem - (totalBlockedTime + totalCPUTime);
+void output_statistics(){           
     std::cout << "\nRUN RESULT REPORT" << std::endl;
-    std::cout << std::fixed << std::setprecision(2) << "Average Wait Time: " << totalWaitTime/totalChildren << " seconds" << std::endl;   
-    std::cout << "Average CPU Utilization: " << (totalCPUTime/totalClockTime)*100 << "%" << std::endl;           
-    std::cout << "Average Blocked Time: " << totalBlockedTime/totalChildren << " seconds" << std::endl; 
-    std::cout << "Total Idle CPU Time: " << totalClockTime - totalCPUTime << " seconds\n" << std::endl;
+    std::cout << "Requests granted immediately: " << requestsImmediatelyGranted << std::endl;   
+    std::cout << "Requests granted from blocked queue: " << requestsEventuallyGranted << std::endl; 
+    std::cout << "Times deadlock detection algorithm has run: " << ddAlgoRuns << std::endl;
+    std::cout << "Processes terminated by deadlock detection algorithm: " << ddAlgoKills << std::endl; 
+    std::cout << "Processes terminated successfully without intervention: " << successfulTerminations << std::endl;
+    std::cout << "Average number of terminations required to resolve a deadlock: " << std::fixed << std::setprecision(1) << static_cast<double>(ddAlgoKills)/numDeadlocks << std::endl;    
 
     outputFile << "\nRUN RESULT REPORT" << std::endl;
-    outputFile << std::fixed << std::setprecision(2) << "Average Wait Time: " << totalWaitTime/totalChildren << " seconds" << std::endl;      
-    outputFile << "Average CPU Utilization: " << (totalCPUTime/totalClockTime)*100 << "%" << std::endl;          
-    outputFile << "Average Blocked Time: " << totalBlockedTime/totalChildren << " seconds" << std::endl; 
-    outputFile << "Total Idle CPU Time: " << totalClockTime - totalCPUTime << " seconds\n" << std::endl;
+    outputFile << "Requests granted immediately: " << requestsImmediatelyGranted << std::endl;   
+    outputFile << "Requests granted from blocked queue: " << requestsEventuallyGranted << std::endl; 
+    outputFile << "Times deadlock detection algorithm has run: " << ddAlgoRuns << std::endl;
+    outputFile << "Processes terminated by deadlock detection algorithm: " << ddAlgoKills << std::endl; 
+    outputFile << "Processes terminated successfully without intervention: " << successfulTerminations << std::endl;
+    outputFile << "Average number of terminations required to resolve a deadlock: " << std::fixed << std::setprecision(1) << static_cast<double>(ddAlgoKills)/numDeadlocks << std::endl;   
 }

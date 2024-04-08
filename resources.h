@@ -26,6 +26,11 @@ void send_unblock_msg(msgbuffer);
 
 struct Resource resourceTable[NUM_RESOURCES];     // resource table
 std::queue<pid_t> resourceQueues[NUM_RESOURCES];  // Queues for each resource
+int ddAlgoKills = 0;
+int ddAlgoRuns = 0;
+int numDeadlocks = 0;
+int requestsImmediatelyGranted = 0;
+int requestsEventuallyGranted = 0;
 
 void init_resource_table(Resource resourceTable[]){
     for(int i = 0; i < NUM_RESOURCES; i++){
@@ -86,6 +91,7 @@ void allocate_resources(PCB processTable[], int simultaneous, int resource_index
 void request_resources(PCB processTable[], int simultaneous, int resource_index, pid_t pid){
     if (resourceTable[resource_index].available > 0){
         allocate_resources(processTable, simultaneous, resource_index, pid);
+        requestsImmediatelyGranted++;
         return;        
     } 
     std::cout << "Insufficient resources available for request." << std::endl;
@@ -112,6 +118,7 @@ void release_single_resource(PCB processTable[], int simultaneous, Resource reso
             resourceTable[randomIndex].available++;
             resourceTable[randomIndex].allocated--;
             processTable[i].resourcesHeld[randomIndex]--;
+            std::cout << "OSS: Decided to release Resource " << static_cast<char>(65 + randomIndex) << " from pid " << pid << std::endl;
             return;
         }
     }
@@ -121,12 +128,15 @@ void release_single_resource(PCB processTable[], int simultaneous, Resource reso
             resourceTable[j].available++;
             resourceTable[j].allocated--;
             processTable[i].resourcesHeld[j]--;
+            std::cout << "OSS: Decided to release Resource " << static_cast<char>(65 + j) << " from pid " << pid << std::endl;
             return;
         }
     }
+    std::cout << "OSS: determined there were no resources to release from pid " << pid << ", release action resulted in no release..." << std::endl;
 }  // If both fail, we conclude the child has no resources to release, move on with no action
 
 int dd_algorithm(PCB processTable[], int simultaneous){   // if deadlock, return resource number, else return 0
+    ddAlgoRuns++;
     for(int i = 0; i < NUM_RESOURCES; i++){ // for each resource
         int sum = 0;  // sum of instances of a particular resource held by blocked procs
         for(int j = 0; j < simultaneous; j++){  // go through each process 
@@ -139,19 +149,23 @@ int dd_algorithm(PCB processTable[], int simultaneous){   // if deadlock, return
         }
     }
     return 0;
-}    
+}
 
 void deadlock_detection(PCB processTable[], int simultaneous, Resource resourceTable[], int secs, int nanos){
     static int next_dd_secs = 0;  // used to keep track of next deadlock detection    
     if(secs >= next_dd_secs){
-        int deadlocked_resource_index = dd_algorithm(processTable, simultaneous); // returns 0 if no deadlock
+        int deadlocked_resource_index = dd_algorithm(processTable, simultaneous); // returns 0 if no deadlock        
+        if (deadlocked_resource_index){
+            numDeadlocks++;
+        }
         while(deadlocked_resource_index){  // While deadlock
             // kills random pid that is allocated a resource that is fully allocated
             kill(resourceQueues[deadlocked_resource_index].front(), SIGKILL);            
             release_all_resources(processTable, simultaneous, resourceTable, resourceQueues[deadlocked_resource_index].front()); // release resources held by PID!            
             resourceQueues[deadlocked_resource_index].pop();
             deadlocked_resource_index = dd_algorithm(processTable, simultaneous);
-        }
+            ddAlgoKills++;
+        }        
         next_dd_secs++;
     }
 }
@@ -163,9 +177,6 @@ void deadlock_detection(PCB processTable[], int simultaneous, Resource resourceT
     // of a resource that whose instances are all allocated
     // then run dd_algo again
 
-    // KEEP STATS OF HOW MANY PROCs KILLED THIS WAY
-    // KEEP STATS OF HOW MANY TIMES dd_algorithm is run!
-
     // SHOULD BE ALMOST THE SAME AS 2nd half of release_resources() but more comprehensive
     // need to check all 
 void attempt_process_unblock(PCB processTable[], int simultaneous, Resource resourceTable[]){   
@@ -173,6 +184,7 @@ void attempt_process_unblock(PCB processTable[], int simultaneous, Resource reso
         while (!resourceQueues[j].empty() && resourceTable[j].available > 0){                      
             allocate_resources(processTable, simultaneous, j, resourceQueues[j].front()); // Allocate one instance to the waiting process 
             resourceQueues[j].pop();
+            requestsEventuallyGranted++;
         }
     }  // This implementation only checks each resource queue once, so if there is 
 }      // a large buildup of blocked procs in a given queue, that could potentially be 
