@@ -45,6 +45,11 @@ void print_resource_table(Resource resourceTable[], int secs, int nanos, std::os
             std::cout << static_cast<char>(65 + i) << "\t  " << std::to_string(resourceTable[i].allocated) << "\t     " << std::to_string(resourceTable[i].available) << std::endl;
             outputFile << static_cast<char>(65 + i) << "\t  " << std::to_string(resourceTable[i].allocated) << "\t     " << std::to_string(resourceTable[i].available) << std::endl;
         }
+        std::cout << "Resource Queues (number of resources in each):" << std::endl;
+        for(int i = 0; i < NUM_RESOURCES; i++){
+            std::cout << static_cast<char>(65 + i) << ": " << std::to_string(resourceQueues[i].size()) << "   ";
+        }
+        std::cout << "\n";
         next_print_nanos = next_print_nanos + 500000000;
         if (next_print_nanos >= 1000000000){   // if over 1 billion nanos, add 1 second, sub 1 bil nanos
             next_print_nanos = next_print_nanos - 1000000000;
