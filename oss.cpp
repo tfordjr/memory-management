@@ -131,6 +131,7 @@ int main(int argc, char** argv){
 
         std::cout << "OSS: attempting process unblock..." << std::endl;
         attempt_process_unblock(processTable, simultaneous, resourceTable);
+        std::cout << "OSS: finished process unblock..." << std::endl;
 
         msgbuffer rcvbuf;     // NONBLOCKING WAIT TO RECEIVE MESSAGE FROM CHILD
         rcvbuf.msgCode = -1; // default msgCode used if no messages received
