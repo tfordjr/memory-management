@@ -15,6 +15,7 @@
 #include <sys/msg.h>
 #include "pcb.h"
 #include "msgq.h"
+#include "rng.h"
 
 struct Resource{
     int allocated;
@@ -83,10 +84,10 @@ void request_resources(PCB processTable[], int simultaneous, int resource_index,
         return;        
     } 
     std::cout << "Insufficient resources available for request." << std::endl;
-    resourceQueues[resource_index].push(pid);    
+    resourceQueues[resource_index].push(pid);
 }
 
-void release_resources(PCB processTable[], int simultaneous, Resource resourceTable[], pid_t killed_pid){ // needs process table to find out
+void release_all_resources(PCB processTable[], int simultaneous, Resource resourceTable[], pid_t killed_pid){ // needs process table to find out
     // find held resources by killed_pid
     int i = return_PCB_index_of_pid(processTable, simultaneous, killed_pid);
 
@@ -95,11 +96,30 @@ void release_resources(PCB processTable[], int simultaneous, Resource resourceTa
         resourceTable[j].allocated -= processTable[i].resourcesHeld[j];
         processTable[i].resourcesHeld[j] = 0;
     }
-
-    // RESOURCES DONE RELEASING HERE
-    // PREVIOUSLY CHECKED TO SEE IF WE COULD ALLOCATE RESOURCES TO PROCS WAITING IN QUEUE,
-    // BUT IN THIS IMPLEMENTATION, WE DON'T
 }
+
+void release_single_resource(PCB processTable[], int simultaneous, Resource resourceTable[], pid_t pid){
+    int i = return_PCB_index_of_pid(processTable, simultaneous, pid);
+
+    for (int j = 0; j < 10; j++){  // 10 tries to release a random resource index
+        int randomIndex = generate_random_number(0, (NUM_RESOURCES - 1), getpid());
+        if (processTable[i].resourcesHeld[randomIndex] > 0){
+            resourceTable[randomIndex].available++;
+            resourceTable[randomIndex].allocated--;
+            processTable[i].resourcesHeld[randomIndex]--;
+            return;
+        }
+    }
+
+    for (int j = 0; j < NUM_RESOURCES; j++){  // if that fails, we sequentially check
+        if (processTable[i].resourcesHeld[j] > 0){ // to release a single resource (not random)
+            resourceTable[j].available++;
+            resourceTable[j].allocated--;
+            processTable[i].resourcesHeld[j]--;
+            return;
+        }
+    }
+}  // If both fail, we conclude the child has no resources to release, move on with no action
 
 int dd_algorithm(PCB processTable[], int simultaneous){   // if deadlock, return resource number, else return 0
     for(int i = 0; i < NUM_RESOURCES; i++){ // for each resource
@@ -123,7 +143,7 @@ void deadlock_detection(PCB processTable[], int simultaneous, Resource resourceT
         while(deadlocked_resource_index){  // While deadlock
             // kills random pid that is allocated a resource that is fully allocated
             kill(resourceQueues[deadlocked_resource_index].front(), SIGKILL);            
-            release_resources(processTable, simultaneous, resourceTable, resourceQueues[deadlocked_resource_index].front()); // release resources held by PID!            
+            release_all_resources(processTable, simultaneous, resourceTable, resourceQueues[deadlocked_resource_index].front()); // release resources held by PID!            
             resourceQueues[deadlocked_resource_index].pop();
             deadlocked_resource_index = dd_algorithm(processTable, simultaneous);
         }

@@ -125,7 +125,7 @@ int main(int argc, char** argv){
             exit(1);
         } else if (pid != 0){     // if child has been terminated
             std::cout << "OSS: Receiving child has terminated..." << std::endl;
-            release_resources(processTable, simultaneous, resourceTable, pid);
+            release_all_resources(processTable, simultaneous, resourceTable, pid);
             update_process_table_of_terminated_child(processTable, pid, simultaneous);
             pid = 0;
         }
@@ -134,16 +134,15 @@ int main(int argc, char** argv){
         attempt_process_unblock(processTable, simultaneous, resourceTable);
 
         msgbuffer buf, rcvbuf;     // NONBLOCKING WAIT TO RECEIVE MESSAGE FROM CHILD
-        if (msgrcv(msgqid, &rcvbuf, sizeof(msgbuffer), getpid(), 1) == -1) {  // IPC_NOWAIT IF 1 DOES NOT WORK
+        if (msgrcv(msgqid, &rcvbuf, sizeof(msgbuffer), getpid(), 0) == -1) {  // IPC_NOWAIT IF 1 DOES NOT WORK
             perror("oss.cpp: Error: failed to receive message in parent\n");
             cleanup("perror encountered.");
             exit(1);
         }       // LOG MSG RECEIVE
         if(rcvbuf.msgCode == MSG_TYPE_REQUEST){
-            request_resources(processTable, simultaneous, rcvbuf.resource, rcvbuf.mtype);
-            // MSGSND back to waiting user process to let them know they've been allocated or not
+            request_resources(processTable, simultaneous, rcvbuf.resource, rcvbuf.mtype); // allocation msg to child included
         } else if (rcvbuf.msgCode == MSG_TYPE_RELEASE){
-            release_resources(processTable, simultaneous, resourceTable, rcvbuf.mtype);        
+            release_single_resource(processTable, simultaneous, resourceTable, rcvbuf.mtype);        
         }
         
         std::cout << "OSS: Incrementing clock, printing tables, and running dd()..." << std::endl;
