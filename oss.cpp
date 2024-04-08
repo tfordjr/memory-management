@@ -108,8 +108,7 @@ int main(int argc, char** argv){
     int i = 0;          // holds PCB location of next process
                         // For some reason my project is happier when child launches before waitpid()
                         //  ---------  MAIN LOOP  ---------   
-    while(numChildren > 0 || !process_table_empty(processTable, simultaneous)){   
-        
+    while(numChildren > 0 || !process_table_empty(processTable, simultaneous)){  
                 // CHECK IF CONDITIONS ARE RIGHT TO LAUNCH ANOTHER CHILD
         if(numChildren > 0 && launch_interval_satisfied(launch_interval)  // check conditions to launch child
         && process_table_vacancy(processTable, simultaneous)){ // child process launch check
@@ -117,7 +116,7 @@ int main(int argc, char** argv){
             outputFile << "OSS: Launching Child Process..." << endl;
             numChildren--;
             launch_child(processTable, simultaneous);
-        }        
+        }
 
         pid_t pid = waitpid((pid_t)-1, nullptr, WNOHANG);  // non-blocking wait call for terminated child process
         if (pid == -1){
@@ -133,7 +132,7 @@ int main(int argc, char** argv){
         std::cout << "OSS: attempting process unblock..." << std::endl;
         attempt_process_unblock(processTable, simultaneous, resourceTable);
 
-        msgbuffer buf, rcvbuf;     // NONBLOCKING WAIT TO RECEIVE MESSAGE FROM CHILD
+        msgbuffer rcvbuf;     // NONBLOCKING WAIT TO RECEIVE MESSAGE FROM CHILD
         rcvbuf.msgCode = -1; // default msgCode used if no messages received
         if (msgrcv(msgqid, &rcvbuf, sizeof(msgbuffer), getpid(), 0) == -1) {  // IPC_NOWAIT IF 1 DOES NOT WORK
             perror("oss.cpp: Error: failed to receive message in parent\n");
