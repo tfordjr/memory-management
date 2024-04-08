@@ -135,12 +135,11 @@ int main(int argc, char** argv){
         msgbuffer rcvbuf;     // NONBLOCKING WAIT TO RECEIVE MESSAGE FROM CHILD
         rcvbuf.msgCode = -1; // default msgCode used if no messages received
         if (msgrcv(msgqid, &rcvbuf, sizeof(msgbuffer), getpid(), IPC_NOWAIT) == -1) {  // IPC_NOWAIT IF 1 DOES NOT WORK
-            if (errno == ENOMSG){  // Technically if there is no message for our nonblocking MSGRCV,
-                break;             // it is an error. For us, this behavior is intended so in this case
-            }                      //  we continue on. Other types of error will not match ENOMSG
-            perror("oss.cpp: Error: failed to receive message in parent\n");
-            cleanup("perror encountered.");
-            exit(1);
+            if (errno != ENOMSG){  // If the error is that no message is present, we ignore the error
+                perror("oss.cpp: Error: failed to receive message in parent\n");
+                cleanup("perror encountered.");
+                exit(1);           
+            }                      
         }       // LOG MSG RECEIVE
         std::cout << "OSS: message received successfully..." << std::endl;
         if(rcvbuf.msgCode == MSG_TYPE_REQUEST){
