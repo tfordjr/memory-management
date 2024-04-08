@@ -30,7 +30,8 @@ readme: explains project
 attempting to send messages within attempt_process_unblock(), trying to get that working.
 right now, the msgsnd is broken
 
-stuck at possibly a blocking msgrcv now...
+oss stuck at line 137 msgrcv, should be 4th arg = 1 for nonblocking, but oss is not moving on
+like is expected for a nonblocking msgrcv action
 
 if launch interval is greater than 0, waitpid() returns -1 bc no processes are in the system
 temp fix: -i 0 allows first process to launch before waitpid() first runs
