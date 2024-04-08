@@ -31,7 +31,7 @@ void help();
 void timeout_handler(int);
 void ctrl_c_handler(int);
 void cleanup(std::string);
-void output_statistics(int, double, double, double);
+void output_statistics();
 
 volatile sig_atomic_t term = 0;  // signal handling global
 struct PCB processTable[20]; // Init Process Table Array of PCB structs (not shm)
@@ -160,7 +160,7 @@ int main(int argc, char** argv){
     }                   // --------- END OF MAIN LOOP ---------    
 
     output_statistics();
-    
+
 	std::cout << "OSS: Child processes have completed. (" << numChildren << " remaining)\n";
     std::cout << "OSS: Parent is now ending.\n";
     outputFile << "OSS: Child processes have completed. (" << numChildren << " remaining)\n";
