@@ -84,7 +84,7 @@ void print_process_table(PCB processTable[], int simultaneous, int secs, int nan
             std::string r_list = "";
 
             for(int j = 0; j < NUM_RESOURCES; j++){
-                r_list += std::to_string(static_cast<char>(65 + j));
+                r_list += static_cast<char>(65 + j);
                 r_list += ":";
                 r_list += std::to_string(processTable[i].resourcesHeld[j]);
                 r_list += " ";
