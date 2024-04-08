@@ -68,7 +68,7 @@ int main(int argc, char** argv) {
                 } else {  // RELEASE
                     buf.msgCode = MSG_TYPE_RELEASE;
                 }   // MSGSND REQUEST/RELEASE TO OSS                    
-                if(msgsnd(msgqid, &buf, sizeof(msgbuffer), 1) == -1) { 
+                if(msgsnd(msgqid, &buf, sizeof(msgbuffer), IPC_NOWAIT) == -1) { 
                     perror("msgsnd to parent failed\n");
                     exit(1);
                 }
