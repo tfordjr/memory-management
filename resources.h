@@ -149,7 +149,7 @@ int dd_algorithm(PCB processTable[], int simultaneous){   // if deadlock, return
         }
     }
     return 0;
-}
+} 
 
 void deadlock_detection(PCB processTable[], int simultaneous, Resource resourceTable[], int secs, int nanos){
     static int next_dd_secs = 0;  // used to keep track of next deadlock detection    
