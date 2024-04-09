@@ -26,7 +26,7 @@ void send_unblock_msg(msgbuffer);
 
 struct Resource resourceTable[NUM_RESOURCES];     // resource table
 std::queue<pid_t> resourceQueues[NUM_RESOURCES];  // Queues for each resource
-int ddAlgoKills = 0;
+int ddAlgoKills = 0;           // globals to keep track for statistics output after execution
 int ddAlgoRuns = 0;
 int numDeadlocks = 0;
 int requestsImmediatelyGranted = 0;
@@ -95,6 +95,8 @@ void request_resources(PCB processTable[], int simultaneous, int resource_index,
         return;        
     } 
     std::cout << "Insufficient resources available for request." << std::endl;
+    int i = return_PCB_index_of_pid(processTable, simultaneous, pid);
+    processTable[i].blocked = 1;
     resourceQueues[resource_index].push(pid);
 }
 
@@ -135,59 +137,88 @@ void release_single_resource(PCB processTable[], int simultaneous, Resource reso
     std::cout << "OSS: determined there were no resources to release from pid " << pid << ", release action resulted in no release..." << std::endl;
 }  // If both fail, we conclude the child has no resources to release, move on with no action
 
-int dd_algorithm(PCB processTable[], int simultaneous){   // if deadlock, return resource number, else return 0
+bool dd_algorithm(PCB processTable[], int simultaneous, Resource resourceTable[], pid_t deadlockedPIDs[], int* index){
     ddAlgoRuns++;
-    for(int i = 0; i < NUM_RESOURCES; i++){ // for each resource
-        int sum = 0;  // sum of instances of a particular resource held by blocked procs
-        for(int j = 0; j < simultaneous; j++){  // go through each process 
-            if(processTable[j].blocked){  // if process is blocked
-                sum += processTable[j].resourcesHeld[i]; 
-            }            
-        }
-        if(sum == NUM_INSTANCES){ // if sum of resource instances held by blocked processes is equal to max number
-            return i;  // return resource index number 
+    *index = 0;
+
+    struct PCB simProcessTable[20];    // declaration of temp copies of tables, resources
+    struct Resource simResourceTable[NUM_RESOURCES];
+    std::queue<pid_t> simResourceQueues[NUM_RESOURCES];
+    
+    for (int i = 0; i < NUM_RESOURCES; i++) {   // Create a local copies
+        simProcessTable[i] = processTable[i];
+        simResourceQueues[i] = resourceQueues[i];
+        simResourceTable[i] = resourceTable[i];        
+    }
+
+    for (int i = 0; i < simultaneous; i++){   // free all processes not in a blocked queue
+        if (!simProcessTable[i].blocked){   // these processes are 100% not deadlocked bc they're not blocked
+            release_all_resources(simProcessTable, simultaneous, simResourceTable, simProcessTable[i].pid);
         }
     }
-    return 0;
-} 
+
+    int count = 0;
+    while(count < 3){   // repeat attempted allocation 3 times to be generous
+        for (int i = 0; i < NUM_RESOURCES; i++){ // attempt to allocate free resources
+            while (!simResourceQueues[i].empty() && simResourceTable[i].available > 0){  
+                release_all_resources(simProcessTable, simultaneous, simResourceTable, simResourceQueues[i].front());
+                simResourceQueues[i].pop();                     
+            }        
+        }
+        count++;
+    }
+    
+    for (int i = 0; i < NUM_RESOURCES; i++){ // logging stubborn (probably deadlocked) pids
+        while (!simResourceQueues[i].empty()){
+            deadlockedPIDs[*index++] = simResourceQueues[i].front();
+            simResourceQueues[i].pop();
+        }
+    }
+    if(*index == 0) 
+        return false;   // THERE ARE NO DEADLOCKS IN SYSTEM
+    return true;
+}
 
 void deadlock_detection(PCB processTable[], int simultaneous, Resource resourceTable[], int secs, int nanos){
     static int next_dd_secs = 0;  // used to keep track of next deadlock detection    
-    if(secs >= next_dd_secs){
-        int deadlocked_resource_index = dd_algorithm(processTable, simultaneous); // returns 0 if no deadlock        
-        if (deadlocked_resource_index){
-            numDeadlocks++;
+    if(secs < next_dd_secs)  // bails if not time for dd() yet
+        return;  
+    next_dd_secs++;
+
+    pid_t deadlockedPIDs[simultaneous];
+    int index = 0;
+    while(dd_algorithm(processTable, simultaneous, resourceTable, deadlockedPIDs, &index)){
+            // determine the pid with the least resources (least impact on system) and kill it
+        int sum = 0;
+        int leastSum = (NUM_RESOURCES * NUM_INSTANCES);
+        pid_t pidWithLeastSum;
+        while(index >= 0){
+            int i = return_PCB_index_of_pid(processTable, simultaneous, deadlockedPIDs[index]);
+            for(int j = 0; j < NUM_RESOURCES; j++){
+                sum += processTable[i].resourcesHeld[j];
+            }
+            if(sum < leastSum){
+                leastSum = sum;
+                pidWithLeastSum = deadlockedPIDs[index];
+            }
+            sum = 0;
         }
-        while(deadlocked_resource_index){  // While deadlock
-            // kills random pid that is allocated a resource that is fully allocated
-            kill(resourceQueues[deadlocked_resource_index].front(), SIGKILL);            
-            release_all_resources(processTable, simultaneous, resourceTable, resourceQueues[deadlocked_resource_index].front()); // release resources held by PID!            
-            resourceQueues[deadlocked_resource_index].pop();
-            deadlocked_resource_index = dd_algorithm(processTable, simultaneous);
-            ddAlgoKills++;
-        }        
-        next_dd_secs++;
+        kill(pidWithLeastSum, SIGKILL);     // kill that least important pid
+        release_all_resources(processTable, simultaneous, resourceTable, pidWithLeastSum); // release resources held by PID!       
+        ddAlgoKills++;
     }
 }
-
-    // dd_algo   for each process in blocked queue, if all other instances of a given Resource
-    // are held by blocked processes, then a deadlock exists
-
-    // We will solve it by killing a random blocked process that holds at least one instance 
-    // of a resource that whose instances are all allocated
-    // then run dd_algo again
-
-    // SHOULD BE ALMOST THE SAME AS 2nd half of release_resources() but more comprehensive
-    // need to check all 
+    
 void attempt_process_unblock(PCB processTable[], int simultaneous, Resource resourceTable[]){   
     for (int j = 0; j < NUM_RESOURCES; j++){
         while (!resourceQueues[j].empty() && resourceTable[j].available > 0){                      
-            allocate_resources(processTable, simultaneous, j, resourceQueues[j].front()); // Allocate one instance to the waiting process 
+            allocate_resources(processTable, simultaneous, j, resourceQueues[j].front()); // Allocate one instance to the waiting process             
+            int i = return_PCB_index_of_pid(processTable, simultaneous, resourceQueues[j].front());
             resourceQueues[j].pop();
+            processTable[i].blocked = 0;
             requestsEventuallyGranted++;
         }
-    }  // This implementation only checks each resource queue once, so if there is 
-}      // a large buildup of blocked procs in a given queue, that could potentially be 
-       // challenging to unblock even if there are large amounts of available resources
+    }  
+}      
 
 #endif
