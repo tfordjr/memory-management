@@ -235,6 +235,7 @@ void attempt_process_unblock(PCB processTable[], int simultaneous, Resource reso
             resourceQueues[j].pop();
             processTable[i].blocked = 0;
             requestsEventuallyGranted++;
+            std::cout << "OSS: Unblocked " << processTable[i].pid << " granted resource " << static_cast<char>(65 + j) << std::endl;
         }
     }  
 }      

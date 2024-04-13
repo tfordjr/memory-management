@@ -130,8 +130,7 @@ int main(int argc, char** argv){
             pid = 0;
             successfulTerminations++;
         }
-
-        std::cout << "OSS: attempting process unblock..." << std::endl;
+        
         attempt_process_unblock(processTable, simultaneous, resourceTable);
 
         msgbuffer rcvbuf;     // NONBLOCKING WAIT TO RECEIVE MESSAGE FROM CHILD
@@ -152,13 +151,12 @@ int main(int argc, char** argv){
             std::cout << "OSS: Checked and found Release msg from pid " << rcvbuf.sender << std::endl;
             release_single_resource(processTable, simultaneous, resourceTable, rcvbuf.sender);        
         }
-
-        output_statistics();
                 
         increment(shm_clock, DISPATCH_AMOUNT);  // dispatcher overhead and unblocked reschedule overhead
         print_process_table(processTable, simultaneous, shm_clock->secs, shm_clock->nanos, outputFile);
         print_resource_table(resourceTable, shm_clock->secs, shm_clock->nanos, outputFile);     
         deadlock_detection(processTable, simultaneous, resourceTable, shm_clock->secs, shm_clock->nanos);        
+        std::cout << "Loop..." << std::endl;
     }                   // --------- END OF MAIN LOOP ---------    
 
     output_statistics();
