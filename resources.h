@@ -32,6 +32,8 @@ int numDeadlocks = 0;
 int requestsImmediatelyGranted = 0;
 int requestsEventuallyGranted = 0;
 
+std::ofstream outputFile;   // init file object
+
 void init_resource_table(Resource resourceTable[]){
     for(int i = 0; i < NUM_RESOURCES; i++){
         resourceTable[i].available = NUM_INSTANCES;
@@ -69,6 +71,9 @@ int return_PCB_index_of_pid(PCB processTable[], int simultaneous, pid_t pid){
             return i;
         }
     }
+
+    print_process_table(processTable, simultaneous, 999, 999, outputFile);
+    print_resource_table(resourceTable, 999, 999, outputFile);
     
     std::cout << " return_PCB_index_of_pid() failed. Cleaning up before exiting..." << std::endl;    
     kill_all_processes(processTable, simultaneous);   
