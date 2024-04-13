@@ -202,9 +202,9 @@ void deadlock_detection(PCB processTable[], int simultaneous, Resource resourceT
                 pidWithLeastSum = deadlockedPIDs[index];
             }
             sum = 0;
-        }
-        kill(pidWithLeastSum, SIGKILL);     // kill that least important pid
+        }        
         release_all_resources(processTable, simultaneous, resourceTable, pidWithLeastSum); // release resources held by PID!       
+        kill(pidWithLeastSum, SIGKILL);     // kill that least important pid
         ddAlgoKills++;
     }
 }
