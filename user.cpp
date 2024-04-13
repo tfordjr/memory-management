@@ -23,7 +23,7 @@
 using namespace std;
 
 #define TERMINATION_CHANCE 5
-#define R_REQUEST_CHANCE 40
+#define R_REQUEST_CHANCE 85
 #define ACTUAL_REQUEST_CHANCE (TERMINATION_CHANCE + R_REQUEST_CHANCE)
       // Remaining (100 - (TERM_CHANCE + R_REQUEST_CHANCE)) = R_RELEASE_CHANCE
 #define R_INTERVAL_BOUND 1e7  // max bound is 10 ms (in ns)
