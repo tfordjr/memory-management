@@ -174,7 +174,7 @@ int main(int argc, char** argv){
     return 0;
 }
 
-void send_unblock_msg(msgbuffer buf){
+void send_msg_to_child(msgbuffer buf){
     if (msgsnd(msgqid, &buf, sizeof(msgbuffer), 0) == -1) { 
         perror("msgsnd to parent failed\n");
         exit(1);

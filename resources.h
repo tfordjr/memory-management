@@ -22,7 +22,7 @@ struct Resource{
     int available;
 };
 
-void send_unblock_msg(msgbuffer);
+void send_msg_to_child(msgbuffer);
 
 struct Resource resourceTable[NUM_RESOURCES];     // resource table
 std::queue<pid_t> resourceQueues[NUM_RESOURCES];  // Queues for each resource
@@ -92,7 +92,7 @@ void allocate_resources(PCB processTable[], int simultaneous, int resource_index
     buf.mtype = pid;
     buf.msgCode = MSG_TYPE_GRANTED;
     buf.resource = resource_index;
-    send_unblock_msg(buf);
+    send_msg_to_child(buf);
 }
 
 void request_resources(PCB processTable[], int simultaneous, int resource_index, pid_t pid){
@@ -103,6 +103,14 @@ void request_resources(PCB processTable[], int simultaneous, int resource_index,
     } 
     std::cout << "Insufficient resources available for request." << std::endl;
     int i = return_PCB_index_of_pid(processTable, simultaneous, pid);
+
+    // SEND MESSAGE LETTING PROC KNOW HE IS BLOCKED
+    msgbuffer buf;
+    buf.mtype = pid;
+    buf.msgCode = MSG_TYPE_BLOCKED;
+    buf.resource = resource_index;
+    send_msg_to_child(buf);
+
     processTable[i].blocked = 1;
     resourceQueues[resource_index].push(pid);
 }
