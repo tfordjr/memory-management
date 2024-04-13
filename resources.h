@@ -80,11 +80,13 @@ int return_PCB_index_of_pid(PCB processTable[], int simultaneous, pid_t pid){
     std::exit(EXIT_SUCCESS);
     // return -1;
 }
+
     //allocate_resources() ALLOCATES UNCONDITIONALLY, MUST BE CAREFUL WHEN WE CALL IT!!!
 void allocate_resources(PCB processTable[], int simultaneous, int resource_index, pid_t pid){
     resourceTable[resource_index].available -= 1;
     resourceTable[resource_index].allocated += 1;
         // LOG ALLOCATION OF RESOURCES ON PCB
+    std::cout << "Calling return_PCB...() from allocate_resources() with pid " << pid << std::endl;
     int i = return_PCB_index_of_pid(processTable, simultaneous, pid);
     processTable[i].resourcesHeld[resource_index]++;
             // Notify the process that it has been allocated resources
@@ -103,6 +105,7 @@ void request_resources(PCB processTable[], int simultaneous, int resource_index,
         return;        
     } 
     std::cout << "OSS: Insufficent resources " << pid << " added to resource queue " << static_cast<char>(65 + resource_index) << std::endl;
+    std::cout << "Calling return_PCB...() from request_resources() with pid " << pid << std::endl;
     int i = return_PCB_index_of_pid(processTable, simultaneous, pid);
 
     // SEND MESSAGE LETTING PROC KNOW HE IS BLOCKED
@@ -118,6 +121,7 @@ void request_resources(PCB processTable[], int simultaneous, int resource_index,
 
 void release_all_resources(PCB processTable[], int simultaneous, Resource resourceTable[], pid_t killed_pid){ // needs process table to find out
     // find held resources by killed_pid
+    std::cout << "Calling return_PCB...() from release_all_resources() with pid " << killed_pid << std::endl;
     int i = return_PCB_index_of_pid(processTable, simultaneous, killed_pid);
 
     for (int j = 0; j < NUM_RESOURCES; j++){
@@ -128,6 +132,7 @@ void release_all_resources(PCB processTable[], int simultaneous, Resource resour
 }
 
 void release_single_resource(PCB processTable[], int simultaneous, Resource resourceTable[], pid_t pid){
+    std::cout << "Calling return_PCB...() from release_single_resource() with pid " << pid << std::endl;
     int i = return_PCB_index_of_pid(processTable, simultaneous, pid);
 
     for (int j = 0; j < 10; j++){  // 10 tries to release a random resource index
@@ -212,6 +217,7 @@ void deadlock_detection(PCB processTable[], int simultaneous, Resource resourceT
         int leastSum = (NUM_RESOURCES * NUM_INSTANCES);
         pid_t pidWithLeastSum;
         while(index >= 0){
+            std::cout << "Calling return_PCB...() from deadlock_detection() with pid " << deadlockedPIDs[index] << std::endl;
             int i = return_PCB_index_of_pid(processTable, simultaneous, deadlockedPIDs[index]);
             for(int j = 0; j < NUM_RESOURCES; j++){
                 sum += processTable[i].resourcesHeld[j];
