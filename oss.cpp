@@ -135,6 +135,9 @@ int main(int argc, char** argv){
 
         msgbuffer rcvbuf;     // NONBLOCKING WAIT TO RECEIVE MESSAGE FROM CHILD
         rcvbuf.msgCode = -1; // default msgCode used if no messages received
+        rcvbuf.mtype = -1;
+        rcvbuf.sender = -1;           // attempt to clean rcvbuf
+        rcvbuf.resource = -1;
         if (msgrcv(msgqid, &rcvbuf, sizeof(msgbuffer), getpid(), IPC_NOWAIT) == -1) {  // IPC_NOWAIT IF 1 DOES NOT WORK
             if (errno != ENOMSG){  // If the error is that no message is present, we ignore the error
                 perror("oss.cpp: Error: failed to receive message in parent\n");
