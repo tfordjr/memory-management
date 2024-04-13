@@ -180,6 +180,7 @@ bool dd_algorithm(PCB processTable[], int simultaneous, Resource resourceTable[]
 
     for (int i = 0; i < simultaneous; i++){   // free all processes not in a blocked queue
         if (!simProcessTable[i].blocked){   // these processes are 100% not deadlocked bc they're not blocked
+            std::cout << "dd_algorithm() simulating release_all_resources() SIMULATING RELEASING RUNNING PROCS" << std::endl;
             release_all_resources(simProcessTable, simultaneous, simResourceTable, simProcessTable[i].pid);
         }
     }
@@ -187,7 +188,8 @@ bool dd_algorithm(PCB processTable[], int simultaneous, Resource resourceTable[]
     int count = 0;
     while(count < 3){   // repeat attempted allocation 3 times to be generous
         for (int i = 0; i < NUM_RESOURCES; i++){ // attempt to allocate free resources
-            while (!simResourceQueues[i].empty() && simResourceTable[i].available > 0){  
+            while (!simResourceQueues[i].empty() && simResourceTable[i].available > 0){ 
+                std::cout << "dd_algorithm() simulating release_all_resources() SIMULATING RELEASING UNBLOCKS" << std::endl; 
                 release_all_resources(simProcessTable, simultaneous, simResourceTable, simResourceQueues[i].front());
                 simResourceQueues[i].pop();                     
             }        
@@ -231,6 +233,7 @@ void deadlock_detection(PCB processTable[], int simultaneous, Resource resourceT
             }
             sum = 0;
         }        
+        std::cout << "deadlock_detection() running release_all_resources() REAL TERMINATIONS" << std::endl;
         release_all_resources(processTable, simultaneous, resourceTable, pidWithLeastSum); // release resources held by PID!       
         kill(pidWithLeastSum, SIGKILL);     // kill that least important pid
         ddAlgoKills++;
