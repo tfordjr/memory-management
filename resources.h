@@ -72,13 +72,13 @@ int return_PCB_index_of_pid(PCB processTable[], int simultaneous, pid_t pid){
         }
     }
 
-    print_process_table(processTable, simultaneous, 999, 999, outputFile);
-    print_resource_table(resourceTable, 999, 999, outputFile);
+    // print_process_table(processTable, simultaneous, 999, 999, outputFile);
+    // print_resource_table(resourceTable, 999, 999, outputFile);
     
-    std::cout << "pid " << pid << " not found. return_PCB_index_of_pid() failed. Cleaning up before exiting..." << std::endl;    
-    kill_all_processes(processTable, simultaneous);   
-    std::exit(EXIT_SUCCESS);
-    // return -1;
+    // std::cout << "pid " << pid << " not found. return_PCB_index_of_pid() failed. Cleaning up before exiting..." << std::endl;    
+    // kill_all_processes(processTable, simultaneous);   
+    // std::exit(EXIT_SUCCESS);
+    return -1;
 }
 
     //allocate_resources() ALLOCATES UNCONDITIONALLY, MUST BE CAREFUL WHEN WE CALL IT!!!
@@ -133,7 +133,10 @@ void release_all_resources(PCB processTable[], int simultaneous, Resource resour
 
 void release_single_resource(PCB processTable[], int simultaneous, Resource resourceTable[], pid_t pid){
     std::cout << "Calling return_PCB...() from release_single_resource() with pid " << pid << std::endl;
+    
     int i = return_PCB_index_of_pid(processTable, simultaneous, pid);
+    if (i == -1)  // Common bug where process termed and old release resource msg
+        return;   // for some reason left in msgq, msg release req safely ignored
 
     for (int j = 0; j < 10; j++){  // 10 tries to release a random resource index
         int randomIndex = generate_random_number(0, (NUM_RESOURCES - 1), getpid());
