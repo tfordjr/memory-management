@@ -124,7 +124,7 @@ int main(int argc, char** argv){
             perror("waitpid returned -1");
             exit(1);
         } else if (pid != 0){     // if child has been terminated
-            std::cout << "OSS: Receiving child has terminated..." << std::endl;
+            std::cout << "OSS: Receiving child " << pid << " has terminated..." << std::endl;
             release_all_resources(processTable, simultaneous, resourceTable, pid);
             update_process_table_of_terminated_child(processTable, pid, simultaneous);
             pid = 0;
