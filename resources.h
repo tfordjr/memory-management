@@ -145,11 +145,14 @@ bool dd_algorithm(PCB processTable[], int simultaneous, Resource resourceTable[]
     struct Resource simResourceTable[NUM_RESOURCES];
     std::queue<pid_t> simResourceQueues[NUM_RESOURCES];
     
-    for (int i = 0; i < NUM_RESOURCES; i++) {   // Create a local copies
-        simProcessTable[i] = processTable[i];
+    for (int i = 0; i < NUM_RESOURCES; i++) {   // Create a local copies        
         simResourceQueues[i] = resourceQueues[i];
-        simResourceTable[i] = resourceTable[i];        
+        simResourceTable[i] = resourceTable[i];
     }
+    for (int i = 0; i < simultaneous; i++) {   // Create a local copies        
+        simProcessTable[i] = processTable[i];
+    }
+    
 
     for (int i = 0; i < simultaneous; i++){   // free all processes not in a blocked queue
         if (!simProcessTable[i].blocked){   // these processes are 100% not deadlocked bc they're not blocked
