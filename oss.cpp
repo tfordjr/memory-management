@@ -152,6 +152,8 @@ int main(int argc, char** argv){
             std::cout << "OSS: Checked and found Release msg from pid " << rcvbuf.sender << std::endl;
             release_single_resource(processTable, simultaneous, resourceTable, rcvbuf.sender);        
         }
+
+        output_statistics();
                 
         increment(shm_clock, DISPATCH_AMOUNT);  // dispatcher overhead and unblocked reschedule overhead
         print_process_table(processTable, simultaneous, shm_clock->secs, shm_clock->nanos, outputFile);
