@@ -99,9 +99,10 @@ void request_resources(PCB processTable[], int simultaneous, int resource_index,
     if (resourceTable[resource_index].available > 0){
         allocate_resources(processTable, simultaneous, resource_index, pid);
         requestsImmediatelyGranted++;
+        std::cout << "OSS: Granted " << pid << " resource " << static_cast<char>(65 + resource_index) << std::endl;
         return;        
     } 
-    std::cout << "Insufficient resources available for request." << std::endl;
+    std::cout << "OSS: Insufficent resources " << pid << " added to resource queue " << static_cast<char>(65 + resource_index) << std::endl;
     int i = return_PCB_index_of_pid(processTable, simultaneous, pid);
 
     // SEND MESSAGE LETTING PROC KNOW HE IS BLOCKED
