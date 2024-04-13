@@ -69,10 +69,11 @@ int return_PCB_index_of_pid(PCB processTable[], int simultaneous, pid_t pid){
             return i;
         }
     }
-    perror("resources.h: Error: given pid not found on process table");
-    cleanup("return_PCB_index_of_pid() failed. Cleanup starting...");
-    exit(1);
-    return -1;
+    
+    std::cout << " return_PCB_index_of_pid() failed. Cleaning up before exiting..." << std::endl;    
+    kill_all_processes(processTable, simultaneous);   
+    std::exit(EXIT_SUCCESS);
+    // return -1;
 }
     //allocate_resources() ALLOCATES UNCONDITIONALLY, MUST BE CAREFUL WHEN WE CALL IT!!!
 void allocate_resources(PCB processTable[], int simultaneous, int resource_index, pid_t pid){
