@@ -27,10 +27,4 @@ readme: explains project
 ---Lack of adhearance to specifications:
 
 ---Known Problems or Bugs: 
-
-if launch interval is greater than 0, waitpid() returns -1 bc no processes are in the system
-temp fix: -i 0 allows first process to launch before waitpid() first runs
-and waitpid() returns 0 as a child process is in the system at that point. 
-In previous projects, waitpid() returns 0 even though there are no child procs, not sure why
-
-std output looks awful, have to clean that up
+Deadlock_detection kills procs indescriminately, want to do it better

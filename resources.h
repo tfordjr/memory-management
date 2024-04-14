@@ -229,9 +229,10 @@ void deadlock_detection(PCB processTable[], int simultaneous, Resource resourceT
     while(dd_algorithm(processTable, simultaneous, resourceTable, deadlockedPIDs, &index, &resourceIndex)){
         std::cout << "deadlock_detection() found a deadlock! KILLING A PID NOW!" << std::endl;
                
-               // THIS IS HANDLED WHEN THE KILLED PID IS CAUGHT BY OSS NONBLOCKING WAIT FOR TERMED PID
-        // release_all_resources(processTable, simultaneous, resourceTable, deadlockedPIDs[0]); // release resources held by PID!       
-        // update_process_table_of_terminated_child(processTable, deadlockedPIDs[0], simultaneous);
+        // release_all_resources() and update_process_table_of_terminated_child() are not called here
+        // because killed pid is caught by nonblocking wait and its handled there. releasing all resources
+        // twice caused a rare bug that caused corrupted data. 
+        
         kill(deadlockedPIDs[0], SIGKILL);     // kill random pid
         remove_pid_from_queue(resourceQueues[resourceIndex], deadlockedPIDs[0]);
         

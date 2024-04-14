@@ -123,14 +123,7 @@ int main(int argc, char** argv){
         if (pid > 0){     // if child has been terminated
             std::cout << "OSS: Receiving child " << pid << " has terminated! Releasing childs' resources..." << std::endl;
             
-            int i = return_PCB_index_of_pid(processTable, simultaneous, pid);
-
-            if(processTable[i].resourcesHeld[0] <= NUM_INSTANCES && processTable[i].resourcesHeld[0] >= 0 &&
-                processTable[i].resourcesHeld[1] <= NUM_INSTANCES && processTable[i].resourcesHeld[1] >= 0){            
-                std::cout << "Way Before release_all_resources(), no processTable issues" << std::endl;
-            } else {
-                cleanup("Way Before release_all_resources(), processTable issues!()");
-            }            
+            int i = return_PCB_index_of_pid(processTable, simultaneous, pid);             
             
             release_all_resources(processTable, simultaneous, resourceTable, pid);
             update_process_table_of_terminated_child(processTable, pid, simultaneous);
