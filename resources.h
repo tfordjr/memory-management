@@ -164,6 +164,7 @@ void release_single_resource(PCB processTable[], int simultaneous, Resource reso
 }  // If both fail, we conclude the child has no resources to release, move on with no action
 
 bool dd_algorithm(PCB processTable[], int simultaneous, Resource resourceTable[], pid_t deadlockedPIDs[], int* index){
+    std::cout << "Running dd_algorithm()..." << std::endl;
     ddAlgoRuns++;
     *index = 0;
 
@@ -180,8 +181,7 @@ bool dd_algorithm(PCB processTable[], int simultaneous, Resource resourceTable[]
     }    
 
     for (int i = 0; i < simultaneous; i++){   // free all processes not in a blocked queue
-        if (!simProcessTable[i].blocked){   // these processes are 100% not deadlocked bc they're not blocked
-            std::cout << "dd_algorithm() simulating release_all_resources() SIMULATING RELEASING RUNNING PROCS" << std::endl;
+        if (!simProcessTable[i].blocked){   // these processes are 100% not deadlocked bc they're not blocked            
             release_all_resources(simProcessTable, simultaneous, simResourceTable, simProcessTable[i].pid);
         }
     }
@@ -189,9 +189,7 @@ bool dd_algorithm(PCB processTable[], int simultaneous, Resource resourceTable[]
     int count = 0;
     while(count < 3){   // repeat attempted allocation 3 times to be generous
         for (int i = 0; i < NUM_RESOURCES; i++){ // attempt to allocate free resources
-            std:: cout << "dd_algo() SIM UNBLOCK LOOP: " << i << std::endl;
-            while (!simResourceQueues[i].empty() && simResourceTable[i].available > 0){ 
-                std::cout << "dd_algorithm() simulating release_all_resources() SIMULATING RELEASING UNBLOCKS" << std::endl; 
+            while (!simResourceQueues[i].empty() && simResourceTable[i].available > 0){                 
                 release_all_resources(simProcessTable, simultaneous, simResourceTable, simResourceQueues[i].front());
                 simResourceQueues[i].pop();                     
             }        
@@ -200,10 +198,8 @@ bool dd_algorithm(PCB processTable[], int simultaneous, Resource resourceTable[]
     }
     
     for (int i = 0; i < NUM_RESOURCES; i++){ // logging stubborn (probably deadlocked) pids
-        std:: cout << "dd_algo() DEADLOCKED TRACKING ATTEMPT: " << i << std::endl;
         while (!simResourceQueues[i].empty()){
-            std::cout << "dd_algo() DEADLOCK TRACKING SUCCESS: " << i << std::endl;
-            std::cout << "Index-" << *index << "   simResourceQueues[i].front()-" << simResourceQueues[i].front() << std::endl;
+            std::cout << "dd_algorithm: DEADLOCKED PID: " << simResourceQueues[i].front() << std::endl;
             deadlockedPIDs[(*index)++] = simResourceQueues[i].front();
             simResourceQueues[i].pop();
         }
@@ -224,12 +220,15 @@ void deadlock_detection(PCB processTable[], int simultaneous, Resource resourceT
     int index = 0;
     int sameDeadlock = 0;
     while(dd_algorithm(processTable, simultaneous, resourceTable, deadlockedPIDs, &index)){
-        std::cout << "deadlock_detection() running release_all_resources() REAL TERMINATIONS" << std::endl;
+        std::cout << "deadlock_detection() found a deadlock! KILLING A PID NOW!" << std::endl;
         release_all_resources(processTable, simultaneous, resourceTable, deadlockedPIDs[0]); // release resources held by PID!       
         kill(deadlockedPIDs[0], SIGKILL);     // kill random pid
         
         if(sameDeadlock == 0)  // numDeadlocks tracking
             numDeadlocks++;        
+        else if(sameDeadlock > 10){
+            std::cout << "deadlock_detection going haywire!" << std::endl;
+        }
         sameDeadlock++;
         ddAlgoKills++;
         index = 0;   
