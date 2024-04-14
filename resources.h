@@ -177,8 +177,7 @@ bool dd_algorithm(PCB processTable[], int simultaneous, Resource resourceTable[]
     }
     for (int i = 0; i < 20; i++) {   // Create a local copies        
         simProcessTable[i] = processTable[i];
-    }
-    
+    }    
 
     for (int i = 0; i < simultaneous; i++){   // free all processes not in a blocked queue
         if (!simProcessTable[i].blocked){   // these processes are 100% not deadlocked bc they're not blocked
