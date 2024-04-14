@@ -125,8 +125,10 @@ int main(int argc, char** argv){
             
             int i = return_PCB_index_of_pid(processTable, simultaneous, pid);             
             
-            release_all_resources(processTable, simultaneous, resourceTable, pid);
-            update_process_table_of_terminated_child(processTable, pid, simultaneous);
+            if(processTable[i].occupied){
+                release_all_resources(processTable, simultaneous, resourceTable, pid);
+                update_process_table_of_terminated_child(processTable, pid, simultaneous);
+            }
             pid = 0;
             successfulTerminations++;
         }  // I ignored pid == -1 case because no child procs was pid == -1 and was crashing the program

@@ -266,14 +266,17 @@ void deadlock_detection(PCB processTable[], int simultaneous, Resource resourceT
   
     while(dd_algorithm(processTable, simultaneous, resourceTable, deadlockedPIDs, &index, &resourceIndex)){
         std::cout << "deadlock_detection() found a deadlock! KILLING A PID NOW!" << std::endl;
-               
-        // release_all_resources() and update_process_table_of_terminated_child() are not called here
-        // because killed pid is caught by nonblocking wait and its handled there. releasing all resources
-        // twice caused a rare bug that caused corrupted data. 
-
+                        
         // pid_t pidDecidedToKill = deadlockedPIDs[0];   // uncomment to switch to random/most impactful/least impactful to terminate
         pid_t pidDecidedToKill = find_pid_with_most_resources(deadlockedPIDs, processTable, index, simultaneous);
         // pid_t pidDecidedToKill = find_pid_with_least_resources(deadlockedPIDs, processTable, index, simultaneous);
+
+        // release_all_resources() and update_process_table_of_terminated_child() are not called here
+        // because killed pid is caught by nonblocking wait and its handled there. releasing all resources
+        // twice caused a rare bug that caused corrupted data.  
+
+        release_all_resources(processTable, simultaneous, resourceTable, pidDecidedToKill);
+        update_process_table_of_terminated_child(processTable, pidDecidedToKill, simultaneous);
 
         kill(pidDecidedToKill, SIGKILL);     // kill random pid
         remove_pid_from_queue(resourceQueues[resourceIndex], pidDecidedToKill);
