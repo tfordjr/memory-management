@@ -93,24 +93,8 @@ int return_PCB_index_of_pid(PCB processTable[], int simultaneous, pid_t pid){
     //allocate_resources() ALLOCATES UNCONDITIONALLY, MUST BE CAREFUL WHEN WE CALL IT!!!
 void allocate_resources(PCB processTable[], int simultaneous, int resource_index, pid_t pid){
 
-    if(resourceTable[0].allocated <= NUM_INSTANCES && resourceTable[0].allocated >= 0 &&
-        resourceTable[1].allocated <= NUM_INSTANCES && resourceTable[1].allocated >= 0){            
-        std::cout << "Before allocate_resources(), no rTable issues" << std::endl;
-    } else {
-        std::cout << "Before allocate_resources(), rTable issues!()" << std::endl;
-        exit(1);
-    }
-
     resourceTable[resource_index].available--;  //allocate on resource table
     resourceTable[resource_index].allocated++;
-
-    if(resourceTable[0].allocated <= NUM_INSTANCES && resourceTable[0].allocated >= 0 &&
-        resourceTable[1].allocated <= NUM_INSTANCES && resourceTable[1].allocated >= 0){            
-        std::cout << "After allocate_resources(), no rTable issues" << std::endl;
-    } else {
-        std::cout << "After allocate_resources(), rTable issues!" << std::endl;
-        exit(1);
-    }
           
     int i = return_PCB_index_of_pid(processTable, simultaneous, pid);
     processTable[i].resourcesHeld[resource_index]++;   // LOG ALLOCATION OF RESOURCES ON PCB  
@@ -146,28 +130,12 @@ void request_resources(PCB processTable[], int simultaneous, int resource_index,
 void release_all_resources(PCB pTable[], int simultaneous, Resource rTable[], pid_t killed_pid){ // needs process table to find out
     int i = return_PCB_index_of_pid(pTable, simultaneous, killed_pid);
 
-    if(pTable[i].resourcesHeld[0] <= NUM_INSTANCES && pTable[i].resourcesHeld[0] >= 0 &&
-        pTable[i].resourcesHeld[1] <= NUM_INSTANCES && pTable[i].resourcesHeld[1] >= 0){            
-        std::cout << "Before release_all_resources(), no pTable issues" << std::endl;
-    } else {
-        std::cout << "Before release_all_resources(), pTable issues!()" << std::endl;
-        exit(1);
-    }
-
     for (int j = 0; j < NUM_RESOURCES; j++){       
         std::cout << "rTable[" << j << "].available: " << rTable[j].available << "pTable[i].resourcesHeld[j]: " << pTable[i].resourcesHeld[j] << std::endl;
         rTable[j].available += pTable[i].resourcesHeld[j];
         std::cout << "rTable[" << j << "].allocated: " << rTable[j].allocated << "pTable[i].resourcesHeld[j]: " << pTable[i].resourcesHeld[j] << std::endl;
         rTable[j].allocated -= pTable[i].resourcesHeld[j];
         pTable[i].resourcesHeld[j] = 0;
-    }
-
-    if(resourceTable[0].allocated <= NUM_INSTANCES && resourceTable[0].allocated >= 0 &&
-        resourceTable[1].allocated <= NUM_INSTANCES && resourceTable[1].allocated >= 0){            
-        std::cout << "After release_all_resources(), no rTable issues" << std::endl;
-    } else {
-        std::cout << "After release_all_resources(), rTable issues!()" << std::endl;
-        exit(1);
     }
 }
 
@@ -259,34 +227,14 @@ void deadlock_detection(PCB processTable[], int simultaneous, Resource resourceT
     pid_t deadlockedPIDs[simultaneous];
     int index = 0, resourceIndex = 0;
     int sameDeadlock = 0;
-
-    if(resourceTable[0].allocated <= NUM_INSTANCES && resourceTable[0].allocated >= 0 &&
-        resourceTable[1].allocated <= NUM_INSTANCES && resourceTable[1].allocated >= 0){            
-            std::cout << "Before dd_algo(), no rTable issues" << std::endl;
-        } else {
-            std::cout << "Before dd_algo(), rTable issues!" << std::endl;
-        }
-
+  
     while(dd_algorithm(processTable, simultaneous, resourceTable, deadlockedPIDs, &index, &resourceIndex)){
         std::cout << "deadlock_detection() found a deadlock! KILLING A PID NOW!" << std::endl;
-        
-        if(resourceTable[0].allocated <= NUM_INSTANCES && resourceTable[0].allocated >= 0 &&
-        resourceTable[1].allocated <= NUM_INSTANCES && resourceTable[1].allocated >= 0){            
-            std::cout << "Before kill, no rTable issues" << std::endl;
-        } else {
-            std::cout << "Before kill, rTable issues!" << std::endl;
-        }
-
+               
         release_all_resources(processTable, simultaneous, resourceTable, deadlockedPIDs[0]); // release resources held by PID!       
         update_process_table_of_terminated_child(processTable, deadlockedPIDs[0], simultaneous);
         kill(deadlockedPIDs[0], SIGKILL);     // kill random pid
         remove_pid_from_queue(resourceQueues[resourceIndex], deadlockedPIDs[0]);
-        
-        if((resourceTable[0].allocated > NUM_INSTANCES || resourceTable[0].allocated < 0) &&
-        (resourceTable[1].allocated > NUM_INSTANCES || resourceTable[1].allocated < 0)){            
-            std::cout << "After kill, rTable issues! Ending...." << std::endl;
-            exit(1);
-        }
         
         if(sameDeadlock == 0)  // numDeadlocks tracking
             numDeadlocks++;        
