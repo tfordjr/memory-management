@@ -152,8 +152,8 @@ int main(int argc, char** argv){
             release_single_resource(processTable, simultaneous, resourceTable, rcvbuf.sender);        
         }
 
-        if(resourceTable[0].allocated < NUM_INSTANCES && resourceTable[0].allocated > 0 &&
-            resourceTable[1].allocated < NUM_INSTANCES && resourceTable[1].allocated > 0){            
+        if(resourceTable[0].allocated <= NUM_INSTANCES && resourceTable[0].allocated >= 0 &&
+            resourceTable[1].allocated <= NUM_INSTANCES && resourceTable[1].allocated >= 0){            
             std::cout << "OSS: Before chunk no rTable issues" << std::endl;
         } else {
             std::cout << "Before chunk rTable issues!()" << std::endl;
