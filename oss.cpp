@@ -120,7 +120,7 @@ int main(int argc, char** argv){
         }
 
         pid_t pid = waitpid((pid_t)-1, nullptr, WNOHANG);  // non-blocking wait call for terminated child process
-        if (pid != 0){     // if child has been terminated
+        if (pid > 0){     // if child has been terminated
             std::cout << "OSS: Receiving child " << pid << " has terminated..." << std::endl;
             std::cout << "oss.cpp releasing already terminated childs' resources" << std::endl;
             release_all_resources(processTable, simultaneous, resourceTable, pid);
