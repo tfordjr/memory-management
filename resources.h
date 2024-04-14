@@ -119,15 +119,15 @@ void request_resources(PCB processTable[], int simultaneous, int resource_index,
     resourceQueues[resource_index].push(pid);
 }
 
-void release_all_resources(PCB processTable[], int simultaneous, Resource resourceTable[], pid_t killed_pid){ // needs process table to find out
+void release_all_resources(PCB pTable[], int simultaneous, Resource rTable[], pid_t killed_pid){ // needs process table to find out
     // find held resources by killed_pid
     std::cout << "Calling return_PCB...() from release_all_resources() with pid " << killed_pid << std::endl;
-    int i = return_PCB_index_of_pid(processTable, simultaneous, killed_pid);
+    int i = return_PCB_index_of_pid(pTable, simultaneous, killed_pid);
 
     for (int j = 0; j < NUM_RESOURCES; j++){
-        resourceTable[j].available += processTable[i].resourcesHeld[j];
-        resourceTable[j].allocated -= processTable[i].resourcesHeld[j];
-        processTable[i].resourcesHeld[j] = 0;
+        rTable[j].available += pTable[i].resourcesHeld[j];
+        rTable[j].allocated -= pTable[i].resourcesHeld[j];
+        pTable[i].resourcesHeld[j] = 0;
     }
 }
 
