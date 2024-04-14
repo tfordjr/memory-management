@@ -239,6 +239,7 @@ void deadlock_detection(PCB processTable[], int simultaneous, Resource resourceT
                 pidWithLeastSum = deadlockedPIDs[index];
             }
             sum = 0;
+            index--;
         }        
         std::cout << "deadlock_detection() running release_all_resources() REAL TERMINATIONS" << std::endl;
         release_all_resources(processTable, simultaneous, resourceTable, pidWithLeastSum); // release resources held by PID!       
