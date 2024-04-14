@@ -92,8 +92,8 @@ int return_PCB_index_of_pid(PCB processTable[], int simultaneous, pid_t pid){
 
     //allocate_resources() ALLOCATES UNCONDITIONALLY, MUST BE CAREFUL WHEN WE CALL IT!!!
 void allocate_resources(PCB processTable[], int simultaneous, int resource_index, pid_t pid){
-    resourceTable[resource_index].available -= 1;  //allocate on resource table
-    resourceTable[resource_index].allocated += 1;
+    resourceTable[resource_index].available--;  //allocate on resource table
+    resourceTable[resource_index].allocated++;
           
     int i = return_PCB_index_of_pid(processTable, simultaneous, pid);
     processTable[i].resourcesHeld[resource_index]++;   // LOG ALLOCATION OF RESOURCES ON PCB  
@@ -129,7 +129,7 @@ void request_resources(PCB processTable[], int simultaneous, int resource_index,
 void release_all_resources(PCB pTable[], int simultaneous, Resource rTable[], pid_t killed_pid){ // needs process table to find out
     int i = return_PCB_index_of_pid(pTable, simultaneous, killed_pid);
 
-    for (int j = 0; j < NUM_RESOURCES; j++){
+    for (int j = 0; j < NUM_RESOURCES; j++){       
         rTable[j].available += pTable[i].resourcesHeld[j];
         rTable[j].allocated -= pTable[i].resourcesHeld[j];
         pTable[i].resourcesHeld[j] = 0;
