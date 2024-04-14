@@ -92,8 +92,8 @@ int return_PCB_index_of_pid(PCB processTable[], int simultaneous, pid_t pid){
 
     //allocate_resources() ALLOCATES UNCONDITIONALLY, MUST BE CAREFUL WHEN WE CALL IT!!!
 void allocate_resources(PCB processTable[], int simultaneous, int resource_index, pid_t pid){
-    resourceTable[resource_index].available--;  //allocate on resource table
-    resourceTable[resource_index].allocated++;
+    resourceTable[resource_index].available -= 1;  //allocate on resource table
+    resourceTable[resource_index].allocated += 1;
           
     int i = return_PCB_index_of_pid(processTable, simultaneous, pid);
     processTable[i].resourcesHeld[resource_index]++;   // LOG ALLOCATION OF RESOURCES ON PCB  
@@ -144,8 +144,8 @@ void release_single_resource(PCB processTable[], int simultaneous, Resource reso
     for (int j = 0; j < 10; j++){  // 10 tries to release a random resource index
         int randomIndex = generate_random_number(0, (NUM_RESOURCES - 1), getpid());
         if (processTable[i].resourcesHeld[randomIndex] > 0){
-            resourceTable[randomIndex].available++;
-            resourceTable[randomIndex].allocated--;
+            resourceTable[randomIndex].available += 1;
+            resourceTable[randomIndex].allocated -= 1;
             processTable[i].resourcesHeld[randomIndex]--;
             std::cout << "OSS: Decided to release Resource " << static_cast<char>(65 + randomIndex) << " from pid " << pid << std::endl;
             return;
@@ -154,8 +154,8 @@ void release_single_resource(PCB processTable[], int simultaneous, Resource reso
 
     for (int j = 0; j < NUM_RESOURCES; j++){  // if that fails, we sequentially check
         if (processTable[i].resourcesHeld[j] > 0){ // to release a single resource (not random)
-            resourceTable[j].available++;
-            resourceTable[j].allocated--;
+            resourceTable[j].available += 1;
+            resourceTable[j].allocated -= 1;
             processTable[i].resourcesHeld[j]--;
             std::cout << "OSS: Decided to release Resource " << static_cast<char>(65 + j) << " from pid " << pid << std::endl;
             return;
