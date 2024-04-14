@@ -28,3 +28,5 @@ readme: explains project
 
 ---Known Problems or Bugs: 
 Deadlock_detection kills procs indescriminately, want to do it better
+
+I've decided to terminate processes with greater resources taken up to reduce the number of average terminations required to solved a deadlock. This strategy also promotes fairness, as processes with more resources in our particular application are older and have presumably had more CPU time, so terminating those old greedy programs that are causing deadlocks gives space for younger, smaller programs to get CPU time.

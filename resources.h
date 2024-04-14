@@ -165,6 +165,44 @@ void release_single_resource(PCB processTable[], int simultaneous, Resource reso
     std::cout << "OSS: determined there were no resources to release from pid " << pid << ", release action resulted in no release..." << std::endl;
 }  // If both fail, we conclude the child has no resources to release, move on with no action
 
+pid_t find_pid_with_most_resources(pid_t deadlockedPIDs[], PCB processTable[], int arraySize, int simultaneous) {
+    int max_resources = 0;
+    pid_t pid_with_most_resources = deadlockedPIDs[0];  // will default to random if none found
+
+    for (int i = 0; i < arraySize; i++) {  // i - deadlockedPIDs index, k - processTable index
+        int k = return_PCB_index_of_pid(processTable, simultaneous, deadlockedPIDs[i]); 
+
+        int total_resources = 0;        
+        for (int j = 0; j < NUM_RESOURCES; ++j) {  // j - iterator through resources
+            total_resources += processTable[k].resourcesHeld[j];
+        }
+        if (total_resources > max_resources) {
+            max_resources = total_resources;
+            pid_with_most_resources = processTable[k].pid;
+        }    
+    }
+    return pid_with_most_resources;
+}
+
+pid_t find_pid_with_least_resources(pid_t deadlockedPIDs[], PCB processTable[], int arraySize, int simultaneous) {
+    int min_resources = 999;
+    pid_t pid_with_least_resources = deadlockedPIDs[0];  // will default to random if none found
+
+    for (int i = 0; i < arraySize; i++) {  // i - deadlockedPIDs index, k - processTable index
+        int k = return_PCB_index_of_pid(processTable, simultaneous, deadlockedPIDs[i]); 
+
+        int total_resources = 0;        
+        for (int j = 0; j < NUM_RESOURCES; ++j) {  // j - iterator through resources
+            total_resources += processTable[k].resourcesHeld[j];
+        }
+        if (total_resources < min_resources) {
+            min_resources = total_resources;
+            pid_with_least_resources = processTable[i].pid;
+        }
+    }    
+    return pid_with_least_resources;
+}
+
 bool dd_algorithm(PCB processTable[], int simultaneous, Resource resourceTable[], pid_t deadlockedPIDs[], int* index, int* resourceIndex){
     std::cout << "Running dd_algorithm()..." << std::endl;
     ddAlgoRuns++;
@@ -233,8 +271,12 @@ void deadlock_detection(PCB processTable[], int simultaneous, Resource resourceT
         // because killed pid is caught by nonblocking wait and its handled there. releasing all resources
         // twice caused a rare bug that caused corrupted data. 
 
-        kill(deadlockedPIDs[0], SIGKILL);     // kill random pid
-        remove_pid_from_queue(resourceQueues[resourceIndex], deadlockedPIDs[0]);
+        // pid_t pidDecidedToKill = deadlockedPIDs[0];   // uncomment to switch to random/most impactful/least impactful to terminate
+        pid_t pidDecidedToKill = find_pid_with_most_resources(deadlockedPIDs, processTable, index, simultaneous);
+        // pid_t pidDecidedToKill = find_pid_with_least_resources(deadlockedPIDs, processTable, index, simultaneous);
+
+        kill(pidDecidedToKill, SIGKILL);     // kill random pid
+        remove_pid_from_queue(resourceQueues[resourceIndex], pidDecidedToKill);
         
         if(sameDeadlock == 0)  // numDeadlocks tracking
             numDeadlocks++;        
