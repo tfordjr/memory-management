@@ -125,7 +125,7 @@ int main(int argc, char** argv){
             
             int i = return_PCB_index_of_pid(processTable, simultaneous, pid);             
             
-            if(processTable[i].occupied){
+            if(processTable[i].occupied){  // If dd_algo() termed this pid, this ensures we don't double release resources
                 release_all_resources(processTable, simultaneous, resourceTable, pid);
                 update_process_table_of_terminated_child(processTable, pid, simultaneous);
             }
