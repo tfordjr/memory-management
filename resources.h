@@ -223,6 +223,7 @@ void deadlock_detection(PCB processTable[], int simultaneous, Resource resourceT
 
     pid_t deadlockedPIDs[simultaneous];
     int index = 0;
+    int sameDeadlock = 0;
     while(dd_algorithm(processTable, simultaneous, resourceTable, deadlockedPIDs, &index)){
             // determine the pid with the least resources (least impact on system) and kill it
         // int sum = 0;
@@ -248,9 +249,14 @@ void deadlock_detection(PCB processTable[], int simultaneous, Resource resourceT
         // ddAlgoKills++;
         // index = 0;        
 
+        if(sameDeadlock == 0){  // numDeadlocks tracking
+            numDeadlocks++;
+        }
+        sameDeadlock++;
+
         std::cout << "deadlock_detection() running release_all_resources() REAL TERMINATIONS" << std::endl;
         release_all_resources(processTable, simultaneous, resourceTable, deadlockedPIDs[0]); // release resources held by PID!       
-        kill(deadlockedPIDs[0], SIGKILL);     // kill that least important pid
+        kill(deadlockedPIDs[0], SIGKILL);     // kill random pid
         ddAlgoKills++;
         index = 0;   
     }
