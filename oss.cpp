@@ -122,6 +122,19 @@ int main(int argc, char** argv){
         pid_t pid = waitpid((pid_t)-1, nullptr, WNOHANG);  // non-blocking wait call for terminated child process
         if (pid > 0){     // if child has been terminated
             std::cout << "OSS: Receiving child " << pid << " has terminated! Releasing childs' resources..." << std::endl;
+            
+            int i = return_PCB_index_of_pid(processTable, simultaneous, pid);
+
+            if(processTable[i].resourcesHeld[0] <= NUM_INSTANCES && processTable[i].resourcesHeld[0] >= 0 &&
+                processTable[i].resourcesHeld[1] <= NUM_INSTANCES && processTable[i].resourcesHeld[1] >= 0){            
+                std::cout << "Way Before release_all_resources(), no processTable issues" << std::endl;
+            } else {
+                std::cout << "Way Before release_all_resources(), processTable issues!()" << std::endl;
+                exit(1);
+            }
+            
+            
+            
             release_all_resources(processTable, simultaneous, resourceTable, pid);
             update_process_table_of_terminated_child(processTable, pid, simultaneous);
             pid = 0;
