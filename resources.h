@@ -232,13 +232,13 @@ void deadlock_detection(PCB processTable[], int simultaneous, Resource resourceT
         // release_all_resources() and update_process_table_of_terminated_child() are not called here
         // because killed pid is caught by nonblocking wait and its handled there. releasing all resources
         // twice caused a rare bug that caused corrupted data. 
-        
+
         kill(deadlockedPIDs[0], SIGKILL);     // kill random pid
         remove_pid_from_queue(resourceQueues[resourceIndex], deadlockedPIDs[0]);
         
         if(sameDeadlock == 0)  // numDeadlocks tracking
             numDeadlocks++;        
-        else if(sameDeadlock > 10){
+        else if(sameDeadlock > simultaneous){
             std::cout << "deadlock_detection going haywire!" << std::endl;
             exit(1);
         }
