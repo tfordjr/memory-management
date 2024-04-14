@@ -129,6 +129,8 @@ void release_all_resources(PCB pTable[], int simultaneous, Resource rTable[], pi
         rTable[j].allocated -= pTable[i].resourcesHeld[j];
         pTable[i].resourcesHeld[j] = 0;
     }
+
+    std::cout << "release_all_resources() complete" << std::endl;
 }
 
 void release_single_resource(PCB processTable[], int simultaneous, Resource resourceTable[], pid_t pid){
