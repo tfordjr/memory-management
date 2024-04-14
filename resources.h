@@ -183,6 +183,7 @@ bool dd_algorithm(PCB processTable[], int simultaneous, Resource resourceTable[]
     for (int i = 0; i < simultaneous; i++){   // free all processes not in a blocked queue
         if (!simProcessTable[i].blocked){   // these processes are 100% not deadlocked bc they're not blocked            
             release_all_resources(simProcessTable, simultaneous, simResourceTable, simProcessTable[i].pid);
+            update_process_table_of_terminated_child(simProcessTable, simProcessTable[i].pid, simultaneous);
         }
     }
                     // THINK SEGFAULT IS BELOW
@@ -191,6 +192,7 @@ bool dd_algorithm(PCB processTable[], int simultaneous, Resource resourceTable[]
         for (int i = 0; i < NUM_RESOURCES; i++){ // attempt to allocate free resources
             while (!simResourceQueues[i].empty() && simResourceTable[i].available > 0){                 
                 release_all_resources(simProcessTable, simultaneous, simResourceTable, simResourceQueues[i].front());
+                update_process_table_of_terminated_child(simProcessTable, simResourceQueues[i].front(), simultaneous);
                 simResourceQueues[i].pop();                     
             }        
         }
@@ -222,6 +224,7 @@ void deadlock_detection(PCB processTable[], int simultaneous, Resource resourceT
     while(dd_algorithm(processTable, simultaneous, resourceTable, deadlockedPIDs, &index)){
         std::cout << "deadlock_detection() found a deadlock! KILLING A PID NOW!" << std::endl;
         release_all_resources(processTable, simultaneous, resourceTable, deadlockedPIDs[0]); // release resources held by PID!       
+        update_process_table_of_terminated_child(processTable, deadlockedPIDs[0], simultaneous);
         kill(deadlockedPIDs[0], SIGKILL);     // kill random pid
         
         if(sameDeadlock == 0)  // numDeadlocks tracking
