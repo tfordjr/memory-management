@@ -225,30 +225,34 @@ void deadlock_detection(PCB processTable[], int simultaneous, Resource resourceT
     int index = 0;
     while(dd_algorithm(processTable, simultaneous, resourceTable, deadlockedPIDs, &index)){
             // determine the pid with the least resources (least impact on system) and kill it
-        int sum = 0;
-        int leastSum = (NUM_RESOURCES * NUM_INSTANCES);
-        pid_t pidWithLeastSum;
-        int pidWithLeastSumQueueNum;
-        while(index >= 0){
-            std::cout << "Calling return_PCB...() from deadlock_detection() with pid " << deadlockedPIDs[index] << std::endl;
-            int i = return_PCB_index_of_pid(processTable, simultaneous, deadlockedPIDs[index]);
-            for(int j = 0; j < NUM_RESOURCES; j++){
-                sum += processTable[i].resourcesHeld[j];
-            }
-            if(sum < leastSum){
-                leastSum = sum;
-                pidWithLeastSum = deadlockedPIDs[index];
-            }
-            sum = 0;
-            index--;
-        }        
-        std::cout << "deadlock_detection() running release_all_resources() REAL TERMINATIONS" << std::endl;
-        release_all_resources(processTable, simultaneous, resourceTable, pidWithLeastSum); // release resources held by PID!       
-        kill(pidWithLeastSum, SIGKILL);     // kill that least important pid
-        // REMOVE FROM RESOURCE QUEUE AS WELL!
+        // int sum = 0;
+        // int leastSum = (NUM_RESOURCES * NUM_INSTANCES);
+        // pid_t pidWithLeastSum;
+        // int pidWithLeastSumQueueNum;
+        // while(index >= 0){
+        //     std::cout << "Calling return_PCB...() from deadlock_detection() with pid " << deadlockedPIDs[index] << std::endl;
+        //     int i = return_PCB_index_of_pid(processTable, simultaneous, deadlockedPIDs[index]);
+        //     for(int j = 0; j < NUM_RESOURCES; j++){
+        //         sum += processTable[i].resourcesHeld[j];
+        //     }
+        //     if(sum < leastSum){
+        //         leastSum = sum;
+        //         pidWithLeastSum = deadlockedPIDs[index];
+        //     }
+        //     sum = 0;
+        //     index--;
+        // }        
+        // std::cout << "deadlock_detection() running release_all_resources() REAL TERMINATIONS" << std::endl;
+        // release_all_resources(processTable, simultaneous, resourceTable, pidWithLeastSum); // release resources held by PID!       
+        // kill(pidWithLeastSum, SIGKILL);     // kill that least important pid
+        // ddAlgoKills++;
+        // index = 0;        
 
+        std::cout << "deadlock_detection() running release_all_resources() REAL TERMINATIONS" << std::endl;
+        release_all_resources(processTable, simultaneous, resourceTable, deadlockedPIDs[0]); // release resources held by PID!       
+        kill(deadlockedPIDs[0], SIGKILL);     // kill that least important pid
         ddAlgoKills++;
-        index = 0;        
+        index = 0;   
     }
 }
     
