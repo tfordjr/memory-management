@@ -203,7 +203,8 @@ bool dd_algorithm(PCB processTable[], int simultaneous, Resource resourceTable[]
     for (int i = 0; i < NUM_RESOURCES; i++){ // logging stubborn (probably deadlocked) pids
         std:: cout << "dd_algo() DEADLOCKED TRACKING ATTEMPT: " << i << std::endl;
         while (!simResourceQueues[i].empty()){
-            std:: cout << "dd_algo() DEADLOCK TRACKING SUCCESS: " << i << std::endl;
+            std::cout << "dd_algo() DEADLOCK TRACKING SUCCESS: " << i << std::endl;
+            std::cout << "Index-" << *index << "   simResourceQueues[i].front()-" << simResourceQueues[i].front() << std::endl;
             deadlockedPIDs[*index++] = simResourceQueues[i].front();
             std::cout << "boutta pop" << std::endl;
             simResourceQueues[i].pop();
