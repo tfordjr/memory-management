@@ -228,6 +228,7 @@ void deadlock_detection(PCB processTable[], int simultaneous, Resource resourceT
             numDeadlocks++;        
         else if(sameDeadlock > 10){
             std::cout << "deadlock_detection going haywire!" << std::endl;
+            exit(1);
         }
         sameDeadlock++;
         ddAlgoKills++;
