@@ -129,11 +129,8 @@ int main(int argc, char** argv){
                 processTable[i].resourcesHeld[1] <= NUM_INSTANCES && processTable[i].resourcesHeld[1] >= 0){            
                 std::cout << "Way Before release_all_resources(), no processTable issues" << std::endl;
             } else {
-                std::cout << "Way Before release_all_resources(), processTable issues!()" << std::endl;
-                exit(1);
-            }
-            
-            
+                cleanup("Way Before release_all_resources(), processTable issues!()");
+            }            
             
             release_all_resources(processTable, simultaneous, resourceTable, pid);
             update_process_table_of_terminated_child(processTable, pid, simultaneous);
@@ -164,15 +161,7 @@ int main(int argc, char** argv){
             std::cout << "OSS: Checked and found Release msg from pid " << rcvbuf.sender << std::endl;
             release_single_resource(processTable, simultaneous, resourceTable, rcvbuf.sender);        
         }
-
-        if(resourceTable[0].allocated <= NUM_INSTANCES && resourceTable[0].allocated >= 0 &&
-            resourceTable[1].allocated <= NUM_INSTANCES && resourceTable[1].allocated >= 0){            
-            std::cout << "OSS: Before chunk no rTable issues" << std::endl;
-        } else {
-            std::cout << "Before chunk rTable issues!()" << std::endl;
-            exit(1);
-        }
-                
+       
         increment(shm_clock, DISPATCH_AMOUNT);  // dispatcher overhead and unblocked reschedule overhead
         print_process_table(processTable, simultaneous, shm_clock->secs, shm_clock->nanos, outputFile);
         print_resource_table(resourceTable, shm_clock->secs, shm_clock->nanos, outputFile);     
