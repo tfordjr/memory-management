@@ -87,13 +87,6 @@ int return_PCB_index_of_pid(PCB processTable[], int simultaneous, pid_t pid){
             return i;
         }
     }
-
-    // print_process_table(processTable, simultaneous, 999, 999, outputFile);
-    // print_resource_table(resourceTable, 999, 999, outputFile);
-    
-    // std::cout << "pid " << pid << " not found. return_PCB_index_of_pid() failed. Cleaning up before exiting..." << std::endl;    
-    // kill_all_processes(processTable, simultaneous);   
-    // std::exit(EXIT_SUCCESS);
     return -1;
 }
 

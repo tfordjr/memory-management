@@ -123,6 +123,8 @@ int main(int argc, char** argv){
         if (pid == -1){
             perror("waitpid returned -1");
             exit(1);
+        } else if (pid == 0){     // case where no child terminated    
+            std::cout << "no child terminated" << std::endl;
         } else if (pid != 0){     // if child has been terminated
             std::cout << "OSS: Receiving child " << pid << " has terminated..." << std::endl;
             std::cout << "oss.cpp releasing already terminated childs' resources" << std::endl;
