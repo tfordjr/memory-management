@@ -266,10 +266,16 @@ void deadlock_detection(PCB processTable[], int simultaneous, Resource resourceT
   
     while(dd_algorithm(processTable, simultaneous, resourceTable, deadlockedPIDs, &index, &resourceIndex)){
         std::cout << "deadlock_detection() found a deadlock! KILLING A PID NOW!" << std::endl;
-                        
-        int randomIndex = generate_random_number(0, (index - 1), getpid());
-        pid_t pidDecidedToKill = deadlockedPIDs[randomIndex];   // uncomment to switch to random/most impactful/least impactful to terminate
+
+        // Below are a few options of how to determine which deadlocked pid to terminate (most aren't great options at the moment)
+
+        // int randomIndex = generate_random_number(0, (index - 1), getpid());   // getting segfaults with this code for some reason?
+        // pid_t pidDecidedToKill = deadlockedPIDs[randomIndex];   
+        
+        pid_t pidDecidedToKill = deadlockedPIDs[0];   // No bugs! But not a great way to determine which to terminate
+
         // pid_t pidDecidedToKill = find_pid_with_most_resources(deadlockedPIDs, processTable, index, simultaneous);
+        
         // pid_t pidDecidedToKill = find_pid_with_least_resources(deadlockedPIDs, processTable, index, simultaneous);
 
         release_all_resources(processTable, simultaneous, resourceTable, pidDecidedToKill);
