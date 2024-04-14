@@ -151,6 +151,14 @@ int main(int argc, char** argv){
             std::cout << "OSS: Checked and found Release msg from pid " << rcvbuf.sender << std::endl;
             release_single_resource(processTable, simultaneous, resourceTable, rcvbuf.sender);        
         }
+
+        if(resourceTable[0].allocated < NUM_INSTANCES && resourceTable[0].allocated > 0 &&
+            resourceTable[1].allocated < NUM_INSTANCES && resourceTable[1].allocated > 0){            
+            std::cout << "OSS: Before chunk no rTable issues" << std::endl;
+        } else {
+            std::cout << "Before chunk rTable issues!()" << std::endl;
+            exit(1);
+        }
                 
         increment(shm_clock, DISPATCH_AMOUNT);  // dispatcher overhead and unblocked reschedule overhead
         print_process_table(processTable, simultaneous, shm_clock->secs, shm_clock->nanos, outputFile);
