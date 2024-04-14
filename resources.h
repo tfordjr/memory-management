@@ -65,6 +65,22 @@ void print_resource_table(Resource resourceTable[], int secs, int nanos, std::os
     }
 }
 
+void remove_pid_from_queue(std::queue<pid_t>& pid_queue, pid_t pid) {
+    std::queue<pid_t> temp_queue;
+
+    while (!pid_queue.empty()) {   
+        if (pid_queue.front() != pid) {
+            temp_queue.push(pid_queue.front());
+        }
+        pid_queue.pop();
+    }
+
+    while (!temp_queue.empty()) {   // move elements back to original queue
+        pid_queue.push(temp_queue.front());
+        temp_queue.pop();
+    }
+}
+
 int return_PCB_index_of_pid(PCB processTable[], int simultaneous, pid_t pid){
     for (int i = 0; i < simultaneous; i++){  
         if (processTable[i].pid == pid){
@@ -163,7 +179,7 @@ void release_single_resource(PCB processTable[], int simultaneous, Resource reso
     std::cout << "OSS: determined there were no resources to release from pid " << pid << ", release action resulted in no release..." << std::endl;
 }  // If both fail, we conclude the child has no resources to release, move on with no action
 
-bool dd_algorithm(PCB processTable[], int simultaneous, Resource resourceTable[], pid_t deadlockedPIDs[], int* index){
+bool dd_algorithm(PCB processTable[], int simultaneous, Resource resourceTable[], pid_t deadlockedPIDs[], int* index, int* resourceIndex){
     std::cout << "Running dd_algorithm()..." << std::endl;
     ddAlgoRuns++;
     *index = 0;
@@ -190,7 +206,8 @@ bool dd_algorithm(PCB processTable[], int simultaneous, Resource resourceTable[]
     while(count < 3){   // repeat attempted allocation 3 times to be generous
         for (int i = 0; i < NUM_RESOURCES; i++){ // attempt to allocate free resources
             while (!simResourceQueues[i].empty() && simResourceTable[i].available > 0){                 
-                release_all_resources(simProcessTable, simultaneous, simResourceTable, simResourceQueues[i].front());                
+                release_all_resources(simProcessTable, simultaneous, simResourceTable, simResourceQueues[i].front());
+                
                 simResourceQueues[i].pop();                     
             }        
         }
@@ -200,7 +217,10 @@ bool dd_algorithm(PCB processTable[], int simultaneous, Resource resourceTable[]
     for (int i = 0; i < NUM_RESOURCES; i++){ // logging stubborn (probably deadlocked) pids
         while (!simResourceQueues[i].empty()){
             std::cout << "dd_algorithm: DEADLOCKED PID: " << simResourceQueues[i].front() << std::endl;
-            deadlockedPIDs[(*index)++] = simResourceQueues[i].front();
+            if (*index == 0){
+                *resourceIndex = i;
+            }
+            deadlockedPIDs[(*index)++] = simResourceQueues[i].front();            
             simResourceQueues[i].pop();
         }
     }
@@ -217,13 +237,14 @@ void deadlock_detection(PCB processTable[], int simultaneous, Resource resourceT
     next_dd_secs++;
 
     pid_t deadlockedPIDs[simultaneous];
-    int index = 0;
+    int index = 0, resourceIndex = 0;
     int sameDeadlock = 0;
-    while(dd_algorithm(processTable, simultaneous, resourceTable, deadlockedPIDs, &index)){
+    while(dd_algorithm(processTable, simultaneous, resourceTable, deadlockedPIDs, &index, &resourceIndex)){
         std::cout << "deadlock_detection() found a deadlock! KILLING A PID NOW!" << std::endl;
         release_all_resources(processTable, simultaneous, resourceTable, deadlockedPIDs[0]); // release resources held by PID!       
         update_process_table_of_terminated_child(processTable, deadlockedPIDs[0], simultaneous);
         kill(deadlockedPIDs[0], SIGKILL);     // kill random pid
+        remove_pid_from_queue(resourceQueues[resourceIndex], deadlockedPIDs[0]);
         
         if(sameDeadlock == 0)  // numDeadlocks tracking
             numDeadlocks++;        
@@ -231,7 +252,7 @@ void deadlock_detection(PCB processTable[], int simultaneous, Resource resourceT
             std::cout << "deadlock_detection going haywire!" << std::endl;
             exit(1);
         }
-        sameDeadlock++;
+        sameDeadlock++; 
         ddAlgoKills++;
         index = 0;   
     }
