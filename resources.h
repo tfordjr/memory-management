@@ -92,8 +92,8 @@ int return_PCB_index_of_pid(PCB processTable[], int simultaneous, pid_t pid){
 
     //allocate_resources() ALLOCATES UNCONDITIONALLY, MUST BE CAREFUL WHEN WE CALL IT!!!
 void allocate_resources(PCB processTable[], int simultaneous, int resource_index, pid_t pid){
-    resourceTable[resource_index].available -= 1;  //allocate on resource table
-    resourceTable[resource_index].allocated += 1;
+    resourceTable[resource_index].available--;  //allocate on resource table
+    resourceTable[resource_index].allocated++;
           
     int i = return_PCB_index_of_pid(processTable, simultaneous, pid);
     processTable[i].resourcesHeld[resource_index]++;   // LOG ALLOCATION OF RESOURCES ON PCB  
@@ -144,8 +144,8 @@ void release_single_resource(PCB processTable[], int simultaneous, Resource reso
     for (int j = 0; j < 10; j++){  // 10 tries to release a random resource index
         int randomIndex = generate_random_number(0, (NUM_RESOURCES - 1), getpid());
         if (processTable[i].resourcesHeld[randomIndex] > 0){
-            resourceTable[randomIndex].available += 1;
-            resourceTable[randomIndex].allocated -= 1;
+            resourceTable[randomIndex].available++;
+            resourceTable[randomIndex].allocated--;
             processTable[i].resourcesHeld[randomIndex]--;
             std::cout << "OSS: Decided to release Resource " << static_cast<char>(65 + randomIndex) << " from pid " << pid << std::endl;
             return;
@@ -154,8 +154,8 @@ void release_single_resource(PCB processTable[], int simultaneous, Resource reso
 
     for (int j = 0; j < NUM_RESOURCES; j++){  // if that fails, we sequentially check
         if (processTable[i].resourcesHeld[j] > 0){ // to release a single resource (not random)
-            resourceTable[j].available += 1;
-            resourceTable[j].allocated -= 1;
+            resourceTable[j].available++;
+            resourceTable[j].allocated--;
             processTable[i].resourcesHeld[j]--;
             std::cout << "OSS: Decided to release Resource " << static_cast<char>(65 + j) << " from pid " << pid << std::endl;
             return;
@@ -226,10 +226,24 @@ void deadlock_detection(PCB processTable[], int simultaneous, Resource resourceT
     int sameDeadlock = 0;
     while(dd_algorithm(processTable, simultaneous, resourceTable, deadlockedPIDs, &index, &resourceIndex)){
         std::cout << "deadlock_detection() found a deadlock! KILLING A PID NOW!" << std::endl;
+        
+        if(resourceTable[0].allocated < NUM_INSTANCES && resourceTable[0].allocated > 0 &&
+        resourceTable[1].allocated < NUM_INSTANCES && resourceTable[1].allocated > 0){            
+            std::cout << "Before kill, no rTable issues" << std::endl;
+        } else {
+            std::cout << "Before kill, rTable issues!" << std::endl;
+        }
+
         release_all_resources(processTable, simultaneous, resourceTable, deadlockedPIDs[0]); // release resources held by PID!       
         update_process_table_of_terminated_child(processTable, deadlockedPIDs[0], simultaneous);
         kill(deadlockedPIDs[0], SIGKILL);     // kill random pid
         remove_pid_from_queue(resourceQueues[resourceIndex], deadlockedPIDs[0]);
+        
+        if((resourceTable[0].allocated > NUM_INSTANCES || resourceTable[0].allocated < 0) &&
+        (resourceTable[1].allocated > NUM_INSTANCES || resourceTable[1].allocated < 0)){            
+            std::cout << "After kill, rTable issues! Ending...." << std::endl;
+            exit(1);
+        }
         
         if(sameDeadlock == 0)  // numDeadlocks tracking
             numDeadlocks++;        
