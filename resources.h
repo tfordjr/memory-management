@@ -190,7 +190,8 @@ bool dd_algorithm(PCB processTable[], int simultaneous, Resource resourceTable[]
     int count = 0;
     while(count < 3){   // repeat attempted allocation 3 times to be generous
         for (int i = 0; i < NUM_RESOURCES; i++){ // attempt to allocate free resources
-            while ((!simResourceQueues[i].empty()) && simResourceTable[i].available > 0){ 
+            std:: cout << "dd_algo() SIM UNBLOCK LOOP: " << i << std::endl;
+            while (!simResourceQueues[i].empty() && simResourceTable[i].available > 0){ 
                 std::cout << "dd_algorithm() simulating release_all_resources() SIMULATING RELEASING UNBLOCKS" << std::endl; 
                 release_all_resources(simProcessTable, simultaneous, simResourceTable, simResourceQueues[i].front());
                 simResourceQueues[i].pop();                     
