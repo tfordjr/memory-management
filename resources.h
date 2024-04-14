@@ -92,14 +92,13 @@ int return_PCB_index_of_pid(PCB processTable[], int simultaneous, pid_t pid){
 
     //allocate_resources() ALLOCATES UNCONDITIONALLY, MUST BE CAREFUL WHEN WE CALL IT!!!
 void allocate_resources(PCB processTable[], int simultaneous, int resource_index, pid_t pid){
-    resourceTable[resource_index].available -= 1;
+    resourceTable[resource_index].available -= 1;  //allocate on resource table
     resourceTable[resource_index].allocated += 1;
-        // LOG ALLOCATION OF RESOURCES ON PCB
-    std::cout << "Calling return_PCB...() from allocate_resources() with pid " << pid << std::endl;
+          
     int i = return_PCB_index_of_pid(processTable, simultaneous, pid);
-    processTable[i].resourcesHeld[resource_index]++;
-            // Notify the process that it has been allocated resources
-    msgbuffer buf;
+    processTable[i].resourcesHeld[resource_index]++;   // LOG ALLOCATION OF RESOURCES ON PCB  
+          
+    msgbuffer buf;         // Notify the process that it has been allocated resources
     buf.mtype = pid;
     buf.msgCode = MSG_TYPE_GRANTED;
     buf.resource = resource_index;
@@ -114,7 +113,6 @@ void request_resources(PCB processTable[], int simultaneous, int resource_index,
         return;        
     } 
     std::cout << "OSS: Insufficent resources " << pid << " added to resource queue " << static_cast<char>(65 + resource_index) << std::endl;
-    std::cout << "Calling return_PCB...() from request_resources() with pid " << pid << std::endl;
     int i = return_PCB_index_of_pid(processTable, simultaneous, pid);
 
     // SEND MESSAGE LETTING PROC KNOW HE IS BLOCKED
@@ -129,8 +127,6 @@ void request_resources(PCB processTable[], int simultaneous, int resource_index,
 }
 
 void release_all_resources(PCB pTable[], int simultaneous, Resource rTable[], pid_t killed_pid){ // needs process table to find out
-    // find held resources by killed_pid
-    std::cout << "Calling return_PCB...() from release_all_resources() with pid " << killed_pid << std::endl;
     int i = return_PCB_index_of_pid(pTable, simultaneous, killed_pid);
 
     for (int j = 0; j < NUM_RESOURCES; j++){
@@ -138,13 +134,9 @@ void release_all_resources(PCB pTable[], int simultaneous, Resource rTable[], pi
         rTable[j].allocated -= pTable[i].resourcesHeld[j];
         pTable[i].resourcesHeld[j] = 0;
     }
-
-    std::cout << "release_all_resources() complete" << std::endl;
 }
 
-void release_single_resource(PCB processTable[], int simultaneous, Resource resourceTable[], pid_t pid){
-    std::cout << "Calling return_PCB...() from release_single_resource() with pid " << pid << std::endl;
-    
+void release_single_resource(PCB processTable[], int simultaneous, Resource resourceTable[], pid_t pid){        
     int i = return_PCB_index_of_pid(processTable, simultaneous, pid);
     if (i == -1)  // Common bug where process termed and old release resource msg
         return;   // for some reason left in msgq, msg release req safely ignored
@@ -217,7 +209,7 @@ bool dd_algorithm(PCB processTable[], int simultaneous, Resource resourceTable[]
             simResourceQueues[i].pop();
         }
     }
-    std:: cout << "dd_algo() ENDING! " << std::endl;
+
     if(*index == 0) 
         return false;   // THERE ARE NO DEADLOCKS IN SYSTEM
     return true;
