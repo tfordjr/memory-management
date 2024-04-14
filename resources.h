@@ -173,7 +173,7 @@ bool dd_algorithm(PCB processTable[], int simultaneous, Resource resourceTable[]
         simResourceQueues[i] = resourceQueues[i];
         simResourceTable[i] = resourceTable[i];
     }
-    for (int i = 0; i < simultaneous; i++) {   // Create a local copies        
+    for (int i = 0; i < 20; i++) {   // Create a local copies        
         simProcessTable[i] = processTable[i];
     }
     
@@ -184,11 +184,11 @@ bool dd_algorithm(PCB processTable[], int simultaneous, Resource resourceTable[]
             release_all_resources(simProcessTable, simultaneous, simResourceTable, simProcessTable[i].pid);
         }
     }
-
+                    // THINK SEGFAULT IS BELOW
     int count = 0;
     while(count < 3){   // repeat attempted allocation 3 times to be generous
         for (int i = 0; i < NUM_RESOURCES; i++){ // attempt to allocate free resources
-            while (!simResourceQueues[i].empty() && simResourceTable[i].available > 0){ 
+            while ((!simResourceQueues[i].empty()) && simResourceTable[i].available > 0){ 
                 std::cout << "dd_algorithm() simulating release_all_resources() SIMULATING RELEASING UNBLOCKS" << std::endl; 
                 release_all_resources(simProcessTable, simultaneous, simResourceTable, simResourceQueues[i].front());
                 simResourceQueues[i].pop();                     
