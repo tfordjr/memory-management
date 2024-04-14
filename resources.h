@@ -182,8 +182,7 @@ bool dd_algorithm(PCB processTable[], int simultaneous, Resource resourceTable[]
 
     for (int i = 0; i < simultaneous; i++){   // free all processes not in a blocked queue
         if (!simProcessTable[i].blocked){   // these processes are 100% not deadlocked bc they're not blocked            
-            release_all_resources(simProcessTable, simultaneous, simResourceTable, simProcessTable[i].pid);
-            update_process_table_of_terminated_child(simProcessTable, simProcessTable[i].pid, simultaneous);
+            release_all_resources(simProcessTable, simultaneous, simResourceTable, simProcessTable[i].pid);            
         }
     }
                     // THINK SEGFAULT IS BELOW
@@ -191,8 +190,7 @@ bool dd_algorithm(PCB processTable[], int simultaneous, Resource resourceTable[]
     while(count < 3){   // repeat attempted allocation 3 times to be generous
         for (int i = 0; i < NUM_RESOURCES; i++){ // attempt to allocate free resources
             while (!simResourceQueues[i].empty() && simResourceTable[i].available > 0){                 
-                release_all_resources(simProcessTable, simultaneous, simResourceTable, simResourceQueues[i].front());
-                update_process_table_of_terminated_child(simProcessTable, simResourceQueues[i].front(), simultaneous);
+                release_all_resources(simProcessTable, simultaneous, simResourceTable, simResourceQueues[i].front());                
                 simResourceQueues[i].pop();                     
             }        
         }
