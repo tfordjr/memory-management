@@ -173,7 +173,7 @@ pid_t find_pid_with_most_resources(pid_t deadlockedPIDs[], PCB processTable[], i
         int k = return_PCB_index_of_pid(processTable, simultaneous, deadlockedPIDs[i]); 
 
         int total_resources = 0;        
-        for (int j = 0; j < NUM_RESOURCES; ++j) {  // j - iterator through resources
+        for (int j = 0; j < NUM_RESOURCES; j++) {  // j - iterator through resources
             total_resources += processTable[k].resourcesHeld[j];
         }
         if (total_resources > max_resources) {
@@ -192,7 +192,7 @@ pid_t find_pid_with_least_resources(pid_t deadlockedPIDs[], PCB processTable[], 
         int k = return_PCB_index_of_pid(processTable, simultaneous, deadlockedPIDs[i]); 
 
         int total_resources = 0;        
-        for (int j = 0; j < NUM_RESOURCES; ++j) {  // j - iterator through resources
+        for (int j = 0; j < NUM_RESOURCES; j++) {  // j - iterator through resources
             total_resources += processTable[k].resourcesHeld[j];
         }
         if (total_resources < min_resources) {
@@ -271,8 +271,8 @@ void deadlock_detection(PCB processTable[], int simultaneous, Resource resourceT
         // because killed pid is caught by nonblocking wait and its handled there. releasing all resources
         // twice caused a rare bug that caused corrupted data. 
 
-        pid_t pidDecidedToKill = deadlockedPIDs[0];   // uncomment to switch to random/most impactful/least impactful to terminate
-        // pid_t pidDecidedToKill = find_pid_with_most_resources(deadlockedPIDs, processTable, index, simultaneous);
+        // pid_t pidDecidedToKill = deadlockedPIDs[0];   // uncomment to switch to random/most impactful/least impactful to terminate
+        pid_t pidDecidedToKill = find_pid_with_most_resources(deadlockedPIDs, processTable, index, simultaneous);
         // pid_t pidDecidedToKill = find_pid_with_least_resources(deadlockedPIDs, processTable, index, simultaneous);
 
         kill(pidDecidedToKill, SIGKILL);     // kill random pid
