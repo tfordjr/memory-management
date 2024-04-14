@@ -92,8 +92,25 @@ int return_PCB_index_of_pid(PCB processTable[], int simultaneous, pid_t pid){
 
     //allocate_resources() ALLOCATES UNCONDITIONALLY, MUST BE CAREFUL WHEN WE CALL IT!!!
 void allocate_resources(PCB processTable[], int simultaneous, int resource_index, pid_t pid){
+
+    if(resourceTable[0].allocated < NUM_INSTANCES && resourceTable[0].allocated > 0 &&
+        resourceTable[1].allocated < NUM_INSTANCES && resourceTable[1].allocated > 0){            
+        std::cout << "Before allocate_resources(), no rTable issues" << std::endl;
+    } else {
+        std::cout << "Before allocate_resources(), rTable issues!()" << std::endl;
+        exit(1);
+    }
+
     resourceTable[resource_index].available--;  //allocate on resource table
     resourceTable[resource_index].allocated++;
+
+    if(resourceTable[0].allocated < NUM_INSTANCES && resourceTable[0].allocated > 0 &&
+        resourceTable[1].allocated < NUM_INSTANCES && resourceTable[1].allocated > 0){            
+        std::cout << "After allocate_resources(), no rTable issues" << std::endl;
+    } else {
+        std::cout << "After allocate_resources(), rTable issues!" << std::endl;
+        exit(1);
+    }
           
     int i = return_PCB_index_of_pid(processTable, simultaneous, pid);
     processTable[i].resourcesHeld[resource_index]++;   // LOG ALLOCATION OF RESOURCES ON PCB  
@@ -224,6 +241,14 @@ void deadlock_detection(PCB processTable[], int simultaneous, Resource resourceT
     pid_t deadlockedPIDs[simultaneous];
     int index = 0, resourceIndex = 0;
     int sameDeadlock = 0;
+
+    if(resourceTable[0].allocated < NUM_INSTANCES && resourceTable[0].allocated > 0 &&
+        resourceTable[1].allocated < NUM_INSTANCES && resourceTable[1].allocated > 0){            
+            std::cout << "Before dd_algo(), no rTable issues" << std::endl;
+        } else {
+            std::cout << "Before dd_algo(), rTable issues!" << std::endl;
+        }
+
     while(dd_algorithm(processTable, simultaneous, resourceTable, deadlockedPIDs, &index, &resourceIndex)){
         std::cout << "deadlock_detection() found a deadlock! KILLING A PID NOW!" << std::endl;
         
