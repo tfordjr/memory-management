@@ -271,7 +271,7 @@ void output_statistics(){
     std::cout << "Requests granted from blocked queue: " << requestsEventuallyGranted << std::endl; 
     std::cout << "Times deadlock detection algorithm has run: " << ddAlgoRuns << std::endl;
     std::cout << "Processes terminated by deadlock detection algorithm: " << ddAlgoKills << std::endl; 
-    std::cout << "Processes terminated successfully without intervention: " << successfulTerminations << std::endl;
+    std::cout << "Processes terminated successfully without intervention: " << (successfulTerminations - ddAlgoKills) << std::endl;
     std::cout << "Average number of terminations required to resolve a deadlock: " << std::fixed << std::setprecision(1) << static_cast<double>(ddAlgoKills)/numDeadlocks << std::endl;    
 
     outputFile << "\nRUN RESULT REPORT" << std::endl;
@@ -279,6 +279,6 @@ void output_statistics(){
     outputFile << "Requests granted from blocked queue: " << requestsEventuallyGranted << std::endl; 
     outputFile << "Times deadlock detection algorithm has run: " << ddAlgoRuns << std::endl;
     outputFile << "Processes terminated by deadlock detection algorithm: " << ddAlgoKills << std::endl; 
-    outputFile << "Processes terminated successfully without intervention: " << successfulTerminations << std::endl;
+    outputFile << "Processes terminated successfully without intervention: " << (successfulTerminations - ddAlgoKills) << std::endl;
     outputFile << "Average number of terminations required to resolve a deadlock: " << std::fixed << std::setprecision(1) << static_cast<double>(ddAlgoKills)/numDeadlocks << std::endl;   
 }
