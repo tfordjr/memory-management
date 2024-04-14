@@ -228,6 +228,7 @@ void deadlock_detection(PCB processTable[], int simultaneous, Resource resourceT
         int sum = 0;
         int leastSum = (NUM_RESOURCES * NUM_INSTANCES);
         pid_t pidWithLeastSum;
+        int pidWithLeastSumQueueNum;
         while(index >= 0){
             std::cout << "Calling return_PCB...() from deadlock_detection() with pid " << deadlockedPIDs[index] << std::endl;
             int i = return_PCB_index_of_pid(processTable, simultaneous, deadlockedPIDs[index]);
@@ -244,6 +245,8 @@ void deadlock_detection(PCB processTable[], int simultaneous, Resource resourceT
         std::cout << "deadlock_detection() running release_all_resources() REAL TERMINATIONS" << std::endl;
         release_all_resources(processTable, simultaneous, resourceTable, pidWithLeastSum); // release resources held by PID!       
         kill(pidWithLeastSum, SIGKILL);     // kill that least important pid
+        // REMOVE FROM RESOURCE QUEUE AS WELL!
+
         ddAlgoKills++;
         index = 0;        
     }
@@ -251,7 +254,11 @@ void deadlock_detection(PCB processTable[], int simultaneous, Resource resourceT
     
 void attempt_process_unblock(PCB processTable[], int simultaneous, Resource resourceTable[]){   
     for (int j = 0; j < NUM_RESOURCES; j++){
-        while (!resourceQueues[j].empty() && resourceTable[j].available > 0){                      
+        while (!resourceQueues[j].empty() && resourceTable[j].available > 0){     
+            if (!pid_on_process_table(processTable, simultaneous, resourceQueues[j].front())){
+                resourceQueues[j].pop();
+                continue;
+            }                    
             allocate_resources(processTable, simultaneous, j, resourceQueues[j].front()); // Allocate one instance to the waiting process             
             int i = return_PCB_index_of_pid(processTable, simultaneous, resourceQueues[j].front());
             resourceQueues[j].pop();
