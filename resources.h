@@ -146,11 +146,11 @@ void request_resources(PCB processTable[], int simultaneous, int resource_index,
 void release_all_resources(PCB pTable[], int simultaneous, Resource rTable[], pid_t killed_pid){ // needs process table to find out
     int i = return_PCB_index_of_pid(pTable, simultaneous, killed_pid);
 
-    if(resourceTable[0].allocated <= NUM_INSTANCES && resourceTable[0].allocated >= 0 &&
-        resourceTable[1].allocated <= NUM_INSTANCES && resourceTable[1].allocated >= 0){            
-        std::cout << "Before release_all_resources(), no rTable issues" << std::endl;
+    if(pTable[i].resourcesHeld[0] <= NUM_INSTANCES && pTable[i].resourcesHeld[0] >= 0 &&
+        pTable[i].resourcesHeld[1] <= NUM_INSTANCES && pTable[i].resourcesHeld[1] >= 0){            
+        std::cout << "Before release_all_resources(), no pTable issues" << std::endl;
     } else {
-        std::cout << "Before release_all_resources(), rTable issues!()" << std::endl;
+        std::cout << "Before release_all_resources(), pTable issues!()" << std::endl;
         exit(1);
     }
 
