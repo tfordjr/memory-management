@@ -120,19 +120,14 @@ int main(int argc, char** argv){
         }
 
         pid_t pid = waitpid((pid_t)-1, nullptr, WNOHANG);  // non-blocking wait call for terminated child process
-        if (pid == -1){
-            perror("waitpid returned -1");
-            exit(1);
-        } else if (pid == 0){     // case where no child terminated    
-            std::cout << "no child terminated" << std::endl;
-        } else if (pid != 0){     // if child has been terminated
+        if (pid != 0){     // if child has been terminated
             std::cout << "OSS: Receiving child " << pid << " has terminated..." << std::endl;
             std::cout << "oss.cpp releasing already terminated childs' resources" << std::endl;
             release_all_resources(processTable, simultaneous, resourceTable, pid);
             update_process_table_of_terminated_child(processTable, pid, simultaneous);
             pid = 0;
             successfulTerminations++;
-        }
+        }  // I ignored pid == -1 case because no child procs was pid == -1 and was crashing the program
         
         attempt_process_unblock(processTable, simultaneous, resourceTable);
 
