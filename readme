@@ -27,13 +27,10 @@ readme: explains project
 ---Lack of adhearance to specifications:
 
 ---Known Problems or Bugs: 
-attempting to send messages within attempt_process_unblock(), trying to get that working.
-right now, the msgsnd is broken
 
 if launch interval is greater than 0, waitpid() returns -1 bc no processes are in the system
 temp fix: -i 0 allows first process to launch before waitpid() first runs
 and waitpid() returns 0 as a child process is in the system at that point. 
 In previous projects, waitpid() returns 0 even though there are no child procs, not sure why
 
-seems like at large scale (./oss -n 100 -s 15), the procs are populating the resource queue
-and not coming out very often. I don't believe this constitutes a deadlock but there is certainly a resource shortage that is slowing or stopping proper system function.
+std output looks awful, have to clean that up
