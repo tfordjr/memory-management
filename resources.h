@@ -131,9 +131,7 @@ void release_all_resources(PCB pTable[], int simultaneous, Resource rTable[], pi
     int i = return_PCB_index_of_pid(pTable, simultaneous, killed_pid);
 
     for (int j = 0; j < NUM_RESOURCES; j++){       
-        std::cout << "rTable[" << j << "].available: " << rTable[j].available << "pTable[i].resourcesHeld[j]: " << pTable[i].resourcesHeld[j] << std::endl;
         rTable[j].available += pTable[i].resourcesHeld[j];
-        std::cout << "rTable[" << j << "].allocated: " << rTable[j].allocated << "pTable[i].resourcesHeld[j]: " << pTable[i].resourcesHeld[j] << std::endl;
         rTable[j].allocated -= pTable[i].resourcesHeld[j];
         pTable[i].resourcesHeld[j] = 0;
     }
