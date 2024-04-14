@@ -206,7 +206,7 @@ bool dd_algorithm(PCB processTable[], int simultaneous, Resource resourceTable[]
             std::cout << "dd_algo() DEADLOCK TRACKING SUCCESS: " << i << std::endl;
             std::cout << "Index-" << *index << "   simResourceQueues[i].front()-" << simResourceQueues[i].front() << std::endl;
             deadlockedPIDs[*index] = simResourceQueues[i].front();
-            *index = *index + 1;
+            *index++;
             std::cout << "boutta pop" << std::endl;
             simResourceQueues[i].pop();
             std::cout << "just popped" << std::endl;
