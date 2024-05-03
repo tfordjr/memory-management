@@ -19,7 +19,7 @@
 #include <sys/mman.h>
 #include <fstream>
 #include "pcb.h"
-#include "resources.h"
+#include "memory.h"
 #include "clock.h"
 #include "msgq.h"
 #include "rng.h"
@@ -81,7 +81,7 @@ int main(int argc, char** argv){
     alarm(5);   // timeout timer
           
     init_process_table(processTable);      // init local process table
-    init_resource_table(resourceTable);    // init resource table
+    init_resource_table();    // init resource table
     shm_clock = (Clock*)shmat(shmtid, NULL, 0);    // attatch to global clock
     shm_clock->secs = 0;                        // init clock to 00:00
     shm_clock->nanos = 0;         
@@ -145,8 +145,8 @@ int main(int argc, char** argv){
         if(rcvbuf.msgCode == -1){
             std::cout << "OSS: Checked and found no messages for OSS in the msgqueue." << std::endl;
         } else if(rcvbuf.msgCode == MSG_TYPE_READ || rcvbuf.msgCode == MSG_TYPE_WRITE){
-            std::cout << "OSS: Checked and found Request msg for Resource " << static_cast<char>(65 + rcvbuf.memoryAddress) << " from pid " << rcvbuf.sender << std::endl;
-            // page_request()           
+            std::cout << "OSS: " << rcvbuf.sender << " requesting read/write of address " << rcvbuf.memoryAddress << " at time " << shm_clock->secs << ":" << shm_clock->nanos << std::endl;
+            // page_request(rcvbuf.memoryAddress);
         }
        
         increment(shm_clock, DISPATCH_AMOUNT);  // dispatcher overhead and unblocked reschedule overhead
