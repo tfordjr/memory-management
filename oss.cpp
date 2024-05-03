@@ -78,7 +78,7 @@ int main(int argc, char** argv){
 
     std::signal(SIGALRM, timeout_handler);  // init signal handlers 
     std::signal(SIGINT, ctrl_c_handler);
-    alarm(60);   // timeout timer
+    alarm(5);   // timeout timer
           
     init_process_table(processTable);      // init local process table
     init_resource_table(resourceTable);    // init resource table

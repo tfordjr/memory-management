@@ -56,19 +56,20 @@ int main(int argc, char** argv) {
             std::cout << "Child " << getpid() << " randomly terminating..." << std::endl;
             exit(1);
         }
-
-        // buf.memoryAddress =  // determine memory address to request or write
+                // generating memoryAddress to read or write to        
+        int pageNumber = generate_random_number(0, 63, getpid());
+        int offset = generate_random_number(0, 1023, getpid());
+        buf.memoryAddress = (pageNumber * 1024) + offset;
 
         if(READ_CHANCE > generate_random_number(1, 100, getpid())){  // REQUEST
             buf.msgCode = MSG_TYPE_REQUEST; 
         } else {                                                     // WRITE
             buf.msgCode = MSG_TYPE_WRITE;
-        }   // MSGSND REQUEST/RELEASE TO OSS                    
+        }   // MSGSND REQUEST/RELEASE TO OSS     
         if(msgsnd(msgqid, &buf, sizeof(msgbuffer), 1) == -1) { 
             perror("msgsnd to parent failed\n");
             exit(1);
         }
-
             // MSGRCV BLOCKING WAIT FOR RESPONSE TO READ/WRITE REQUEST
         if(msgrcv(msgqid, &rcvbuf, sizeof(msgbuffer), getpid(), 0) == -1) {
             perror("failed to receive message from parent\n");
