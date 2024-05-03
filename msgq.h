@@ -28,6 +28,6 @@ typedef struct msgbuffer {
 #define MSG_TYPE_GRANTED 4   // GRANTED
 #define MSG_TYPE_BLOCKED 3   // BLOCKED
 #define MSG_TYPE_WRITE 2     // WRITE
-#define MSG_TYPE_REQUEST 1   // REQUEST
+#define MSG_TYPE_READ 1   // REQUEST
  
 #endif

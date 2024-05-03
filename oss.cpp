@@ -135,10 +135,6 @@ int main(int argc, char** argv){
         attempt_process_unblock(processTable, simultaneous, resourceTable);      
 
         msgbuffer rcvbuf;     // NONBLOCKING WAIT TO RECEIVE MESSAGE FROM CHILD
-        rcvbuf.msgCode = -1; // default msgCode used if no messages received
-        rcvbuf.mtype = -1;
-        rcvbuf.sender = -1;           // attempt to clean rcvbuf
-        rcvbuf.memoryAddress = -1;
         if (msgrcv(msgqid, &rcvbuf, sizeof(msgbuffer), getpid(), IPC_NOWAIT) == -1) {  // IPC_NOWAIT IF 1 DOES NOT WORK
             if (errno != ENOMSG){  // If the error is that no message is present, we ignore the error
                 perror("oss.cpp: Error: failed to receive message in parent\n");
@@ -148,7 +144,7 @@ int main(int argc, char** argv){
         }       // LOG MSG RECEIVE
         if(rcvbuf.msgCode == -1){
             std::cout << "OSS: Checked and found no messages for OSS in the msgqueue." << std::endl;
-        } else if(rcvbuf.msgCode == MSG_TYPE_REQUEST){
+        } else if(rcvbuf.msgCode == MSG_TYPE_READ || rcvbuf.msgCode == MSG_TYPE_WRITE){
             std::cout << "OSS: Checked and found Request msg for Resource " << static_cast<char>(65 + rcvbuf.memoryAddress) << " from pid " << rcvbuf.sender << std::endl;
             // page_request()           
         }

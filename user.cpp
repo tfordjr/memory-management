@@ -62,7 +62,7 @@ int main(int argc, char** argv) {
         buf.memoryAddress = (pageNumber * 1024) + offset;
 
         if(READ_CHANCE > generate_random_number(1, 100, getpid())){  // REQUEST
-            buf.msgCode = MSG_TYPE_REQUEST; 
+            buf.msgCode = MSG_TYPE_READ; 
         } else {                                                     // WRITE
             buf.msgCode = MSG_TYPE_WRITE;
         }   // MSGSND REQUEST/RELEASE TO OSS     
