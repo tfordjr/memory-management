@@ -16,9 +16,16 @@ void page_fault(){
 }
 
 void page_request(){
-    // If page is not in page table (main memory) then page fault
+    // if pagefault
+    // page_fault(), put process in blocked queue until page is brought in
+
+    // if not pagefault
+    // increment() 100 ns
+    // send msg back to proc
 }
 
-
+void attempt_process_unblock(){   // attempt unblock from queue waiting for page unblock
+    
+}   
 
 #endif

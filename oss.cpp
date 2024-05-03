@@ -133,7 +133,7 @@ int main(int argc, char** argv){
             successfulTerminations++;
         }  // I ignored pid == -1 case because no child procs was pid == -1 and was crashing the program
         
-        attempt_process_unblock(processTable, simultaneous, resourceTable);
+        attempt_process_unblock(processTable, simultaneous, resourceTable);      
 
         msgbuffer rcvbuf;     // NONBLOCKING WAIT TO RECEIVE MESSAGE FROM CHILD
         rcvbuf.msgCode = -1; // default msgCode used if no messages received
@@ -151,10 +151,7 @@ int main(int argc, char** argv){
             std::cout << "OSS: Checked and found no messages for OSS in the msgqueue." << std::endl;
         } else if(rcvbuf.msgCode == MSG_TYPE_REQUEST){
             std::cout << "OSS: Checked and found Request msg for Resource " << static_cast<char>(65 + rcvbuf.resource) << " from pid " << rcvbuf.sender << std::endl;
-            request_resources(processTable, simultaneous, rcvbuf.resource, rcvbuf.sender); // allocation msg to child included            
-        } else if (rcvbuf.msgCode == MSG_TYPE_RELEASE){
-            std::cout << "OSS: Checked and found Release msg from pid " << rcvbuf.sender << std::endl;
-            release_single_resource(processTable, simultaneous, resourceTable, rcvbuf.sender);        
+            // page_request()           
         }
        
         increment(shm_clock, DISPATCH_AMOUNT);  // dispatcher overhead and unblocked reschedule overhead
