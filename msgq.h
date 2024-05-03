@@ -21,13 +21,13 @@
 typedef struct msgbuffer {
 	long mtype;			 	  // recipient's pid
 	int msgCode;			  // msgCode indicates if we're releasing, requesting, or term
-	int resource;             // resource requested or releasing
+	int memoryAddress;             // resource requested or releasing
 	pid_t sender;
 } msgbuffer;
 
 #define MSG_TYPE_GRANTED 4   // GRANTED
 #define MSG_TYPE_BLOCKED 3   // BLOCKED
-#define MSG_TYPE_RELEASE 2   // RELEASE
+#define MSG_TYPE_WRITE 2     // WRITE
 #define MSG_TYPE_REQUEST 1   // REQUEST
  
 #endif
