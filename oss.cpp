@@ -104,10 +104,9 @@ int main(int argc, char** argv){
 		exit(1);
 	}
 	cout << "OSS: Message queue set up\n";
-    outputFile << "OSS: Message queue set up\n";
-  
-    int i = 0;          // holds PCB location of next process
-                        // For some reason my project is happier when child launches before waitpid()
+    outputFile << "OSS: Message queue set up\n";  
+    
+    // For some reason my project is happier when child launches before waitpid()
                         //  ---------  MAIN LOOP  ---------   
     while(numChildren > 0 || !process_table_empty(processTable, simultaneous)){  
                 // CHECK IF CONDITIONS ARE RIGHT TO LAUNCH ANOTHER CHILD
@@ -139,7 +138,7 @@ int main(int argc, char** argv){
         rcvbuf.msgCode = -1; // default msgCode used if no messages received
         rcvbuf.mtype = -1;
         rcvbuf.sender = -1;           // attempt to clean rcvbuf
-        rcvbuf.resource = -1;
+        rcvbuf.memoryAddress = -1;
         if (msgrcv(msgqid, &rcvbuf, sizeof(msgbuffer), getpid(), IPC_NOWAIT) == -1) {  // IPC_NOWAIT IF 1 DOES NOT WORK
             if (errno != ENOMSG){  // If the error is that no message is present, we ignore the error
                 perror("oss.cpp: Error: failed to receive message in parent\n");
@@ -150,7 +149,7 @@ int main(int argc, char** argv){
         if(rcvbuf.msgCode == -1){
             std::cout << "OSS: Checked and found no messages for OSS in the msgqueue." << std::endl;
         } else if(rcvbuf.msgCode == MSG_TYPE_REQUEST){
-            std::cout << "OSS: Checked and found Request msg for Resource " << static_cast<char>(65 + rcvbuf.resource) << " from pid " << rcvbuf.sender << std::endl;
+            std::cout << "OSS: Checked and found Request msg for Resource " << static_cast<char>(65 + rcvbuf.memoryAddress) << " from pid " << rcvbuf.sender << std::endl;
             // page_request()           
         }
        
