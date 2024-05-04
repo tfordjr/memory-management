@@ -106,7 +106,7 @@ int main(int argc, char** argv){
 	}
 	cout << "OSS: Message queue set up\n";
     outputFile << "OSS: Message queue set up\n";  
-    auto start = std::chrono::high_resolution_clock::now();
+    std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
     
     // For some reason my project is happier when child launches before waitpid()
                         //  ---------  MAIN LOOP  ---------   
@@ -153,9 +153,9 @@ int main(int argc, char** argv){
         std::cout << "Loop..." << std::endl;
     }                   // --------- END OF MAIN LOOP ---------    
 
-    auto end = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-    output_statistics(duration);
+    std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> duration = end - start;
+    output_statistics(static_cast<double>(duration.count()));
 
 	std::cout << "OSS: Child processes have completed. (" << numChildren << " remaining)\n";
     std::cout << "OSS: Parent is now ending.\n";
@@ -257,7 +257,7 @@ void cleanup(std::string cause) {
     std::exit(EXIT_SUCCESS);
 }
 
-void output_statistics(auto runtime){           
+void output_statistics(double duration){           
     std::cout << "\nRUN RESULT REPORT" << std::endl;
     std::cout << "Number of Page Faults: " << pageFaults << std::endl;   
     std::cout << "Number of Memory Accesses: " << memoryAccesses << std::endl; 
