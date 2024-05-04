@@ -23,7 +23,7 @@
 using namespace std;
 
 #define TERMINATION_CHANCE 1  // 0.1% chance to terminate every loop
-#define READ_CHANCE 70
+#define READ_CHANCE 85
 // This means write chance is 30%
 
 int main(int argc, char** argv) {
