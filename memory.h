@@ -85,34 +85,30 @@ void page_fault(Page pageTable[]){
     // victimPage = replaced page + 1
 }
 
-void page_request(Page pageTable[], pid_t pid, int memoryAddress, int msgCode){
+void page_request(Page pageTable[], Clock* c, pid_t pid, int memoryAddress, int msgCode){
 
-    int pageNumber = memoryAddress/1024;
-    int offset = memoryAddress % 1024;
+    msgbuffer buf;          // msgbuffer setup
+    buf.mtype = pid;
+    int pageNumber = memoryAddress/1024;  // translation of memory address
+    int offset = memoryAddress % 1024;        
 
-    for (int i = 0; i < PAGE_TABLE_SIZE; i++){
-        if(pageTable[i].pid == pid && pageTable[i].pageNumber == pageNumber){
-            // if(Write)
-            // pageTable[i].dirtyBit = 1;
-            // pageTable[i].secondChanceBit = 1;
-            // increment() 100 ns
+    for (int i = 0; i < PAGE_TABLE_SIZE; i++){  // init scan of pageTable
+        if(pageTable[i].pid == pid && pageTable[i].pageNumber == pageNumber){  
             
-            // msgbuffer buf;        // send msg to child to let them know page was in memory
-            // buf.mtype = pid;
-            // buf.msgCode = MSG_TYPE_GRANTED;
-            // buf.resource = resource_index;
-            // send_msg_to_child(buf);
-            return;  
+            if(msgCode == MSG_TYPE_WRITE)
+                pageTable[i].dirtyBit = 1;     
+            pageTable[i].secondChanceBit = 1;       
+            increment(c, 100);            
+
+            buf.msgCode = MSG_TYPE_GRANTED;
+            send_msg_to_child(buf); 
+            return;
         }
     }
-    
-    // page_fault(),     
-    
-    // msgbuffer buf;          // MSG CHILD THEY'RE BLOCKED
-    // buf.mtype = pid;
-    // buf.msgCode = MSG_TYPE_GRANTED;
-    // buf.resource = resource_index;
-    // send_msg_to_child(buf);
+        // page not in main memory! Page Fault! 
+    buf.msgCode = MSG_TYPE_BLOCKED;  
+    send_msg_to_child(buf); 
+    page_fault(pageTable);     
 }
 
 // void attempt_process_unblock(){   // attempt unblock from queue waiting for page unblock
