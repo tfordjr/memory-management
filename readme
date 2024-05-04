@@ -25,13 +25,8 @@ readme: explains project
 
 
 ---Lack of adhearance to specifications:
+I decided against implementing a blocked queue, user processes are still being blocked
+as they're waiting for their page to be moved to main memory, but for this project when a 
+page fault occurs, I immediately move that page to main memory, so no need for a queue
 
 ---Known Problems or Bugs: 
-Deadlock_detection kills procs indescriminately, want to do it better
-The outcome of this is that we do successfully detangle deadlocks consitently!
-The downside is that we often turn around and create another deadlock and another deadlock...
-We need to terminate the oldest, greedies programs to prevent us from terminating a huge
-percentage of total programs over time. I would be content terminating just the biggest 
-greediest programs and allow majority of processes to run and terminate successfully.
-
-I've decided to terminate processes with greater resources taken up to reduce the number of average terminations required to solved a deadlock. This strategy also promotes fairness, as processes with more resources in our particular application are older and have presumably had more CPU time, so terminating those old greedy programs that are causing deadlocks gives space for younger, smaller programs to get CPU time.

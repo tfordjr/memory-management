@@ -35,13 +35,13 @@ void output_statistics();
 
 volatile sig_atomic_t term = 0;  // signal handling global
 struct PCB processTable[20]; // Init Process Table Array of PCB structs (not shm)
-  // RESOURCE TABLE DECLARED IN RESOURCES_H
+struct Page pageTable[PAGE_TABLE_SIZE];
 
 // Declaring globals needed for signal handlers to clean up at anytime
 Clock* shm_clock;  // Declare global shm clock
 key_t clock_key = ftok("/tmp", 35);             
 int shmtid = shmget(clock_key, sizeof(Clock), IPC_CREAT | 0666);    // init shm clock
-// std::ofstream outputFile;   // init file object
+std::ofstream outputFile;   // init file object
 int msgqid;           // MSGQID GLOBAL FOR MSGQ CLEANUP
 int simultaneous = 1;  // simultaneous global so that sighandlers know PCB table size to avoid segfaults when killing all procs on PCB
 int successfulTerminations = 0;
@@ -151,12 +151,11 @@ int main(int argc, char** argv){
        
         increment(shm_clock, DISPATCH_AMOUNT);  // dispatcher overhead and unblocked reschedule overhead
         print_process_table(processTable, simultaneous, shm_clock->secs, shm_clock->nanos, outputFile);
-        print_resource_table(resourceTable, shm_clock->secs, shm_clock->nanos, outputFile);     
-        deadlock_detection(processTable, simultaneous, resourceTable, shm_clock->secs, shm_clock->nanos);        
+        print_page_table(pageTable, shm_clock->secs, shm_clock->nanos, outputFile);                
         std::cout << "Loop..." << std::endl;
     }                   // --------- END OF MAIN LOOP ---------    
 
-    output_statistics();
+    // output_statistics();
 
 	std::cout << "OSS: Child processes have completed. (" << numChildren << " remaining)\n";
     std::cout << "OSS: Parent is now ending.\n";
@@ -258,20 +257,20 @@ void cleanup(std::string cause) {
     std::exit(EXIT_SUCCESS);
 }
 
-void output_statistics(){           
-    std::cout << "\nRUN RESULT REPORT" << std::endl;
-    std::cout << "Requests granted immediately: " << requestsImmediatelyGranted << std::endl;   
-    std::cout << "Requests granted from blocked queue: " << requestsEventuallyGranted << std::endl; 
-    std::cout << "Times deadlock detection algorithm has run: " << ddAlgoRuns << std::endl;
-    std::cout << "Processes terminated by deadlock detection algorithm: " << ddAlgoKills << std::endl; 
-    std::cout << "Processes terminated successfully without intervention: " << (successfulTerminations - ddAlgoKills) << std::endl;
-    std::cout << "Average number of terminations required to resolve a deadlock: " << std::fixed << std::setprecision(1) << static_cast<double>(ddAlgoKills)/numDeadlocks << std::endl;    
+// void output_statistics(){           
+//     std::cout << "\nRUN RESULT REPORT" << std::endl;
+//     std::cout << "Requests granted immediately: " << requestsImmediatelyGranted << std::endl;   
+//     std::cout << "Requests granted from blocked queue: " << requestsEventuallyGranted << std::endl; 
+//     std::cout << "Times deadlock detection algorithm has run: " << ddAlgoRuns << std::endl;
+//     std::cout << "Processes terminated by deadlock detection algorithm: " << ddAlgoKills << std::endl; 
+//     std::cout << "Processes terminated successfully without intervention: " << (successfulTerminations - ddAlgoKills) << std::endl;
+//     std::cout << "Average number of terminations required to resolve a deadlock: " << std::fixed << std::setprecision(1) << static_cast<double>(ddAlgoKills)/numDeadlocks << std::endl;    
 
-    outputFile << "\nRUN RESULT REPORT" << std::endl;
-    outputFile << "Requests granted immediately: " << requestsImmediatelyGranted << std::endl;   
-    outputFile << "Requests granted from blocked queue: " << requestsEventuallyGranted << std::endl; 
-    outputFile << "Times deadlock detection algorithm has run: " << ddAlgoRuns << std::endl;
-    outputFile << "Processes terminated by deadlock detection algorithm: " << ddAlgoKills << std::endl; 
-    outputFile << "Processes terminated successfully without intervention: " << (successfulTerminations - ddAlgoKills) << std::endl;
-    outputFile << "Average number of terminations required to resolve a deadlock: " << std::fixed << std::setprecision(1) << static_cast<double>(ddAlgoKills)/numDeadlocks << std::endl;   
-}
+//     outputFile << "\nRUN RESULT REPORT" << std::endl;
+//     outputFile << "Requests granted immediately: " << requestsImmediatelyGranted << std::endl;   
+//     outputFile << "Requests granted from blocked queue: " << requestsEventuallyGranted << std::endl; 
+//     outputFile << "Times deadlock detection algorithm has run: " << ddAlgoRuns << std::endl;
+//     outputFile << "Processes terminated by deadlock detection algorithm: " << ddAlgoKills << std::endl; 
+//     outputFile << "Processes terminated successfully without intervention: " << (successfulTerminations - ddAlgoKills) << std::endl;
+//     outputFile << "Average number of terminations required to resolve a deadlock: " << std::fixed << std::setprecision(1) << static_cast<double>(ddAlgoKills)/numDeadlocks << std::endl;   
+// }
