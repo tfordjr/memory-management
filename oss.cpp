@@ -146,7 +146,7 @@ int main(int argc, char** argv){
             std::cout << "OSS: Checked and found no messages for OSS in the msgqueue." << std::endl;
         } else if(rcvbuf.msgCode == MSG_TYPE_READ || rcvbuf.msgCode == MSG_TYPE_WRITE){
             std::cout << "OSS: " << rcvbuf.sender << " requesting read/write of address " << rcvbuf.memoryAddress << " at time " << shm_clock->secs << ":" << shm_clock->nanos << std::endl;
-            page_request(rcvbuf.memoryAddress);
+            page_request(pageTable, rcvbuf.sender, rcvbuf.memoryAddress, rcvbuf.msgCode);
         }
        
         increment(shm_clock, DISPATCH_AMOUNT);  // dispatcher overhead and unblocked reschedule overhead

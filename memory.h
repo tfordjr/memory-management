@@ -13,6 +13,7 @@
 #include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/msg.h>
+#include <msgq.h>
 
 struct Page{    // OSS PAGE TABLE - 256K memory, 256 1k pages
     pid_t pid;
@@ -20,6 +21,8 @@ struct Page{    // OSS PAGE TABLE - 256K memory, 256 1k pages
     bool secondChanceBit;
     bool dirtyBit;
 };
+
+void send_msg_to_child(msgbuffer);
 
 const int PAGE_TABLE_SIZE = 256;
 // std::queue<pid_t> pageQueue; // Omitting queue for now
@@ -65,7 +68,12 @@ void page_fault(Page pageTable[]){
             // pageTable[victimPage].pageNumber =
             // pageTable[victimPage].secondChanceBit = 1;
             // pageTable[victimPage].dirtyBit = 
-                // SEND MSG TO CHILD
+                
+            // msgbuffer buf;         // SEND MSG TO CHILD
+            // buf.mtype = pid;
+            // buf.msgCode = MSG_TYPE_GRANTED;
+            // buf.resource = resource_index;
+            // send_msg_to_child(buf);
         }        
         victimPage++;  // we increment victimPage whether it's found or not
         if(victimPage == PAGE_TABLE_SIZE){
@@ -87,13 +95,23 @@ void page_request(Page pageTable[], pid_t pid, int memoryAddress, int msgCode){
             // pageTable[i].dirtyBit = 1;
             // pageTable[i].secondChanceBit = 1;
             // increment() 100 ns
-            // send msg to child to let them know page was in memory
+            
+            // msgbuffer buf;        // send msg to child to let them know page was in memory
+            // buf.mtype = pid;
+            // buf.msgCode = MSG_TYPE_GRANTED;
+            // buf.resource = resource_index;
+            // send_msg_to_child(buf);
             return;  
         }
     }
     
     // page_fault(),     
-    // MSG CHILD THEY'RE BLOCKED
+    
+    // msgbuffer buf;          // MSG CHILD THEY'RE BLOCKED
+    // buf.mtype = pid;
+    // buf.msgCode = MSG_TYPE_GRANTED;
+    // buf.resource = resource_index;
+    // send_msg_to_child(buf);
 }
 
 // void attempt_process_unblock(){   // attempt unblock from queue waiting for page unblock
