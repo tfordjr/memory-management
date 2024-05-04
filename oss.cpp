@@ -248,6 +248,7 @@ void cleanup(std::string cause) {
     shmdt(shm_clock);       // clock cleanup, detatch & delete shm
     if (shmctl(shmtid, IPC_RMID, NULL) == -1) {
         perror("oss.cpp: Error: shmctl failed!!");
+        std::cout << "\nerrno: " << errno << std::endl;
         exit(1);
     }            
     if (msgctl(msgqid, IPC_RMID, NULL) == -1) {  // get rid of message queue
