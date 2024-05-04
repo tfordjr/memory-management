@@ -79,6 +79,8 @@ void page_fault(Page frameTable[], std::ofstream* outputFile, pid_t pid, int pag
                 
             msgbuffer buf;         // SEND GRANTED MSG TO CHILD
             buf.mtype = pid;
+            buf.sender = getpid();
+            buf.memoryAddress = pageNumber;
             buf.msgCode = MSG_TYPE_GRANTED;
             memoryAccesses++;
             send_msg_to_child(buf);
@@ -94,6 +96,8 @@ void page_request(Page frameTable[], std::ofstream* outputFile, Clock* c, pid_t 
 
     msgbuffer buf;          // msgbuffer setup
     buf.mtype = pid;
+    buf.sender = getpid();
+    buf.memoryAddress = memoryAddress;
     int pageNumber = memoryAddress/1024;  // translation of memory address
     // int offset = memoryAddress % 1024;        
 
