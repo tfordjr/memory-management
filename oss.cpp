@@ -151,11 +151,7 @@ int main(int argc, char** argv){
         print_process_table(processTable, simultaneous, shm_clock->secs, shm_clock->nanos, outputFile);
         print_frame_table(frameTable, shm_clock->secs, shm_clock->nanos, outputFile);                
         std::cout << "Loop..." << std::endl;
-    }                   // --------- END OF MAIN LOOP ---------    
-
-    std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> duration = end - start;
-    output_statistics(static_cast<double>(duration.count()));
+    }                   // --------- END OF MAIN LOOP ---------        
 
 	std::cout << "OSS: Child processes have completed. (" << numChildren << " remaining)\n";
     std::cout << "OSS: Parent is now ending.\n";
