@@ -13,11 +13,12 @@
 #include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/msg.h>
-#include <msgq.h>
+#include "msgq.h"
+#include "clock.h"
 
-struct Page{    // OSS PAGE TABLE - 256K memory, 256 1k pages
+struct Page{    // OSS PAGE TABLE - 0-255k
     pid_t pid;
-    int pageNumber;
+    int pageNumber;  // 0-63
     bool secondChanceBit;
     bool dirtyBit;
 };

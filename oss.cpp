@@ -81,7 +81,7 @@ int main(int argc, char** argv){
     alarm(5);   // timeout timer
           
     init_process_table(processTable);      // init local process table
-    init_resource_table();    // init resource table
+    init_page_table(pageTable);    // init resource table
     shm_clock = (Clock*)shmat(shmtid, NULL, 0);    // attatch to global clock
     shm_clock->secs = 0;                        // init clock to 00:00
     shm_clock->nanos = 0;         
@@ -125,15 +125,11 @@ int main(int argc, char** argv){
             int i = return_PCB_index_of_pid(processTable, simultaneous, pid);             
             
             if(processTable[i].occupied){  // If dd_algo() termed this pid, this ensures we don't double release resources
-                release_all_resources(processTable, simultaneous, resourceTable, pid);
                 update_process_table_of_terminated_child(processTable, pid, simultaneous);
             }
             pid = 0;
-            successfulTerminations++;
-        }  // I ignored pid == -1 case because no child procs was pid == -1 and was crashing the program
-        
-        // attempt_process_unblock(processTable, simultaneous, resourceTable);      
-
+        }  
+               
         msgbuffer rcvbuf;     // NONBLOCKING WAIT TO RECEIVE MESSAGE FROM CHILD
         if (msgrcv(msgqid, &rcvbuf, sizeof(msgbuffer), getpid(), IPC_NOWAIT) == -1) {  // IPC_NOWAIT IF 1 DOES NOT WORK
             if (errno != ENOMSG){  // If the error is that no message is present, we ignore the error

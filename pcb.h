@@ -143,4 +143,13 @@ bool pid_on_process_table(PCB processTable[], int simultaneous, pid_t pid){
     return false;
 }
 
+int return_PCB_index_of_pid(PCB processTable[], int simultaneous, pid_t pid){
+    for (int i = 0; i < simultaneous; i++){  
+        if (processTable[i].pid == pid){
+            return i;
+        }
+    }
+    return -1;
+}
+
 # endif
