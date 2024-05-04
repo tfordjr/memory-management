@@ -46,6 +46,7 @@ std::ofstream outputFile;   // init file object
 int msgqid;           // MSGQID GLOBAL FOR MSGQ CLEANUP
 int simultaneous = 1;  // simultaneous global so that sighandlers know PCB table size to avoid segfaults when killing all procs on PCB
 int successfulTerminations = 0;
+std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
 
 int main(int argc, char** argv){
     int option, numChildren = 1, launch_interval = 100;      
@@ -105,8 +106,7 @@ int main(int argc, char** argv){
 		exit(1);
 	}
 	cout << "OSS: Message queue set up\n";
-    outputFile << "OSS: Message queue set up\n";  
-    std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
+    outputFile << "OSS: Message queue set up\n";      
     
     // For some reason my project is happier when child launches before waitpid()
                         //  ---------  MAIN LOOP  ---------   
@@ -240,6 +240,20 @@ void ctrl_c_handler(int signum) {
     cleanup("Ctrl+C detected.");
 }
 
+void output_statistics(double duration){           
+    std::cout << "\nRUN RESULT REPORT" << std::endl;
+    std::cout << "Number of Page Faults: " << pageFaults << std::endl;   
+    std::cout << "Number of Memory Accesses: " << memoryAccesses << std::endl; 
+    std::cout << "Number of Memory Accesses per second: " << std::fixed << std::setprecision(1) << static_cast<double>(memoryAccesses)/duration << std::endl; 
+    std::cout << "Average Number of Page Faults per Memory Access: " << std::fixed << std::setprecision(1) << static_cast<double>(pageFaults)/memoryAccesses << std::endl; 
+
+    outputFile << "\nRUN RESULT REPORT" << std::endl;
+    outputFile << "Number of Page Faults: " << pageFaults << std::endl;   
+    outputFile << "Number of Memory Accesses: " << memoryAccesses << std::endl; 
+    outputFile << "Number of Memory Accesses per second: " << std::fixed << std::setprecision(1) << static_cast<double>(memoryAccesses)/duration << std::endl; 
+    outputFile << "Average Number of Page Faults per Memory Access: " << std::fixed << std::setprecision(1) << static_cast<double>(pageFaults)/memoryAccesses << std::endl; 
+}
+
 void cleanup(std::string cause) {
     std::cout << cause << " Cleaning up before exiting..." << std::endl;
     outputFile << cause << " Cleaning up before exiting..." << std::endl;
@@ -255,19 +269,11 @@ void cleanup(std::string cause) {
 		perror("oss.cpp: Error: msgctl to get rid of queue in parent failed");
 		exit(1);
 	}
+
+    std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> duration = end - start;
+    output_statistics(static_cast<double>(duration.count()));
+
     std::exit(EXIT_SUCCESS);
 }
 
-void output_statistics(double duration){           
-    std::cout << "\nRUN RESULT REPORT" << std::endl;
-    std::cout << "Number of Page Faults: " << pageFaults << std::endl;   
-    std::cout << "Number of Memory Accesses: " << memoryAccesses << std::endl; 
-    std::cout << "Number of Memory Accesses per second: " << std::fixed << std::setprecision(1) << static_cast<double>(memoryAccesses)/duration << std::endl; 
-    std::cout << "Average Number of Page Faults per Memory Access: " << std::fixed << std::setprecision(1) << static_cast<double>(pageFaults)/memoryAccesses << std::endl; 
-
-    outputFile << "\nRUN RESULT REPORT" << std::endl;
-    outputFile << "Number of Page Faults: " << pageFaults << std::endl;   
-    outputFile << "Number of Memory Accesses: " << memoryAccesses << std::endl; 
-    outputFile << "Number of Memory Accesses per second: " << std::fixed << std::setprecision(1) << static_cast<double>(memoryAccesses)/duration << std::endl; 
-    outputFile << "Average Number of Page Faults per Memory Access: " << std::fixed << std::setprecision(1) << static_cast<double>(pageFaults)/memoryAccesses << std::endl; 
-}
