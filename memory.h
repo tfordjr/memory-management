@@ -56,33 +56,34 @@ void print_page_table(Page pageTable[], int secs, int nanos, std::ostream& outpu
     }
 }
 
-void page_fault(Page pageTable[]){
+void page_fault(Page pageTable[], pid_t pid, int pageNumber, int msgCode){
     static int victimPage = 0;
     bool victimFound = false;
 
     while(!victimFound){
-        if(pageTable[victimPage].secondChanceBit = 1){   // victim not found
+        if(pageTable[victimPage].secondChanceBit == 1){   // victim not found
             pageTable[victimPage].secondChanceBit = 0;            
         } else {    // second chance bit == 0, victim is found, swap out page
             victimFound = true;
-            // pageTable[victimPage].pid = 
-            // pageTable[victimPage].pageNumber =
-            // pageTable[victimPage].secondChanceBit = 1;
-            // pageTable[victimPage].dirtyBit = 
+            if(pageTable[victimPage].dirtyBit){    // SAVE OLD PAGE BEFORE SWAPPING OUT
+
+            }
+
+            pageTable[victimPage].pid = pid;   // WRITING NEW PAGE TO MAIN MEMORY
+            pageTable[victimPage].pageNumber = pageNumber;
+            pageTable[victimPage].secondChanceBit = 1;
+            pageTable[victimPage].dirtyBit = (msgCode == MSG_TYPE_WRITE) ? 1 : 0;
                 
-            // msgbuffer buf;         // SEND MSG TO CHILD
-            // buf.mtype = pid;
-            // buf.msgCode = MSG_TYPE_GRANTED;
-            // buf.resource = resource_index;
-            // send_msg_to_child(buf);
-        }        
+            msgbuffer buf;         // SEND GRANTED MSG TO CHILD
+            buf.mtype = pid;
+            buf.msgCode = MSG_TYPE_GRANTED;
+            send_msg_to_child(buf);
+        }
         victimPage++;  // we increment victimPage whether it's found or not
         if(victimPage == PAGE_TABLE_SIZE){
             victimPage = 0;        
         }
     }
-    // run second chance algorithm, determine which page will be replaced
-    // victimPage = replaced page + 1
 }
 
 void page_request(Page pageTable[], Clock* c, pid_t pid, int memoryAddress, int msgCode){
@@ -90,7 +91,7 @@ void page_request(Page pageTable[], Clock* c, pid_t pid, int memoryAddress, int 
     msgbuffer buf;          // msgbuffer setup
     buf.mtype = pid;
     int pageNumber = memoryAddress/1024;  // translation of memory address
-    int offset = memoryAddress % 1024;        
+    // int offset = memoryAddress % 1024;        
 
     for (int i = 0; i < PAGE_TABLE_SIZE; i++){  // init scan of pageTable
         if(pageTable[i].pid == pid && pageTable[i].pageNumber == pageNumber){  
@@ -108,7 +109,7 @@ void page_request(Page pageTable[], Clock* c, pid_t pid, int memoryAddress, int 
         // page not in main memory! Page Fault! 
     buf.msgCode = MSG_TYPE_BLOCKED;  
     send_msg_to_child(buf); 
-    page_fault(pageTable);     
+    page_fault(pageTable, pid, pageNumber, msgCode);     
 }
 
 // void attempt_process_unblock(){   // attempt unblock from queue waiting for page unblock
