@@ -22,7 +22,7 @@
 #include "pcb.h"
 using namespace std;
 
-#define TERMINATION_CHANCE 5  // 0.5% chance to terminate every loop
+#define TERMINATION_CHANCE 1  // 0.1% chance to terminate every loop
 #define READ_CHANCE 70
 // This means write chance is 30%
 
