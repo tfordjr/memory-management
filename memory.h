@@ -67,9 +67,8 @@ void page_request(pid_t pid, int memoryAddress, int msgCode){
         }
     }
     
-    // page_fault(), 
-    // pageQueue.push(pid);    // put child in blocked queue
-    // MSG CHILD THEY'RE IN BLOCKED QUEUE
+    // page_fault(),     
+    // MSG CHILD THEY'RE BLOCKED
 }
 
 // void attempt_process_unblock(){   // attempt unblock from queue waiting for page unblock
