@@ -4,28 +4,76 @@
 #ifndef MEMORY_H
 #define MEMORY_H
 
-struct frame{    // OSS FRAME TABLE - 256K memory, 256 1k frames
+#include <iostream>
+#include <unistd.h>
+#include <signal.h>
+#include <fstream>
+#include <string>
+#include <queue>
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/msg.h>
+
+struct Page{    // OSS PAGE TABLE - 256K memory, 256 1k pages
+    pid_t owner;
+    int pageNumber;
     bool secondChanceBit;
     bool dirtyBit;
 };
 
+const int PAGE_TABLE_SIZE = 256;
+struct Page pageTable[PAGE_TABLE_SIZE];
+std::queue<pid_t> pageQueue; // only 18 procs in system at a time
+
+// init page table
+
 void page_fault(){
-    static int victimFrame = 0;
-    // run second chance algorithm, determine which frame will be replaced
-    // victimFrame = replaced frame + 1
+    static int victimPage = 0;
+    bool victimFound = false;
+
+    while(!victimFound){
+        if(pageTable[victimPage].secondChanceBit = 1){   // victim not found
+            pageTable[victimPage].secondChanceBit = 0;            
+        } else {    // second chance bit == 0, victim is found, swap out page
+            victimFound = true;
+            // pageTable[victimPage].owner = 
+            // pageTable[victimPage].pageNumber =
+            // pageTable[victimPage].secondChanceBit = 1;
+            // pageTable[victimPage].dirtyBit = 
+                // SEND MSG TO CHILD
+        }        
+        victimPage++;  // we increment victimPage whether it's found or not
+        if(victimPage == PAGE_TABLE_SIZE){
+            victimPage = 0;        
+        }
+    }
+    // run second chance algorithm, determine which page will be replaced
+    // victimPage = replaced page + 1
 }
 
-void page_request(){
-    // if pagefault
-    // page_fault(), put process in blocked queue until page is brought in
+void page_request(pid_t pid, int memoryAddress, int msgCode){
 
-    // if not pagefault
-    // increment() 100 ns
-    // send msg back to proc
-}
+    int pageNumber = memoryAddress/1024;
+    int offset = memoryAddress % 1024;
 
-void attempt_process_unblock(){   // attempt unblock from queue waiting for page unblock
+    for (int i = 0; i < PAGE_TABLE_SIZE; i++){
+        if(pageTable[i].owner == pid && pageTable[i].pageNumber == pageNumber){
+            // if(Write)
+            // pageTable[i].dirtyBit = 1;
+            // pageTable[i].secondChanceBit = 1;
+            // increment() 100 ns
+            // send msg to child to let them know page was in memory
+            return;  
+        }
+    }
     
-}   
+    // page_fault(), 
+    // pageQueue.push(pid);    // put child in blocked queue
+    // MSG CHILD THEY'RE IN BLOCKED QUEUE
+}
+
+// void attempt_process_unblock(){   // attempt unblock from queue waiting for page unblock
+    
+// }   
 
 #endif

@@ -132,7 +132,7 @@ int main(int argc, char** argv){
             successfulTerminations++;
         }  // I ignored pid == -1 case because no child procs was pid == -1 and was crashing the program
         
-        attempt_process_unblock(processTable, simultaneous, resourceTable);      
+        // attempt_process_unblock(processTable, simultaneous, resourceTable);      
 
         msgbuffer rcvbuf;     // NONBLOCKING WAIT TO RECEIVE MESSAGE FROM CHILD
         if (msgrcv(msgqid, &rcvbuf, sizeof(msgbuffer), getpid(), IPC_NOWAIT) == -1) {  // IPC_NOWAIT IF 1 DOES NOT WORK
@@ -146,7 +146,7 @@ int main(int argc, char** argv){
             std::cout << "OSS: Checked and found no messages for OSS in the msgqueue." << std::endl;
         } else if(rcvbuf.msgCode == MSG_TYPE_READ || rcvbuf.msgCode == MSG_TYPE_WRITE){
             std::cout << "OSS: " << rcvbuf.sender << " requesting read/write of address " << rcvbuf.memoryAddress << " at time " << shm_clock->secs << ":" << shm_clock->nanos << std::endl;
-            // page_request(rcvbuf.memoryAddress);
+            page_request(rcvbuf.memoryAddress);
         }
        
         increment(shm_clock, DISPATCH_AMOUNT);  // dispatcher overhead and unblocked reschedule overhead
