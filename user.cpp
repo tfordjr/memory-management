@@ -45,16 +45,16 @@ int main(int argc, char** argv) {
 	printf("%d: Child has access to the msg queue\n",getpid());   // starting messages    
     printf("USER PID: %d  PPID: %d  SysClockS: %d  SysClockNano: %d \n--Just Starting\n", getpid(), getppid(), shm_clock->secs, shm_clock->nanos); 
 
-    bool done = false;
+    // bool done = false;
     msgbuffer buf, rcvbuf;   // buf for msgsnd buffer, rcvbuf for msgrcv buffer	
     buf.mtype = getppid();              
     buf.sender = getpid();        
     // add_time(&nextSecs, &nextNanos, randomInterval); // next user request/release event
 
-    while(!done){ // ---------- MAIN LOOP ----------             
+    while(true){ // ---------- MAIN LOOP ----------             
         if (TERMINATION_CHANCE > generate_random_number(0, 1000, getpid())){
             std::cout << "Child " << getpid() << " randomly terminating..." << std::endl;
-            exit(1);
+            break;  // exits while loop and cleans up before exiting
         }
                 // generating memoryAddress to read or write to        
         int pageNumber = generate_random_number(0, 63, getpid());
@@ -65,7 +65,7 @@ int main(int argc, char** argv) {
             buf.msgCode = MSG_TYPE_READ; 
         } else {                                                     // WRITE
             buf.msgCode = MSG_TYPE_WRITE;
-        }   // MSGSND REQUEST/RELEASE TO OSS     
+        }   // MSGSND READ/WRITE TO OSS     
         if(msgsnd(msgqid, &buf, sizeof(msgbuffer), 1) == -1) { 
             perror("msgsnd to parent failed\n");
             exit(1);
@@ -83,7 +83,7 @@ int main(int argc, char** argv) {
             if(rcvbuf.msgCode != MSG_TYPE_GRANTED){
                 perror("user.cpp: child process unblocked but msgCode was not MSG_TYPE_GRANTED");
                 exit(1);
-            } // If resource is granted, resume execution. OSS handles Allocation
+            } 
         }            
     }   // ---------------------- MAIN LOOP ----------------------
     shmdt(shm_clock);  // deallocate shm and terminate

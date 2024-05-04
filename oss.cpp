@@ -35,7 +35,7 @@ void output_statistics();
 
 volatile sig_atomic_t term = 0;  // signal handling global
 struct PCB processTable[20]; // Init Process Table Array of PCB structs (not shm)
-struct Page pageTable[PAGE_TABLE_SIZE];
+struct Page frameTable[FRAME_TABLE_SIZE];
 
 // Declaring globals needed for signal handlers to clean up at anytime
 Clock* shm_clock;  // Declare global shm clock
@@ -81,7 +81,7 @@ int main(int argc, char** argv){
     alarm(5);   // timeout timer
           
     init_process_table(processTable);      // init local process table
-    init_page_table(pageTable);    // init resource table
+    init_frame_table(frameTable);    // init resource table
     shm_clock = (Clock*)shmat(shmtid, NULL, 0);    // attatch to global clock
     shm_clock->secs = 0;                        // init clock to 00:00
     shm_clock->nanos = 0;         
@@ -142,12 +142,12 @@ int main(int argc, char** argv){
             std::cout << "OSS: Checked and found no messages for OSS in the msgqueue." << std::endl;
         } else if(rcvbuf.msgCode == MSG_TYPE_READ || rcvbuf.msgCode == MSG_TYPE_WRITE){
             std::cout << "OSS: " << rcvbuf.sender << " requesting read/write of address " << rcvbuf.memoryAddress << " at time " << shm_clock->secs << ":" << shm_clock->nanos << std::endl;
-            page_request(pageTable, shm_clock, rcvbuf.sender, rcvbuf.memoryAddress, rcvbuf.msgCode);
+            page_request(frameTable, &outputFile, shm_clock, rcvbuf.sender, rcvbuf.memoryAddress, rcvbuf.msgCode);
         }
        
         increment(shm_clock, DISPATCH_AMOUNT);  // dispatcher overhead and unblocked reschedule overhead
         print_process_table(processTable, simultaneous, shm_clock->secs, shm_clock->nanos, outputFile);
-        print_page_table(pageTable, shm_clock->secs, shm_clock->nanos, outputFile);                
+        print_frame_table(frameTable, shm_clock->secs, shm_clock->nanos, outputFile);                
         std::cout << "Loop..." << std::endl;
     }                   // --------- END OF MAIN LOOP ---------    
 
@@ -166,7 +166,7 @@ int main(int argc, char** argv){
 
 void send_msg_to_child(msgbuffer buf){
     if (msgsnd(msgqid, &buf, sizeof(msgbuffer), 0) == -1) { 
-        perror("msgsnd to parent failed\n");
+        perror("msgsnd to child failed\n");
         exit(1);
     }
 }           

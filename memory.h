@@ -25,28 +25,28 @@ struct Page{    // OSS PAGE TABLE - 0-255k
 
 void send_msg_to_child(msgbuffer);
 
-const int PAGE_TABLE_SIZE = 256;
+const int FRAME_TABLE_SIZE = 256;
 // std::queue<pid_t> pageQueue; // Omitting queue for now
 
-void init_page_table(Page pageTable[]){
-    for(int i = 0; i < PAGE_TABLE_SIZE; i++){
-        pageTable[i].pid = 0;
-        pageTable[i].pageNumber = 0;
-        pageTable[i].secondChanceBit = 0;
-        pageTable[i].dirtyBit = 0; 
+void init_frame_table(Page frameTable[]){
+    for(int i = 0; i < FRAME_TABLE_SIZE; i++){
+        frameTable[i].pid = 0;
+        frameTable[i].pageNumber = 0;
+        frameTable[i].secondChanceBit = 0;
+        frameTable[i].dirtyBit = 0; 
     }
 }
 
-void print_page_table(Page pageTable[], int secs, int nanos, std::ostream& outputFile){
+void print_frame_table(Page frameTable[], int secs, int nanos, std::ostream& outputFile){
     static int next_print_secs = 0;  // static ints used to keep track of each 
     static int next_print_nanos = 0;   // process table print to be done
 
     if(secs > next_print_secs || (secs == next_print_secs && nanos > next_print_nanos)){
-        std::cout << "OSS PID: " << getpid() << "  SysClockS: " << secs << "  SysClockNano " << nanos << "  \nPage Table:\nEntry\tOwner PID\tPage Number\t2nd Chance Bit\tDirty Bit\n";
-        outputFile << "OSS PID: " << getpid() << "  SysClockS: " << secs << "  SysClockNano " << nanos << "  \nPage Table:\nEntry\tOwner PID\tPage Number\t2nd Chance Bit\tDirty Bit\n";
-        for(int i = 0; i < PAGE_TABLE_SIZE; i++){
-            std::cout << std::to_string(i + 1) << "\t" << std::to_string(pageTable[i].pid) << "\t" << std::to_string(pageTable[i].pageNumber) << "\t" << std::to_string(pageTable[i].secondChanceBit) << "\t" << std::to_string(pageTable[i].dirtyBit) << std::endl;
-            outputFile << std::to_string(i + 1) << "\t" << std::to_string(pageTable[i].pid) << "\t" << std::to_string(pageTable[i].pageNumber) << "\t" << std::to_string(pageTable[i].secondChanceBit) << "\t" << std::to_string(pageTable[i].dirtyBit) << std::endl;
+        std::cout << "OSS PID: " << getpid() << "  SysClockS: " << secs << "  SysClockNano " << nanos << "  \nPage Table:\n\tOwner PID\tPage Number\t2nd Chance Bit\tDirty Bit\n";
+        outputFile << "OSS PID: " << getpid() << "  SysClockS: " << secs << "  SysClockNano " << nanos << "  \nPage Table:\n\tOwner PID\tPage Number\t2nd Chance Bit\tDirty Bit\n";
+        for(int i = 0; i < FRAME_TABLE_SIZE; i++){
+            std::cout << "Frame " << std::to_string(i + 1) << ":\t" << std::to_string(frameTable[i].pid) << "\t" << std::to_string(frameTable[i].pageNumber) << "\t" << std::to_string(frameTable[i].secondChanceBit) << "\t" << std::to_string(frameTable[i].dirtyBit) << std::endl;
+            outputFile << std::to_string(i + 1) << "\t" << std::to_string(frameTable[i].pid) << "\t" << std::to_string(frameTable[i].pageNumber) << "\t" << std::to_string(frameTable[i].secondChanceBit) << "\t" << std::to_string(frameTable[i].dirtyBit) << std::endl;
         }
         next_print_nanos = next_print_nanos + 500000000;
         if (next_print_nanos >= 1000000000){   // if over 1 billion nanos, add 1 second, sub 1 bil nanos
@@ -56,49 +56,50 @@ void print_page_table(Page pageTable[], int secs, int nanos, std::ostream& outpu
     }
 }
 
-void page_fault(Page pageTable[], pid_t pid, int pageNumber, int msgCode){
-    static int victimPage = 0;
+void page_fault(Page frameTable[], std::ofstream* outputFile, pid_t pid, int pageNumber, int msgCode){
+    static int victimFrame = 0;
     bool victimFound = false;
 
     while(!victimFound){
-        if(pageTable[victimPage].secondChanceBit == 1){   // victim not found
-            pageTable[victimPage].secondChanceBit = 0;            
+        if(frameTable[victimFrame].secondChanceBit == 1){   // victim not found
+            frameTable[victimFrame].secondChanceBit = 0;            
         } else {    // second chance bit == 0, victim is found, swap out page
             victimFound = true;
-            if(pageTable[victimPage].dirtyBit){    // SAVE OLD PAGE BEFORE SWAPPING OUT
-
+            if(frameTable[victimFrame].dirtyBit){    // SAVE OLD PAGE BEFORE SWAPPING OUT
+                std::cout << "OSS: Swapping out dirty frame, saving to secondary storage..." << std::endl;
+                *outputFile << "OSS: Swapping out dirty frame, saving to secondary storage..." << std::endl;
             }
 
-            pageTable[victimPage].pid = pid;   // WRITING NEW PAGE TO MAIN MEMORY
-            pageTable[victimPage].pageNumber = pageNumber;
-            pageTable[victimPage].secondChanceBit = 1;
-            pageTable[victimPage].dirtyBit = (msgCode == MSG_TYPE_WRITE) ? 1 : 0;
+            frameTable[victimFrame].pid = pid;   // WRITING NEW PAGE TO MAIN MEMORY
+            frameTable[victimFrame].pageNumber = pageNumber;
+            frameTable[victimFrame].secondChanceBit = 1;
+            frameTable[victimFrame].dirtyBit = (msgCode == MSG_TYPE_WRITE) ? 1 : 0;
                 
             msgbuffer buf;         // SEND GRANTED MSG TO CHILD
             buf.mtype = pid;
             buf.msgCode = MSG_TYPE_GRANTED;
             send_msg_to_child(buf);
         }
-        victimPage++;  // we increment victimPage whether it's found or not
-        if(victimPage == PAGE_TABLE_SIZE){
-            victimPage = 0;        
+        victimFrame++;  // we increment victimFrame whether it's found or not
+        if(victimFrame == FRAME_TABLE_SIZE){
+            victimFrame = 0;        
         }
     }
 }
 
-void page_request(Page pageTable[], Clock* c, pid_t pid, int memoryAddress, int msgCode){
+void page_request(Page frameTable[], std::ofstream* outputFile, Clock* c, pid_t pid, int memoryAddress, int msgCode){
 
     msgbuffer buf;          // msgbuffer setup
     buf.mtype = pid;
     int pageNumber = memoryAddress/1024;  // translation of memory address
     // int offset = memoryAddress % 1024;        
 
-    for (int i = 0; i < PAGE_TABLE_SIZE; i++){  // init scan of pageTable
-        if(pageTable[i].pid == pid && pageTable[i].pageNumber == pageNumber){  
+    for (int i = 0; i < FRAME_TABLE_SIZE; i++){  // init scan of frameTable
+        if(frameTable[i].pid == pid && frameTable[i].pageNumber == pageNumber){  
             
             if(msgCode == MSG_TYPE_WRITE)
-                pageTable[i].dirtyBit = 1;     
-            pageTable[i].secondChanceBit = 1;       
+                frameTable[i].dirtyBit = 1;     
+            frameTable[i].secondChanceBit = 1;       
             increment(c, 100);            
 
             buf.msgCode = MSG_TYPE_GRANTED;
@@ -109,7 +110,7 @@ void page_request(Page pageTable[], Clock* c, pid_t pid, int memoryAddress, int 
         // page not in main memory! Page Fault! 
     buf.msgCode = MSG_TYPE_BLOCKED;  
     send_msg_to_child(buf); 
-    page_fault(pageTable, pid, pageNumber, msgCode);     
+    page_fault(frameTable, outputFile, pid, pageNumber, msgCode);     
 }
 
 // void attempt_process_unblock(){   // attempt unblock from queue waiting for page unblock
