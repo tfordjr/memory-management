@@ -26,6 +26,8 @@ struct Page{    // OSS PAGE TABLE - 0-255k
 void send_msg_to_child(msgbuffer);
 
 const int FRAME_TABLE_SIZE = 256;
+int memoryAccesses = 0;
+int pageFaults = 0;
 // std::queue<pid_t> pageQueue; // Omitting queue for now
 
 void init_frame_table(Page frameTable[]){
@@ -78,6 +80,7 @@ void page_fault(Page frameTable[], std::ofstream* outputFile, pid_t pid, int pag
             msgbuffer buf;         // SEND GRANTED MSG TO CHILD
             buf.mtype = pid;
             buf.msgCode = MSG_TYPE_GRANTED;
+            memoryAccesses++;
             send_msg_to_child(buf);
         }
         victimFrame++;  // we increment victimFrame whether it's found or not
@@ -103,6 +106,7 @@ void page_request(Page frameTable[], std::ofstream* outputFile, Clock* c, pid_t 
             increment(c, 100);            
 
             buf.msgCode = MSG_TYPE_GRANTED;
+            memoryAccesses++;
             send_msg_to_child(buf); 
             return;
         }
@@ -110,7 +114,8 @@ void page_request(Page frameTable[], std::ofstream* outputFile, Clock* c, pid_t 
         // page not in main memory! Page Fault! 
     buf.msgCode = MSG_TYPE_BLOCKED;  
     send_msg_to_child(buf); 
-    page_fault(frameTable, outputFile, pid, pageNumber, msgCode);     
+    page_fault(frameTable, outputFile, pid, pageNumber, msgCode);    
+    pageFaults++; 
 }
 
 // void attempt_process_unblock(){   // attempt unblock from queue waiting for page unblock

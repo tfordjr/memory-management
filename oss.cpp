@@ -18,6 +18,7 @@
 #include <sys/msg.h>
 #include <sys/mman.h>
 #include <fstream>
+#include <chrono>
 #include "pcb.h"
 #include "memory.h"
 #include "clock.h"
@@ -105,6 +106,7 @@ int main(int argc, char** argv){
 	}
 	cout << "OSS: Message queue set up\n";
     outputFile << "OSS: Message queue set up\n";  
+    auto start = std::chrono::high_resolution_clock::now();
     
     // For some reason my project is happier when child launches before waitpid()
                         //  ---------  MAIN LOOP  ---------   
@@ -151,7 +153,9 @@ int main(int argc, char** argv){
         std::cout << "Loop..." << std::endl;
     }                   // --------- END OF MAIN LOOP ---------    
 
-    // output_statistics();
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+    output_statistics(duration);
 
 	std::cout << "OSS: Child processes have completed. (" << numChildren << " remaining)\n";
     std::cout << "OSS: Parent is now ending.\n";
@@ -253,20 +257,16 @@ void cleanup(std::string cause) {
     std::exit(EXIT_SUCCESS);
 }
 
-// void output_statistics(){           
-//     std::cout << "\nRUN RESULT REPORT" << std::endl;
-//     std::cout << "Requests granted immediately: " << requestsImmediatelyGranted << std::endl;   
-//     std::cout << "Requests granted from blocked queue: " << requestsEventuallyGranted << std::endl; 
-//     std::cout << "Times deadlock detection algorithm has run: " << ddAlgoRuns << std::endl;
-//     std::cout << "Processes terminated by deadlock detection algorithm: " << ddAlgoKills << std::endl; 
-//     std::cout << "Processes terminated successfully without intervention: " << (successfulTerminations - ddAlgoKills) << std::endl;
-//     std::cout << "Average number of terminations required to resolve a deadlock: " << std::fixed << std::setprecision(1) << static_cast<double>(ddAlgoKills)/numDeadlocks << std::endl;    
+void output_statistics(auto runtime){           
+    std::cout << "\nRUN RESULT REPORT" << std::endl;
+    std::cout << "Number of Page Faults: " << pageFaults << std::endl;   
+    std::cout << "Number of Memory Accesses: " << memoryAccesses << std::endl; 
+    std::cout << "Number of Memory Accesses per second: " << std::fixed << std::setprecision(1) << static_cast<double>(memoryAccesses)/duration << std::endl; 
+    std::cout << "Average Number of Page Faults per Memory Access: " << std::fixed << std::setprecision(1) << static_cast<double>(pageFaults)/memoryAccesses << std::endl; 
 
-//     outputFile << "\nRUN RESULT REPORT" << std::endl;
-//     outputFile << "Requests granted immediately: " << requestsImmediatelyGranted << std::endl;   
-//     outputFile << "Requests granted from blocked queue: " << requestsEventuallyGranted << std::endl; 
-//     outputFile << "Times deadlock detection algorithm has run: " << ddAlgoRuns << std::endl;
-//     outputFile << "Processes terminated by deadlock detection algorithm: " << ddAlgoKills << std::endl; 
-//     outputFile << "Processes terminated successfully without intervention: " << (successfulTerminations - ddAlgoKills) << std::endl;
-//     outputFile << "Average number of terminations required to resolve a deadlock: " << std::fixed << std::setprecision(1) << static_cast<double>(ddAlgoKills)/numDeadlocks << std::endl;   
-// }
+    outputFile << "\nRUN RESULT REPORT" << std::endl;
+    outputFile << "Number of Page Faults: " << pageFaults << std::endl;   
+    outputFile << "Number of Memory Accesses: " << memoryAccesses << std::endl; 
+    outputFile << "Number of Memory Accesses per second: " << std::fixed << std::setprecision(1) << static_cast<double>(memoryAccesses)/duration << std::endl; 
+    outputFile << "Average Number of Page Faults per Memory Access: " << std::fixed << std::setprecision(1) << static_cast<double>(pageFaults)/memoryAccesses << std::endl; 
+}
