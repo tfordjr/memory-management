@@ -28,5 +28,12 @@ void add_time(int *addend1Secs, int *addend1Nanos, int addend2Nanos){
         *addend1Secs++;
     }
 }
+        // returns true if first time greater than second time
+bool compare_time(int secsA, int nanosA, int secsB, int nanosB){
+    if(secsA > secsB || ((secsA == secsB) && (nanosA >= nanosB))){
+        return true;
+    }        
+    return false;
+}
 
 #endif

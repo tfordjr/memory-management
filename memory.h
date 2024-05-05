@@ -23,6 +23,18 @@ struct Page{    // OSS PAGE TABLE - 0-255k
     bool dirtyBit;
 };
 
+struct ProcInfo{
+    pid_t pid;
+    int secs;
+    int nanos;
+    int pageNumber;
+    int msgCode;
+        // Constructor
+    ProcInfo(pid_t p, int s, int n, int a, int m) : pid(p), secs(s), nanos(n), pageNumber(a), msgCode(m) {}
+};
+
+std::queue<ProcInfo> blockedQueue; // queue of blocked procs with their unblock time
+
 void send_msg_to_child(msgbuffer);
 
 const int FRAME_TABLE_SIZE = 256;
@@ -118,12 +130,28 @@ void page_request(Page frameTable[], std::ofstream* outputFile, Clock* c, pid_t 
         // page not in main memory! Page Fault! 
     buf.msgCode = MSG_TYPE_BLOCKED;  
     send_msg_to_child(buf); 
-    page_fault(frameTable, outputFile, pid, pageNumber, msgCode);    
-    pageFaults++; 
+
+    // init time values
+    int unblockSecs = c->secs;
+    int unblockNanos = c->nanos;
+    // add_time()
+    add_time(&unblockSecs, &unblockNanos, 1.4e7);
+
+    blockedQueue.push(ProcInfo(pid, unblockSecs, unblockNanos, pageNumber, msgCode));
+
+        // can't run page_fault() to replace until secondary storage retrieves
+        // desired frame which is simulated by blocked queue and 14ms wait
+    // page_fault(frameTable, outputFile, pid, pageNumber, msgCode);    
+    // pageFaults++; 
 }
 
-// void attempt_process_unblock(){   // attempt unblock from queue waiting for page unblock
-    
-// }   
+void attempt_process_unblock(Page frameTable[], std::ofstream* outputFile, Clock* c){   // attempt unblock from queue waiting for page unblock
+        // if unblock time has elapsed
+    while(compare_time(c->secs, c->nanos, blockedQueue.front().secs, blockedQueue.front().nanos)){
+        page_fault(frameTable, outputFile, blockedQueue.front().pid, blockedQueue.front().pageNumber, blockedQueue.front().msgCode);    
+        pageFaults++; 
+        blockedQueue.pop();
+    }
+}   
 
 #endif

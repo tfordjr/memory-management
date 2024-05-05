@@ -131,6 +131,8 @@ int main(int argc, char** argv){
             }
             pid = 0;
         }  
+
+        attempt_process_unblock(frameTable, &outputFile, shm_clock);
                
         msgbuffer rcvbuf;     // NONBLOCKING WAIT TO RECEIVE MESSAGE FROM CHILD
         if (msgrcv(msgqid, &rcvbuf, sizeof(msgbuffer), getpid(), IPC_NOWAIT) == -1) {  // IPC_NOWAIT IF 1 DOES NOT WORK
@@ -240,14 +242,14 @@ void output_statistics(double duration){
     std::cout << "\nRUN RESULT REPORT" << std::endl;
     std::cout << "Number of Page Faults: " << pageFaults << std::endl;   
     std::cout << "Number of Memory Accesses: " << memoryAccesses << std::endl; 
-    std::cout << "Number of Memory Accesses per second: " << std::fixed << std::setprecision(1) << static_cast<double>(memoryAccesses)/duration << std::endl; 
-    std::cout << "Average Number of Page Faults per Memory Access: " << std::fixed << std::setprecision(1) << static_cast<double>(pageFaults)/memoryAccesses << std::endl; 
+    std::cout << "Number of Memory Accesses per second: " << std::fixed << std::setprecision(2) << static_cast<double>(memoryAccesses)/duration << std::endl; 
+    std::cout << "Average Number of Page Faults per Memory Access: " << std::fixed << std::setprecision(2) << static_cast<double>(pageFaults)/memoryAccesses << std::endl; 
 
     outputFile << "\nRUN RESULT REPORT" << std::endl;
     outputFile << "Number of Page Faults: " << pageFaults << std::endl;   
     outputFile << "Number of Memory Accesses: " << memoryAccesses << std::endl; 
-    outputFile << "Number of Memory Accesses per second: " << std::fixed << std::setprecision(1) << static_cast<double>(memoryAccesses)/duration << std::endl; 
-    outputFile << "Average Number of Page Faults per Memory Access: " << std::fixed << std::setprecision(1) << static_cast<double>(pageFaults)/memoryAccesses << std::endl; 
+    outputFile << "Number of Memory Accesses per second: " << std::fixed << std::setprecision(2) << static_cast<double>(memoryAccesses)/duration << std::endl; 
+    outputFile << "Average Number of Page Faults per Memory Access: " << std::fixed << std::setprecision(2) << static_cast<double>(pageFaults)/memoryAccesses << std::endl; 
 }
 
 void cleanup(std::string cause) {

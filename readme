@@ -16,6 +16,7 @@ Args default to appropriate figures if not provided, can be in any order.
 oss.cpp: processes args and managles child forking, msgq, pcb, logical clock, etc.
 user.cpp: user executable takes one arg for number of iterations. prints and sleeps. 
 pcb.h: contains pcb struct and many related functions for process table utility.
+memory.h contains Page struct and memory queue and related functions
 clock.h: logical clock struct, include add_time() and subtract_time()
 msgq.h: houses msgbuffer struct, running states
 rng.h: holds generate_random_number() to be used in user.cpp and oss.cpp
@@ -25,9 +26,6 @@ readme: explains project
 
 
 ---Lack of adhearance to specifications:
-I decided against implementing a blocked queue, user processes are still being blocked
-as they're waiting for their page to be moved to main memory, but for this project when a 
-page fault occurs, I immediately move that page to main memory, so no need for a queue
 
 ---Known Problems or Bugs: 
 my when I call shmctl() in cleanup(), it produces a fatal bug. I have no idea why this 
