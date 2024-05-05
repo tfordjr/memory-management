@@ -243,6 +243,7 @@ void output_statistics(double duration){
     std::cout << "Number of Page Faults: " << pageFaults << std::endl;   
     std::cout << "Number of Memory Accesses: " << (instantMemoryAccesses + pageFaults) << std::endl; 
     std::cout << "Percent of Memory Requests granted instantly: " << std::fixed << std::setprecision(2) << static_cast<double>(100*instantMemoryAccesses)/(instantMemoryAccesses + pageFaults) << "%" << std::endl; 
+    std::cout << "Percent of Memory Requests granted instantly discounting the first 256: " << std::fixed << std::setprecision(2) << static_cast<double>(100*(instantMemoryAccesses-256))/(instantMemoryAccesses + pageFaults) << "%" << std::endl; 
     std::cout << "Number of Memory Accesses per second: " << std::fixed << std::setprecision(2) << static_cast<double>(instantMemoryAccesses + pageFaults)/duration << std::endl; 
     std::cout << "Average Number of Page Faults per Memory Access: " << std::fixed << std::setprecision(2) << static_cast<double>(pageFaults)/(instantMemoryAccesses + pageFaults) << std::endl; 
 
@@ -250,6 +251,7 @@ void output_statistics(double duration){
     outputFile << "Number of Page Faults: " << pageFaults << std::endl;   
     outputFile << "Number of Memory Accesses: " << (instantMemoryAccesses + pageFaults) << std::endl; 
     outputFile << "Percent of Instant Memory Accesses: " << std::fixed << std::setprecision(2) << static_cast<double>(100*instantMemoryAccesses)/(instantMemoryAccesses + pageFaults) << "%" << std::endl; 
+    outputFile << "Percent of Memory Requests granted instantly discounting the first 256: " << std::fixed << std::setprecision(2) << static_cast<double>(100*(instantMemoryAccesses-256))/(instantMemoryAccesses + pageFaults) << "%" << std::endl; 
     outputFile << "Number of Memory Accesses per second: " << std::fixed << std::setprecision(2) << static_cast<double>(instantMemoryAccesses + pageFaults)/duration << std::endl; 
     outputFile << "Average Number of Page Faults per Memory Access: " << std::fixed << std::setprecision(2) << static_cast<double>(pageFaults)/(instantMemoryAccesses + pageFaults) << std::endl; 
 }
