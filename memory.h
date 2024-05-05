@@ -38,7 +38,7 @@ std::queue<ProcInfo> blockedQueue; // queue of blocked procs with their unblock 
 void send_msg_to_child(msgbuffer);
 
 const int FRAME_TABLE_SIZE = 256;
-int memoryAccesses = 0;
+int instantMemoryAccesses = 0;
 int pageFaults = 0;
 // std::queue<pid_t> pageQueue; // Omitting queue for now
 
@@ -59,8 +59,8 @@ void print_frame_table(Page frameTable[], int secs, int nanos, std::ostream& out
         std::cout << "OSS PID: " << getpid() << "  SysClockS: " << secs << "  SysClockNano " << nanos << "  \nPage Table:\n\tOwner PID\tPage Number\t2nd Chance Bit\tDirty Bit\n";
         outputFile << "OSS PID: " << getpid() << "  SysClockS: " << secs << "  SysClockNano " << nanos << "  \nPage Table:\n\tOwner PID\tPage Number\t2nd Chance Bit\tDirty Bit\n";
         for(int i = 0; i < FRAME_TABLE_SIZE; i++){
-            std::cout << "Frame " << std::to_string(i + 1) << ":\t" << std::to_string(frameTable[i].pid) << "\t" << std::to_string(frameTable[i].pageNumber) << "\t" << std::to_string(frameTable[i].secondChanceBit) << "\t" << std::to_string(frameTable[i].dirtyBit) << std::endl;
-            outputFile << std::to_string(i + 1) << "\t" << std::to_string(frameTable[i].pid) << "\t" << std::to_string(frameTable[i].pageNumber) << "\t" << std::to_string(frameTable[i].secondChanceBit) << "\t" << std::to_string(frameTable[i].dirtyBit) << std::endl;
+            std::cout << "Frame " << std::to_string(i + 1) << ":\t" << std::to_string(frameTable[i].pid) << "\t" << std::to_string(frameTable[i].pageNumber) << "\t\t" << std::to_string(frameTable[i].secondChanceBit) << "\t" << std::to_string(frameTable[i].dirtyBit) << std::endl;
+            outputFile << "Frame " << std::to_string(i + 1) << ":\t" << std::to_string(frameTable[i].pid) << "\t" << std::to_string(frameTable[i].pageNumber) << "\t\t" << std::to_string(frameTable[i].secondChanceBit) << "\t" << std::to_string(frameTable[i].dirtyBit) << std::endl;
         }
         next_print_nanos = next_print_nanos + 500000000;
         if (next_print_nanos >= 1000000000){   // if over 1 billion nanos, add 1 second, sub 1 bil nanos
@@ -94,7 +94,6 @@ void page_fault(Page frameTable[], std::ofstream* outputFile, pid_t pid, int pag
             buf.sender = getpid();
             buf.memoryAddress = pageNumber;
             buf.msgCode = MSG_TYPE_GRANTED;
-            memoryAccesses++;
             send_msg_to_child(buf);
         }
         victimFrame++;  // we increment victimFrame whether it's found or not
@@ -122,7 +121,7 @@ void page_request(Page frameTable[], std::ofstream* outputFile, Clock* c, pid_t 
             increment(c, 100);            
 
             buf.msgCode = MSG_TYPE_GRANTED;
-            memoryAccesses++;
+            instantMemoryAccesses++;
             send_msg_to_child(buf); 
             return;
         }
@@ -148,8 +147,10 @@ void page_request(Page frameTable[], std::ofstream* outputFile, Clock* c, pid_t 
 void attempt_process_unblock(Page frameTable[], std::ofstream* outputFile, Clock* c){   // attempt unblock from queue waiting for page unblock
         // if unblock time has elapsed
     while(!blockedQueue.empty() && (c->secs, c->nanos, blockedQueue.front().secs, blockedQueue.front().nanos)){
+        std::cout << "OSS: Process " << blockedQueue.front().pid << " Unblocked and now swapping memory in" << std::endl; 
+        *outputFile << "OSS: Process " << blockedQueue.front().pid << " Unblocked and now swapping memory in" << std::endl; 
         page_fault(frameTable, outputFile, blockedQueue.front().pid, blockedQueue.front().pageNumber, blockedQueue.front().msgCode);    
-        pageFaults++; 
+        pageFaults++;  
         blockedQueue.pop();
     }
 }   
