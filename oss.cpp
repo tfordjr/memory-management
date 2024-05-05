@@ -132,7 +132,7 @@ int main(int argc, char** argv){
             pid = 0;
         }  
 
-        attempt_process_unblock(frameTable, &outputFile, shm_clock);
+        // attempt_process_unblock(frameTable, &outputFile, shm_clock);
                
         msgbuffer rcvbuf;     // NONBLOCKING WAIT TO RECEIVE MESSAGE FROM CHILD
         if (msgrcv(msgqid, &rcvbuf, sizeof(msgbuffer), getpid(), IPC_NOWAIT) == -1) {  // IPC_NOWAIT IF 1 DOES NOT WORK
