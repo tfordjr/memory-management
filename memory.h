@@ -137,17 +137,17 @@ void page_request(Page frameTable[], std::ofstream* outputFile, Clock* c, pid_t 
     // add_time()
     add_time(&unblockSecs, &unblockNanos, 1.4e7);
 
-    // blockedQueue.push(ProcInfo(pid, unblockSecs, unblockNanos, pageNumber, msgCode));
+    blockedQueue.push(ProcInfo(pid, unblockSecs, unblockNanos, pageNumber, msgCode));
 
         // can't run page_fault() to replace until secondary storage retrieves
         // desired frame which is simulated by blocked queue and 14ms wait
-    page_fault(frameTable, outputFile, pid, pageNumber, msgCode);    
-    pageFaults++; 
+    // page_fault(frameTable, outputFile, pid, pageNumber, msgCode);    
+    // pageFaults++; 
 }
 
 void attempt_process_unblock(Page frameTable[], std::ofstream* outputFile, Clock* c){   // attempt unblock from queue waiting for page unblock
         // if unblock time has elapsed
-    while(compare_time(c->secs, c->nanos, blockedQueue.front().secs, blockedQueue.front().nanos)){
+    while(!blockedQueue.empty() && (c->secs, c->nanos, blockedQueue.front().secs, blockedQueue.front().nanos)){
         page_fault(frameTable, outputFile, blockedQueue.front().pid, blockedQueue.front().pageNumber, blockedQueue.front().msgCode);    
         pageFaults++; 
         blockedQueue.pop();
