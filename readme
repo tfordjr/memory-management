@@ -32,7 +32,3 @@ my when I call shmctl() in cleanup(), it produces a fatal bug. I have no idea wh
 began in this project but this same code had no issues in my prior projects.
 I've removed that line so the bug isn't present, but it leaves that memory in the system.
 
-Occasionally when I run the program, the first thing that happens is a fatal bug caused by 
-oss.cpp:send_msg_to_child() which is called from memory.h:page_request(), I assume it's 
-related to sending a message to a child who's msgqueue isn't setup yet, but I'm having
-trouble producing the bug so I believe it may not recur even though I didn't fix it.
