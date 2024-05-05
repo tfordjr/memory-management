@@ -120,7 +120,7 @@ int main(int argc, char** argv){
             launch_child(processTable, simultaneous);
         }
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        usleep(100000);
 
         pid_t pid = waitpid((pid_t)-1, nullptr, WNOHANG);  // non-blocking wait call for terminated child process
         if (pid > 0){     // if child has been terminated
