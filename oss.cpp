@@ -120,8 +120,6 @@ int main(int argc, char** argv){
             launch_child(processTable, simultaneous);
         }
 
-        usleep(100000);
-
         pid_t pid = waitpid((pid_t)-1, nullptr, WNOHANG);  // non-blocking wait call for terminated child process
         if (pid > 0){     // if child has been terminated
             std::cout << "OSS: Receiving child " << pid << " has terminated! Releasing childs' resources..." << std::endl;
